@@ -1,0 +1,11 @@
+Package: GreedyExperimentalDesign
+Type: Package
+Title:Greedy Experimental Design
+Version: 1.0
+Date: 2015-02-01
+Author: Adam Kapelner, see COPYRIGHTS file for the authors of the java libraries
+Maintainer: Adam Kapelner <kapelner@qc.cuny.edu>
+Description: A means of computing near optimal experimental designs for a two-arm experiment with covariates
+License: GPL-3
+Depends: R (>= 2.14.0), rJava (>= 0.8-4)
+SystemRequirements: Java (>= 1.6.27)
