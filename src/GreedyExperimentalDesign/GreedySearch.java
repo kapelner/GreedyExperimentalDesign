@@ -28,7 +28,11 @@ public class GreedySearch {
 		Double obj_val = null;
 		
 		double min_obj_val = Double.MAX_VALUE;
+		int iter = 0;
 		while (true){
+			System.out.println("GreedySearch: iter " + iter);
+			iter++;
+			
 			int[] indicTmin = null;
 			int[] i_Ts = findIndicies(indicT, nT, 1);
 			int[] i_Cs = findIndicies(indicT, n - nT, 0);

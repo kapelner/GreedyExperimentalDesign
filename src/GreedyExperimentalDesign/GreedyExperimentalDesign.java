@@ -71,6 +71,7 @@ public class GreedyExperimentalDesign {
 	private Double[] objective_vals;
 	
 	public GreedyExperimentalDesign(){
+		System.out.println("GreedyExperimentalDesign");
 //		writeStdOutToLogFile();
 	}
 	
@@ -130,19 +131,23 @@ public class GreedyExperimentalDesign {
 	}
 	
 	public void setMaxDesigns(int max_designs){
+		System.out.println("setMaxDesigns " + max_designs);
 		this.max_designs = max_designs;
 	}
 	
 	public void setNumCores(int num_cores){
+		System.out.println("setNumCores " +num_cores);
 		this.num_cores = num_cores;
 	}	
 	
 	public void setNandP(int n, int p){
+		System.out.println("setNandP n = " + n + " p = " + p);
 		this.n = n;
 		this.p = p;
 	}
 	
 	public void setObjective(String objective) throws Exception{
+		System.out.println("setObjective " + objective);
 		this.objective = objective;
 		if (!MAHAL.equals(objective) && !ABS.equals(objective)){
 			throw new Exception("bad objective function");
@@ -150,6 +155,7 @@ public class GreedyExperimentalDesign {
 	}
 	
 	public void setDataRow(int i0, double[] x_i){
+		System.out.println("setDataRow " + i0 + "  " + x_i);
 		if (Xstd == null){
 			Xstd = new double[n][p];
 		}
@@ -159,6 +165,7 @@ public class GreedyExperimentalDesign {
 	}
 	
 	public void setInvVarCovRow(int j0, double[] Sinv_i){
+		System.out.println("setInvVarCovRow " + j0 + "  " + Sinv_i);
 		if (Sinv == null){
 			Sinv = new double[p][p];
 		}
@@ -168,6 +175,7 @@ public class GreedyExperimentalDesign {
 	}
 	
 	public void setDesignStartingPoint(int d0, int[] indicT){
+		System.out.println("setDesignStartingPoint " + d0 + " " + indicT);
 		if (starting_indicTs == null){
 			starting_indicTs = new int[max_designs][n];
 		}
