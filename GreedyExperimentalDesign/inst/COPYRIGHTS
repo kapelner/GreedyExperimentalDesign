@@ -1,20 +1,14 @@
-The following open source Java libraries are included in this package:
+The following open source Java library is included in this package:
 
-- Commons Math: The Apache Commons Mathematics Library under the Apache License 2.0, 
-  Version 2.1, March 2010,
-  http://commons.apache.org/proper/commons-math/, 
+- MAtrix Toolkits Java: Java linear algebra library powered by BLAS and LAPACK 
+  under the Lesser GNU Public License (LGPL) 3.0, 
+  Version 1.0, September 28, 2013,
+  JAR Download: https://code.google.com/p/java-matrix-benchmark/source/browse/#svn%2Ftrunk%2Flib%2Fmtj, 
+  Source code: https://github.com/fommil/matrix-toolkits-java/tree/cddc4d10014ac63460457aa921677e3ae1714539
   Copyright 2003-2014 The Apache Software Foundation
-
-- Trove under Lesser GNU Public License (LGPL) 2.1,
-  Version 3.0.3, February 2012, 
-  http://trove.starlight-systems.com/
 
 License
 =======
 
-
-You may obtain a copy of the Apache License, Version 2.0 at
-http://www.apache.org/licenses/LICENSE-2.0
-
-You may obtain a copy of the Lesser GNU Public License (LGPL) 2.1 at
-http://www.gnu.org/licenses/lgpl-2.1.html
+You may obtain a copy of the Lesser GNU Public License (LGPL) 3.0 at
+https://raw.githubusercontent.com/fommil/matrix-toolkits-java/master/LICENSE
