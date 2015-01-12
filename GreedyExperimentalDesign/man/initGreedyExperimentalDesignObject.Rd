@@ -2,7 +2,7 @@
 \name{initGreedyExperimentalDesignObject}
 \alias{initGreedyExperimentalDesignObject}
 \title{This method creates an object of type greedy_experimental_design and will immediately initiate
-a search through $\indic{T}$ space.}
+a search through $1_{T}$ space.}
 \usage{
 initGreedyExperimentalDesignObject(X, max_designs = 10000,
   objective = "abs_sum_diff", num_cores = 1)
@@ -26,7 +26,7 @@ An object of type \code{greedy_experimental_design_search} which can be further 
 }
 \description{
 This method creates an object of type greedy_experimental_design and will immediately initiate
-a search through $\indic{T}$ space.
+a search through $1_{T}$ space.
 }
 \author{
 Adam Kapelner

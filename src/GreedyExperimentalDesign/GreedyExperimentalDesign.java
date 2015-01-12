@@ -76,9 +76,11 @@ public class GreedyExperimentalDesign {
 	}
 	
 	public void beginSearch(){
+		System.out.println("beginSearch");
 		//initialize all data
 		objective_vals = new Double[max_designs];
 		ending_indicTs = new int[max_designs][n];
+		System.out.println("resulting data initialized");
 		
 		//convert Sinv to a matrix for easier multiplication inside the search
 		final DenseMatrix Sinvmat = new DenseMatrix(p, p);
@@ -87,11 +89,15 @@ public class GreedyExperimentalDesign {
 				Sinvmat.set(i, j, Sinv[i][j]);
 			}			
 		}
+		System.out.println("Sinvmat initialized");
 		
 		//build the pool and all tasks to it
 		greedy_search_thread_pool = Executors.newFixedThreadPool(num_cores);
 		for (int d = 0; d < max_designs; d++){
 			final int d0 = d;
+			if (d % 100 == 0){
+				System.out.println("worker added to thread pool #" + d);
+			}
 	    	greedy_search_thread_pool.execute(new Runnable(){
 				public void run() {
 					new GreedySearch(Xstd, Sinvmat, starting_indicTs[d0], ending_indicTs[d0], objective_vals, objective, d0);
@@ -102,7 +108,7 @@ public class GreedyExperimentalDesign {
 		try {	         
 	         greedy_search_thread_pool.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS); //effectively infinity
 	    } catch (InterruptedException ignored){}	
-		
+		System.out.println("greedy_search_thread_pool shut down");
 	}
 	
 	public void stopSearch(){
@@ -155,7 +161,7 @@ public class GreedyExperimentalDesign {
 	}
 	
 	public void setDataRow(int i0, double[] x_i){
-		System.out.println("setDataRow " + i0 + "  " + x_i);
+//		System.out.println("setDataRow " + i0 + "  " + x_i);
 		if (Xstd == null){
 			Xstd = new double[n][p];
 		}
@@ -165,7 +171,7 @@ public class GreedyExperimentalDesign {
 	}
 	
 	public void setInvVarCovRow(int j0, double[] Sinv_i){
-		System.out.println("setInvVarCovRow " + j0 + "  " + Sinv_i);
+//		System.out.println("setInvVarCovRow " + j0 + "  " + Sinv_i);
 		if (Sinv == null){
 			Sinv = new double[p][p];
 		}
@@ -175,7 +181,7 @@ public class GreedyExperimentalDesign {
 	}
 	
 	public void setDesignStartingPoint(int d0, int[] indicT){
-		System.out.println("setDesignStartingPoint " + d0 + " " + indicT);
+//		System.out.println("setDesignStartingPoint " + d0 + " " + indicT);
 		if (starting_indicTs == null){
 			starting_indicTs = new int[max_designs][n];
 		}

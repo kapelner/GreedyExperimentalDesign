@@ -1,7 +1,7 @@
 VERSION = "1.0"
 
 #' This method creates an object of type greedy_experimental_design and will immediately initiate
-#' a search through $\indic{T}$ space.
+#' a search through $1_{T}$ space.
 #' 
 #' @param X					The design matrix with $n$ rows (one for each subject) and $p$ columns 
 #' 							(one for each measurement on the subject). This is the design matrix you wish 
