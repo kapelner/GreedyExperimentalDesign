@@ -24,6 +24,12 @@
 
 package GreedyExperimentalDesign;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import no.uib.cipr.matrix.DenseMatrix;
+
 /**
  * This class handles the parallelization of many Gibbs chains over many CPU cores
  * to create one BART regression model. It also handles all operations on the completed model.
@@ -31,7 +37,132 @@ package GreedyExperimentalDesign;
  * @author Adam Kapelner and Justin Bleich
  */
 public class GreedyExperimentalDesign {
+	
+	//valid objective functions
+	public static final String MAHAL = "mahal_dist";
+	public static final String ABS = "abs_sum_diff";
+	
+	//set by user
+	private int n;
+	private int p;
+	private int max_designs;
+	private String objective;
+	private int num_cores;
+	//data inputted from the user's data
+	private double[][] Xstd;
+	private double[][] Sinv;
+	private int[][] starting_indicTs;
+	
+	//temp objects needed for search
+	private ExecutorService greedy_search_thread_pool;
+	
+	//output
+	private int[][] ending_indicTs;	
+	private Double[] objective_vals;
+	
+	public GreedyExperimentalDesign(){
+		
+	}
+	
+	public void beginSearch(){
+		//initialize all data
+		objective_vals = new Double[max_designs];
+		ending_indicTs = new int[max_designs][n];
+		
+		//convert Sinv to a matrix for easier multiplication inside the search
+		final DenseMatrix Sinvmat = new DenseMatrix(p, p);
+		for (int i = 0; i < p; i++){
+			for (int j = 0; j < p; j++){
+				Sinvmat.set(i, j, Sinv[i][j]);
+			}			
+		}
+		
+		//build the pool and all tasks to it
+		greedy_search_thread_pool = Executors.newFixedThreadPool(num_cores);
+		for (int d = 0; d < max_designs; d++){
+			final int d0 = d;
+	    	greedy_search_thread_pool.execute(new Runnable(){
+				public void run() {
+					new GreedySearch(Xstd, Sinvmat, starting_indicTs[d0], ending_indicTs[d0], objective_vals, objective, d0);
+				}
+			});
+		}
+		greedy_search_thread_pool.shutdown();
+		try {	         
+	         greedy_search_thread_pool.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS); //effectively infinity
+	    } catch (InterruptedException ignored){}	
+		
+	}
+	
+	public void stopSearch(){
+		greedy_search_thread_pool.shutdownNow();
+	}
+	
 
+	public int progress(){
+		int done = 0;
+		for (int d = 0; d < max_designs; d++){
+			if (objective_vals[d] != null){
+				done++;
+			}
+		}
+		return done;
+	}
+	
+	public Double[] getObjectiveVals(){
+		return objective_vals;
+	}
+	
+	public int[] getEndingIndicT(int d){
+		return ending_indicTs[d];
+	}
+	
+	public void setMaxDesigns(int max_designs){
+		this.max_designs = max_designs;
+	}
+	
+	public void setNumCores(int num_cores){
+		this.num_cores = num_cores;
+	}	
+	
+	public void setNandP(int n, int p){
+		this.n = n;
+		this.p = p;
+	}
+	
+	public void setObjective(String objective) throws Exception{
+		this.objective = objective;
+		if (!MAHAL.equals(objective) && !ABS.equals(objective)){
+			throw new Exception("bad objective function");
+		}
+	}
+	
+	public void setDataRow(int i0, double[] x_i){
+		if (Xstd == null){
+			Xstd = new double[n][p];
+		}
+		for (int j = 0; j < p; j++){
+			Xstd[i0][j] = x_i[j];
+		}
+	}
+	
+	public void setInvVarCovRow(int j0, double[] Sinv_i){
+		if (Sinv == null){
+			Sinv = new double[p][p];
+		}
+		for (int j = 0; j < p; j++){
+			Sinv[j0][j] = Sinv_i[j];
+		}
+	}
+	
+	public void setDesignStartingPoint(int d0, int[] indicT){
+		if (starting_indicTs == null){
+			starting_indicTs = new int[max_designs][n];
+		}
+		for (int i = 0; i < n; i++){
+			starting_indicTs[d0][i] = indicT[i];
+		}		
+	}
 }
 
 

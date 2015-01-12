@@ -2,42 +2,94 @@
 #' This method creates an object of type greedy_experimental_design and will immediately initiate
 #' a search through $\indic{T}$ space.
 #' 
-#' @param X					The dataset you wish to search. We STRONGLY recommend you standardize your matrix 
-#' 							using the method \code{\link{stdize_design_matrix}}
+#' @param X					The design matrix with $n$ rows (one for each subject) and $p$ columns 
+#' 							(one for each measurement on the subject). This is the design matrix you wish 
+#' 							to search for a more optimal design.
 #' @param max_designs 		The maximum number of designs to be returned. Default is 10,000. Make this large 
 #' 							so you can search however long you wish as the search can be stopped at any time by
 #' 							using the \code{\link{stopGreedySearch}} method 
+#' @param objective			The objective function to use when greedily searching design space. This is a string
+#' 							"\code{abs_sum_diff}" (default) or "\code{mahal_dist}."
 #' @param num_cores 		The number of CPU cores you wish to use during the search
-#' @return					An object of type \code{greedy_experimental_design} which can be further operated upon
+#' @return					An object of type \code{greedy_experimental_design_search} which can be further operated upon
 #' 
 #' @author Adam Kapelner
 #' @export
-newGreedyExperimentalDesignObject = function(X, max_designs = 10000, num_cores = 1){
+newGreedyExperimentalDesignObject = function(X, max_designs = 10000, objective = "abs_sum_diff", num_cores = 1){
 	#get dimensions immediately
 	n = nrow(X)
 	p = ncol(X)
 	
+	#standardize it
+	Xstd = apply(X, 2, function(xj){(xj - mean(xj)) / sd(xj)})
+	Sinv = solve(var(Xstd))
+	
 	#now go ahead and create the Java object and set its information
-	java_greedy_experimental_design = .jnew("GreedyExperimentalDesign.GreedyExperimentalDesign")
-	.jcall(java_greedy_experimental_design, "V", "setMaxDesigns", max_designs)
-	.jcall(java_greedy_experimental_design, "V", "setNumCores", num_cores)
+	java_obj = .jnew("GreedyExperimentalDesign.GreedyExperimentalDesign")
+	.jcall(java_obj, "V", "setMaxDesigns", max_designs)
+	.jcall(java_obj, "V", "setNumCores", num_cores)
+	.jcall(java_obj, "V", "setNandP", n, p)
+	.jcall(java_obj, "V", "setObjective", objective)
+	
+	
+	#feed in the data
+	for (i in 1 : n){		
+		.jcall(java_obj, "V", "setDataRow", i - 1, Xstd[i, ]) #java indexes from 0...n-1
+	}
+	
+	#feed in the inverse var-cov matrix
+	for (j in 1 : p){
+		.jcall(java_obj, "V", "setInvVarCovRow", j - 1, Sinv[j, ]) #java indexes from 0...n-1
+	}
 	
 	#now feed into Java some starting points for the search since it's easier to do in R
 	for (d in 1 : max_designs){
-		.jcall(java_greedy_experimental_design, "V", "addDesignStartPoint", create_random_dummy_vec(n))
+		.jcall(java_obj, "V", "setDesignStartingPoint", d - 1, as.integer(create_random_dummy_vec(n))) #java indexes from 0...n-1
 	}
 	
-	#now begin the search
-	.jcall(java_greedy_experimental_design, "V", "beginSearch")
+	#now begin the search - all on different threads, so this function finishes and the R user can go back to whatever they were doing
+	.jcall(java_obj, "V", "beginSearch")
 		
 	#now return information as the object
-	greedy_experimental_design = list()
-	greedy_experimental_design$java_greedy_experimental_design = java_greedy_experimental_design
-	class(greedy_experimental_design) = "greedy_experimental_design"
-	greedy_experimental_design
+	greedy_experimental_design_search = list()
+	greedy_experimental_design_search$java_greedy_experimental_design = java_obj
+	class(greedy_experimental_design_search) = "greedy_experimental_design_search"
+	greedy_experimental_design_search
 }
 
+#' Stops the parallelized greedy design search
+#' 
+#' @param obj 		The \code{greedy_experimental_design} object that is currently running the search
+#' 
+#' @author Adam Kapelner
+#' @export
+stopGreedySearch = function(obj){
+	.jcall(obj$java_obj, "V", "stopSearch")
+}
 
+#' Returns the number of vectors found by the greedy design search
+#' 
+#' @param obj 		The \code{greedy_experimental_design} object that is currently running the search
+#' 
+#' @author Adam Kapelner
+#' @export
+greedySearchCurrentProgress = function(obj){
+	.jcall(obj$java_obj, "I", "progress")
+}
+
+#' Returns the results (thus far) of the greedy design search
+#' 
+#' @param obj 		The \code{greedy_experimental_design} object that is currently running the search
+#' 
+#' @author Adam Kapelner
+#' @export
+resultsGreedySearch = function(obj){
+	obj_vals = .jcall(obj$java_obj, "[D", "getObjectiveVals")
+	
+	
+	l = list()
+	l
+}
 
 #' Creates a random binary vector which codes an experimental design
 #' 
@@ -49,19 +101,6 @@ newGreedyExperimentalDesignObject = function(X, max_designs = 10000, num_cores =
 create_random_dummy_vec = function(n, p_w = 0.5){
 	indic_T_dummy_permutation_vector = c(rep(1, n * p_w), rep(0, n * p_w)) #there are n_T 1's followed by n_C 0's dictated by p_w
 	sample(indic_T_dummy_permutation_vector)
-}
-
-
-#' Standardizes a design matrix by subtracting each feature's mean and then dividing by each
-#' feature's standard deviation
-#' 
-#' @param X			The design matrix to be standardized
-#' @return 			The design matrix standardized of the same dimension as the original
-#' 
-#' @author Adam Kapelner
-#' @export
-stdize_design_matrix = function(X){
-	apply(X, 2, function(xj){(xj - mean(xj)) / sd(xj)})	
 }
 
 #for debugging purposes only
