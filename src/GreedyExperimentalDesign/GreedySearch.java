@@ -8,7 +8,7 @@ import no.uib.cipr.matrix.DenseVector;
 public class GreedySearch {
 
 	public GreedySearch(double[][] Xstd, DenseMatrix sinvmat, int[] indicT, int[] ending_indicT, Double[] objective_vals, String objective, int d0) {
-		System.out.println("GreedySearch: ready to begin " + d0);
+//		System.out.println("GreedySearch: ready to begin " + d0);
 		ObjectiveFunction objective_fun = null;
 		if (objective.equals(GreedyExperimentalDesign.MAHAL)){
 			objective_fun = new PropMahalObjective(sinvmat);
@@ -16,7 +16,7 @@ public class GreedySearch {
 		else if (objective.equals(GreedyExperimentalDesign.ABS)){
 			objective_fun = new AbsSumObjective();	
 		}
-		
+		System.out.println("indicT: [" + Tools.StringJoin(indicT) + "]");
 		beginSearch(Xstd, sinvmat, indicT, ending_indicT, objective_vals, d0, objective_fun);		
 	}
 
