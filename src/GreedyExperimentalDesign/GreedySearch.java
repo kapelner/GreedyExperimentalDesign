@@ -3,7 +3,6 @@ package GreedyExperimentalDesign;
 import java.util.ArrayList;
 
 import no.uib.cipr.matrix.DenseMatrix;
-import no.uib.cipr.matrix.DenseVector;
 
 public class GreedySearch {
 
@@ -23,7 +22,8 @@ public class GreedySearch {
 	private void beginSearch(double[][] Xstd, DenseMatrix sinvmat, int[] indicT, int[] ending_indicT, Double[] objective_vals, int d0, ObjectiveFunction obj_fun) {
 		int n = Xstd.length;
 		int p = Xstd[0].length;		
-		int nT = count(indicT, 1);
+		int nT = Tools.count(indicT, 1);
+		System.out.println("beginSearch: nT = " + nT + " and nC = " + (n - nT));
 		
 		Double obj_val = null;
 		
@@ -34,8 +34,8 @@ public class GreedySearch {
 			System.out.println("GreedySearch: iter " + iter);			
 			
 			int[] indicTmin = null;
-			int[] i_Ts = findIndicies(indicT, nT, 1);
-			int[] i_Cs = findIndicies(indicT, n - nT, 0);
+			int[] i_Ts = Tools.findIndicies(indicT, nT, 1);
+			int[] i_Cs = Tools.findIndicies(indicT, n - nT, 0);
 			for (int i_T : i_Ts){
 				for (int i_C : i_Cs){
 					int[] indicT_proposal = indicT.clone();
@@ -43,11 +43,11 @@ public class GreedySearch {
 					indicT_proposal[i_T] = 0;
 					indicT_proposal[i_C] = 1;
 					
-					ArrayList<double[]> XT = subsetMatrix(Xstd, nT, p, i_Ts, i_T, i_C); 
-					ArrayList<double[]> XC = subsetMatrix(Xstd, nT, p, i_Cs, i_C, i_T); 
+					ArrayList<double[]> XT = Tools.subsetMatrix(Xstd, nT, p, i_Ts, i_T, i_C); 
+					ArrayList<double[]> XC = Tools.subsetMatrix(Xstd, nT, p, i_Cs, i_C, i_T); 
 
-					obj_fun.setXTbar(colAvg(XT, p));
-					obj_fun.setXCbar(colAvg(XC, p));
+					obj_fun.setXTbar(Tools.colAvg(XT, p));
+					obj_fun.setXCbar(Tools.colAvg(XC, p));
 								
 					obj_val = obj_fun.calc();
 					
@@ -71,51 +71,4 @@ public class GreedySearch {
 		objective_vals[d0] = obj_val;	
 	}
 
-	private DenseVector colAvg(ArrayList<double[]> X, int p) {
-		int n = X.size();	
-		double[] tally = new double[p];
-		for (int i = 0; i < n; i++){
-			for (int j = 0; j < p; j++){
-				tally[j] += X.get(i)[j];
-			}			
-		}
-		for (int j = 0; j < p; j++){
-			tally[j] /= n;
-		}
-		return new DenseVector(tally);
-	}
-
-	private ArrayList<double[]> subsetMatrix(double[][] Xstd, int nT, int p, int[] indices, int i_remove, int i_add) {
-		ArrayList<double[]> XstdT = new ArrayList<double[]>(nT);
-		for (int i : indices){
-			if (i != i_remove){
-				XstdT.add(Xstd[i]);
-			}			
-		}
-		XstdT.add(Xstd[i_add]);		
-		return XstdT;
-	}
-
-	private int count(int[] indicT, int val) {
-		int tally = 0;
-		for (int i = 0; i < indicT.length; i++){
-			if (indicT[i] == val){
-				tally++;
-			}			
-		}
-		return tally;
-	}
-
-	private int[] findIndicies(int[] vec, int n_val, int val) {
-		int[] indicies = new int[n_val];
-		int index = 0;
-		for (int i = 0; i < vec.length; i++){
-			if (vec[i] == val){
-				System.out.println("index found at loc = " + i);
-				indicies[index] = i;
-				index++;
-			}
-		}
-		return indicies;
-	}
 }

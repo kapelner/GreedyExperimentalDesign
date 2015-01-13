@@ -30,12 +30,62 @@ import gnu.trove.list.array.TIntArrayList;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import no.uib.cipr.matrix.DenseVector;
+
 /**
  * A class that contains many generally useful convenience methods.
  * 
- * @author Adam Kapelner and Justin Bleich
+ * @author Adam Kapelner
  */
-public class Tools {
+public class Tools {	
+
+	public static DenseVector colAvg(ArrayList<double[]> X, int p) {
+		int n = X.size();	
+		double[] tally = new double[p];
+		for (int i = 0; i < n; i++){
+			for (int j = 0; j < p; j++){
+				tally[j] += X.get(i)[j];
+			}			
+		}
+		for (int j = 0; j < p; j++){
+			tally[j] /= n;
+		}
+		return new DenseVector(tally);
+	}
+
+	public static ArrayList<double[]> subsetMatrix(double[][] Xstd, int nT, int p, int[] indices, int i_remove, int i_add) {
+		ArrayList<double[]> XstdT = new ArrayList<double[]>(nT);
+		for (int i : indices){
+			if (i != i_remove){
+				XstdT.add(Xstd[i]);
+			}			
+		}
+		XstdT.add(Xstd[i_add]);		
+		return XstdT;
+	}
+
+	public static int count(int[] indicT, int val) {
+		int tally = 0;
+		for (int i = 0; i < indicT.length; i++){
+			if (indicT[i] == val){
+				tally++;
+			}			
+		}
+		return tally;
+	}
+
+	public static int[] findIndicies(int[] vec, int n_val, int val) {
+		int[] indicies = new int[n_val];
+		int index = 0;
+		for (int i = 0; i < vec.length; i++){
+			if (vec[i] == val){
+				System.out.println("index found at loc = " + i);
+				indicies[index] = i;
+				index++;
+			}
+		}
+		return indicies;
+	}	
 	
 	/**
 	 * Joins a collection of strings into one string

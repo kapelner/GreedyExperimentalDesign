@@ -96,11 +96,11 @@ public class GreedyExperimentalDesign {
 			if (d % 100 == 0){
 				System.out.println("worker added to thread pool #" + d);
 			}
-	    	greedy_search_thread_pool.execute(new Runnable(){
-				public void run() {
+//	    	greedy_search_thread_pool.execute(new Runnable(){
+//				public void run() {
 					new GreedySearch(Xstd, Sinvmat, starting_indicTs[d0], ending_indicTs[d0], objective_vals, objective, d0);
-				}
-			});
+//				}
+//			});
 		}
 		greedy_search_thread_pool.shutdown();
 		try {	         
