@@ -30,8 +30,8 @@ public class GreedySearch {
 		double min_obj_val = Double.MAX_VALUE;
 		int iter = 0;
 		while (true){
-			System.out.println("GreedySearch: iter " + iter);
 			iter++;
+			System.out.println("GreedySearch: iter " + iter);			
 			
 			int[] indicTmin = null;
 			int[] i_Ts = findIndicies(indicT, nT, 1);
@@ -106,11 +106,12 @@ public class GreedySearch {
 		return tally;
 	}
 
-	private int[] findIndicies(int[] indicT, int nC, int val) {
-		int[] indicies = new int[nC];
+	private int[] findIndicies(int[] vec, int n_val, int val) {
+		int[] indicies = new int[n_val];
 		int index = 0;
-		for (int i = 0; i < indicT.length; i++){
-			if (indicT[i] == val){
+		for (int i = 0; i < vec.length; i++){
+			if (vec[i] == val){
+				System.out.println("index found at loc = " + i);
 				indicies[index] = i;
 				index++;
 			}

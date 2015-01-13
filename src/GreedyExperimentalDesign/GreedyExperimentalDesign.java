@@ -84,8 +84,6 @@ public class GreedyExperimentalDesign {
 		final DenseMatrix Sinvmat = new DenseMatrix(p, p);
 		for (int i = 0; i < p; i++){
 			for (int j = 0; j < p; j++){
-				System.out.println("Sinvmat " + i + " " + j);
-				///////////BUSTED HERE
 				Sinvmat.set(i, j, Sinv[i][j]);
 			}			
 		}
