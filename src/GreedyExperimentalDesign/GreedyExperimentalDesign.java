@@ -41,10 +41,10 @@ import CustomLogging.SuperSimpleFormatter;
 import no.uib.cipr.matrix.DenseMatrix;
 
 /**
- * This class handles the parallelization of many Gibbs chains over many CPU cores
- * to create one BART regression model. It also handles all operations on the completed model.
+ * This class handles initializing many greedy searches for a treatment vector
+ * (the design) using a thread pool.
  * 
- * @author Adam Kapelner and Justin Bleich
+ * @author Adam Kapelner
  */
 public class GreedyExperimentalDesign {
 	
@@ -58,14 +58,12 @@ public class GreedyExperimentalDesign {
 	private int max_designs;
 	private String objective;
 	private int num_cores;
-	//data inputted from the user's data
+	//data inputed from the user's data
 	private double[][] Xstd;
 	private double[][] Sinv;
-	private int[][] starting_indicTs;
-	
-	//temp objects needed for search
+	private int[][] starting_indicTs;	
+	//temporary objects needed for search
 	private ExecutorService greedy_search_thread_pool;
-	
 	//output
 	private int[][] ending_indicTs;	
 	private Double[] objective_vals;
@@ -86,6 +84,8 @@ public class GreedyExperimentalDesign {
 		final DenseMatrix Sinvmat = new DenseMatrix(p, p);
 		for (int i = 0; i < p; i++){
 			for (int j = 0; j < p; j++){
+				System.out.println("Sinvmat " + i + " " + j);
+				///////////BUSTED HERE
 				Sinvmat.set(i, j, Sinv[i][j]);
 			}			
 		}
@@ -171,7 +171,7 @@ public class GreedyExperimentalDesign {
 	}
 	
 	public void setInvVarCovRow(int j0, double[] Sinv_i){
-//		System.out.println("setInvVarCovRow " + j0 + "  " + Sinv_i);
+		System.out.println("setInvVarCovRow " + j0 + "  " + Sinv_i);
 		if (Sinv == null){
 			Sinv = new double[p][p];
 		}

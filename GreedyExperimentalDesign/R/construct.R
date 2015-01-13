@@ -25,6 +25,12 @@ initGreedyExperimentalDesignObject = function(X, max_designs = 10000, objective 
 	Xstd = apply(X, 2, function(xj){(xj - mean(xj)) / sd(xj)})
 	Sinv = solve(var(Xstd))
 	
+	#we are about to construct a GreedyExperimentalDesign java object. First, let R garbage collect
+	#to clean up previous GreedyExperimentalDesign objects that are no longer in use. This is important
+	#because R's garbage collection system does not "see" the size of Java objects. Thus,
+	#you are at risk of running out of memory without this invocation. 
+	gc() #Delete at your own risk!	
+	
 	#now go ahead and create the Java object and set its information
 	java_obj = .jnew("GreedyExperimentalDesign.GreedyExperimentalDesign")
 	.jcall(java_obj, "V", "setMaxDesigns", as.integer(max_designs))
