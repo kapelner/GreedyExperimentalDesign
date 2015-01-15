@@ -114,7 +114,9 @@ plot.greedy_experimental_design_search = function(x, ...){
 	progress = greedySearchCurrentProgress(x)
 	res = resultsGreedySearch(ged, max_vectors = 2)
 	hist(res$obj_vals_orig_order, br = progress / 10, xlab = "objective value", ylab = NULL, main = paste("After", progress, "searches"))
+#	hist(res$num_iters, br = progress / 10, xlab = "# of search iterations", ylab = NULL, main = "")
 	
+	#now do the plot of number of searches needed
 	obj_vals_rand_order = res$obj_vals_orig_order
 	obj_vals_rand_order_mins = array(NA, progress)
 	for (d in 1 : progress){
@@ -168,13 +170,14 @@ greedySearchCurrentProgress = function(obj){
 #' @export
 resultsGreedySearch = function(obj, max_vectors = NULL){
 	obj_vals = .jcall(obj$java_obj, "[D", "getObjectiveVals")
+	num_iters = .jcall(obj$java_obj, "[I", "getNumIters")
 	#these two are in order, so let's order the indicTs by the final objective values
 	ordered_indices = order(obj_vals)
 	last_index = ifelse(is.null(max_vectors), length(ordered_indices), max_vectors)
 	
 	
 	indicTs = t(sapply(.jcall(obj$java_obj, "[[I", "getEndingIndicTs", as.integer(ordered_indices[1 : last_index])), .jevalArray))
-	list(obj_vals = obj_vals[ordered_indices], obj_vals_orig_order = obj_vals, indicTs = indicTs)
+	list(obj_vals = obj_vals[ordered_indices], num_iters = num_iters[ordered_indices], obj_vals_orig_order = obj_vals, indicTs = indicTs)
 }
 
 # PRIVATE: Creates a random binary vector which codes an experimental design

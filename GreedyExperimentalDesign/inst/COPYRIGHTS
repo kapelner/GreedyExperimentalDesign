@@ -1,11 +1,8 @@
 The following open source Java library is included in this package:
 
-- MAtrix Toolkits Java: Java linear algebra library powered by BLAS and LAPACK 
+- Matrix Toolkits Java: Java linear algebra library powered by BLAS and LAPACK 
   under the Lesser GNU Public License (LGPL) 3.0, 
-  Version 1.0, September 28, 2013,
-  JAR Download: https://code.google.com/p/java-matrix-benchmark/source/browse/#svn%2Ftrunk%2Flib%2Fmtj, 
-  Source code: https://github.com/fommil/matrix-toolkits-java/tree/cddc4d10014ac63460457aa921677e3ae1714539
-  Copyright 2003-2014 The Apache Software Foundation
+  Version 1.0, September 28, 2013
 
 License
 =======

@@ -67,7 +67,7 @@ public class GreedyExperimentalDesign {
 	//output
 	private int[][] ending_indicTs;	
 	private Double[] objective_vals;
-	private int[] num_iters;
+	private Integer[] num_iters;
 	
 //	public static void main(String[] args) throws Exception{		
 //		GreedyExperimentalDesign gd = new GreedyExperimentalDesign();
@@ -96,7 +96,7 @@ public class GreedyExperimentalDesign {
 		began_search = true;
 		//initialize all data
 		objective_vals = new Double[max_designs];
-		num_iters = new int[max_designs];
+		num_iters = new Integer[max_designs];
 		ending_indicTs = new int[max_designs][n];
 //		System.out.println("resulting data initialized");
 		
@@ -151,6 +151,15 @@ public class GreedyExperimentalDesign {
 		return done;
 	}
 	
+	public int[] getNumIters(){		
+		int d_finished = progress();
+		int[] num_iters = new int[d_finished];
+		for (int i = 0; i < d_finished; i++){
+			num_iters[i] = this.num_iters[i];
+		}
+		return num_iters;
+	}
+	
 	public double[] getObjectiveVals(){		
 		int d_finished = progress();
 		double[] objective_vals = new double[d_finished];
@@ -159,15 +168,6 @@ public class GreedyExperimentalDesign {
 		}
 		return objective_vals;
 	}
-	
-//	public int[][] getEndingIndicTs(){
-//		int d_finished = progress();
-//		int[][] ending_indicTs = new int[d_finished][n];
-//		for (int i = 0; i < d_finished; i++){
-//			ending_indicTs[i] = this.ending_indicTs[i];
-//		}
-//		return ending_indicTs;
-//	}
 	
 	public int[][] getEndingIndicTs(int[] indicies){
 		int[][] ending_indicTs = new int[indicies.length][n];
