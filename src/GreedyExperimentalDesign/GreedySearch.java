@@ -68,7 +68,7 @@ public class GreedySearch {
 			//after searching through every possible switch, we didn't find anything, so break
 			if (indicTmin == null){
 //				System.out.println("break");
-				break;
+//				break;
 			}
 			System.out.println("after while true");
 		}		
