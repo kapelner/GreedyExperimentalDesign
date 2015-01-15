@@ -57,7 +57,7 @@ public class GreedyExperimentalDesign {
 	private int p;
 	private int max_designs;
 	private String objective;
-	private int num_cores;
+	private Integer num_cores;
 	//data inputed from the user's data
 	private double[][] Xstd;
 	private double[][] Sinv;
@@ -67,6 +67,23 @@ public class GreedyExperimentalDesign {
 	//output
 	private int[][] ending_indicTs;	
 	private Double[] objective_vals;
+	
+	public static void main(String[] args) throws Exception{
+		GreedyExperimentalDesign gd = new GreedyExperimentalDesign();
+		gd.setNandP(20, 7);
+		for (int i = 0; i < 20; i++){
+			double[] x_i = {Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random()};
+			gd.setDataRow(0, x_i);
+		}
+		gd.setMaxDesigns(100);
+		int[] indicT = {0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0};
+		for (int i = 0; i < 100; i++){
+			gd.setDesignStartingPoint(i, indicT);
+		}
+		gd.setObjective(ABS);
+		gd.beginSearch();
+		System.out.println("progress: " + gd.progress());
+	}
 	
 	public GreedyExperimentalDesign(){
 //		System.out.println("GreedyExperimentalDesign");
@@ -82,15 +99,17 @@ public class GreedyExperimentalDesign {
 		
 		//convert Sinv to a matrix for easier multiplication inside the search
 		final DenseMatrix Sinvmat = new DenseMatrix(p, p);
-		for (int i = 0; i < p; i++){
-			for (int j = 0; j < p; j++){
-				Sinvmat.set(i, j, Sinv[i][j]);
-			}			
+		if (Sinv != null){
+			for (int i = 0; i < p; i++){
+				for (int j = 0; j < p; j++){
+					Sinvmat.set(i, j, Sinv[i][j]);
+				}			
+			}
+			System.out.println("Sinvmat initialized");
 		}
-		System.out.println("Sinvmat initialized");
 		
 		//build the pool and all tasks to it
-		greedy_search_thread_pool = Executors.newFixedThreadPool(num_cores);
+		greedy_search_thread_pool = Executors.newFixedThreadPool(num_cores == null ? 1 : num_cores);
 		for (int d = 0; d < max_designs; d++){
 			final int d0 = d;
 //			if (d % 100 == 0){
@@ -115,9 +134,11 @@ public class GreedyExperimentalDesign {
 	
 
 	public int progress(){
+		System.out.println("max_designs " + max_designs);
 		int done = 0;
 		if (objective_vals != null){
 			for (int d = 0; d < max_designs; d++){
+				System.out.println("progress loop d = " + d);
 				if (objective_vals[d] != null){
 					done++;
 				}
@@ -135,7 +156,7 @@ public class GreedyExperimentalDesign {
 	}
 	
 	public void setMaxDesigns(int max_designs){
-//		System.out.println("setMaxDesigns " + max_designs);
+		System.out.println("setMaxDesigns " + max_designs);
 		this.max_designs = max_designs;
 	}
 	
