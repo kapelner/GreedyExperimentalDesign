@@ -1,4 +1,4 @@
-#' A tool to select and run kernel PCA linear models for regression and classification
+#' A tool to find a priori experimental designs with good balance greedily
 #'
 #' @name 		GreedyExperimentalDesign
 #' @docType 	package

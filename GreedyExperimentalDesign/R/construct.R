@@ -23,7 +23,7 @@ initGreedyExperimentalDesignObject = function(X, max_designs = 10000, objective 
 	
 	#standardize it
 	Xstd = apply(X, 2, function(xj){(xj - mean(xj)) / sd(xj)})
-	Sinv = solve(var(Xstd))
+	SinvXstd = solve(var(Xstd))
 	
 	#we are about to construct a GreedyExperimentalDesign java object. First, let R garbage collect
 	#to clean up previous GreedyExperimentalDesign objects that are no longer in use. This is important
@@ -46,7 +46,7 @@ initGreedyExperimentalDesignObject = function(X, max_designs = 10000, objective 
 	
 	#feed in the inverse var-cov matrix
 	for (j in 1 : p){
-		.jcall(java_obj, "V", "setInvVarCovRow", as.integer(j - 1), Sinv[j, ]) #java indexes from 0...n-1
+		.jcall(java_obj, "V", "setInvVarCovRow", as.integer(j - 1), SinvXstd[j, ]) #java indexes from 0...n-1
 	}
 	
 	#now feed into Java some starting points for the search since it's easier to do in R
@@ -54,8 +54,13 @@ initGreedyExperimentalDesignObject = function(X, max_designs = 10000, objective 
 		.jcall(java_obj, "V", "setDesignStartingPoint", as.integer(d - 1), as.integer(create_random_dummy_vec(n))) #java indexes from 0...n-1
 	}
 		
-	#now return information as the object
+	#now return information as an object (just a list)
 	greedy_experimental_design_search = list()
+	greedy_experimental_design_search$max_designs = max_designs
+	greedy_experimental_design_search$X = X
+	greedy_experimental_design_search$n = n
+	greedy_experimental_design_search$p = p
+	greedy_experimental_design_search$objective = objective
 	greedy_experimental_design_search$java_obj = java_obj
 	class(greedy_experimental_design_search) = "greedy_experimental_design_search"
 	greedy_experimental_design_search
@@ -128,10 +133,10 @@ greedySearchCurrentProgress = function(obj){
 #' @export
 resultsGreedySearch = function(obj){
 	obj_vals = .jcall(obj$java_obj, "[D", "getObjectiveVals")
-	
-	
-	l = list()
-	l
+	indicTs = t(sapply(.jcall(obj$java_obj, "[[I", "getEndingIndicTs"), .jevalArray))
+	#these two are in order, so let's order the indicTs by the final objective values
+	ordered_indices = order(obj_vals)
+	list(obj_vals = obj_vals[ordered_indices], indicTs = indicTs[ordered_indices, ])
 }
 
 # PRIVATE: Creates a random binary vector which codes an experimental design

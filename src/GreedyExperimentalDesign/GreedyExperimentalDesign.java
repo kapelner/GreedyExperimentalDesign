@@ -148,12 +148,22 @@ public class GreedyExperimentalDesign {
 		return done;
 	}
 	
-	public Double[] getObjectiveVals(){
+	public double[] getObjectiveVals(){		
+		int d_finished = progress();
+		double[] objective_vals = new double[d_finished];
+		for (int i = 0; i < d_finished; i++){
+			objective_vals[i] = this.objective_vals[i];
+		}
 		return objective_vals;
 	}
 	
-	public int[] getEndingIndicT(int d){
-		return ending_indicTs[d];
+	public int[][] getEndingIndicTs(){
+		int d_finished = progress();
+		int[][] ending_indicTs = new int[d_finished][n];
+		for (int i = 0; i < d_finished; i++){
+			ending_indicTs[i] = this.ending_indicTs[i];
+		}
+		return ending_indicTs;
 	}
 	
 	public void setMaxDesigns(int max_designs){
