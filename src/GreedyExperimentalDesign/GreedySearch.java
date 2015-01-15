@@ -64,6 +64,7 @@ public class GreedySearch {
 				}				
 			}
 			System.out.println("end of double loop");
+			System.out.println("indicT: " + indicT + " indicTmin: " + indicTmin);
 			//after searching through every possible switch, we didn't find anything, so break
 			if (indicTmin == null){
 				System.out.println("break");
