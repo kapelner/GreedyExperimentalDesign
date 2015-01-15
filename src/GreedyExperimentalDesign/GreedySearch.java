@@ -31,11 +31,13 @@ public class GreedySearch {
 		int iter = 0;
 		while (true){
 			iter++;
-			System.out.println("GreedySearch: iter " + iter);			
+						
 			
 			int[] indicTmin = null;
 			int[] i_Ts = Tools.findIndicies(indicT, nT, 1);
 			int[] i_Cs = Tools.findIndicies(indicT, n - nT, 0);
+			
+			System.out.println("GreedySearch: iter " + iter + " #i_Ts: " + i_Ts.length + " #i_Cs: " + i_Cs.length);
 			for (int i_T : i_Ts){
 				for (int i_C : i_Cs){
 					
@@ -56,7 +58,7 @@ public class GreedySearch {
 						indicTmin = indicT_proposal;
 						indicT = indicT_proposal;
 						min_obj_val = obj_val;
-						System.out.println("switdched i_T " + i_T + " and i_C " + i_C);
+						System.out.println("switched i_T " + i_T + " and i_C " + i_C);
 						System.out.println("min_obj_val " + min_obj_val);
 					}
 				}				
