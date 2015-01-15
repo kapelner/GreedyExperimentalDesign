@@ -19,9 +19,9 @@ generate_stdzied_design_matrix = function(n = 50, p = 3, covariate_dist = "iid_s
 
 X = generate_stdzied_design_matrix()
 ged = initGreedyExperimentalDesignObject(X, max_designs = 10)
-ged$java_obj
-greedySearchCurrentProgress(ged)
-ged
+#ged$java_obj
+#greedySearchCurrentProgress(ged)
+#ged
 
 startGreedySearch(ged)
 
