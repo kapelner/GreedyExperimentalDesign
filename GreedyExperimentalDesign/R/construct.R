@@ -41,12 +41,12 @@ initGreedyExperimentalDesignObject = function(X, max_designs = 10000, objective 
 	
 	#feed in the data
 	for (i in 1 : n){		
-		.jcall(java_obj, "V", "setDataRow", as.integer(i - 1), Xstd[i, ]) #java indexes from 0...n-1
+		.jcall(java_obj, "V", "setDataRow", as.integer(i - 1), Xstd[i, , drop = FALSE]) #java indexes from 0...n-1
 	}
 	
 	#feed in the inverse var-cov matrix
 	for (j in 1 : p){
-		.jcall(java_obj, "V", "setInvVarCovRow", as.integer(j - 1), SinvXstd[j, ]) #java indexes from 0...n-1
+		.jcall(java_obj, "V", "setInvVarCovRow", as.integer(j - 1), SinvXstd[j, , drop = FALSE]) #java indexes from 0...n-1
 	}
 	
 	#now feed into Java some starting points for the search since it's easier to do in R
@@ -79,7 +79,7 @@ print.greedy_experimental_design_search = function(x, ...){
 	if (progress == 0){
 		cat("No progress on the GreedyExperimentalDesign. Did you run \"startGreedySearch?\"\n")
 	} else {
-		cat("The search has found", progress, "vectors thus far.\n")
+		cat("The search has found ", progress, " vectors thus far (", round(progress / x$max_designs * 100), "%).\n", sep = "")
 	}
 }
 
@@ -95,17 +95,45 @@ summary.greedy_experimental_design_search = function(object, ...){
 	print(object, ...)
 }
 
-#' Starts the parallelized greedy design search
+#' Plots a summary of a \code{greedy_experimental_design_search} object
+#' 
+#' @param x			The \code{greedy_experimental_design_search} object to be summarized in the plot
+#' @param ...		Other parameters to pass to the default plot function
+#' 
+#' @author 			Adam Kapelner
+#' @method plot greedy_experimental_design_search
+#' @export
+plot.greedy_experimental_design_search = function(x, ...){
+	par(mfrow = c(1, 2))
+	
+	progress = greedySearchCurrentProgress(x)
+	res = resultsGreedySearch(ged, max_vectors = 2)
+	hist(res$obj_vals, br = progress / 10, main = "", xlab = "objective value", ylab = NULL)
+	
+	obj_vals_rand_order = res$obj_vals[order(rnorm(progress))]
+	obj_vals_rand_order_mins = array(NA, progress)
+	for (d in 1 : progress){
+		obj_vals_rand_order_mins[d] = min(obj_vals_rand_order[1 : d])
+	}
+	plot(1 : progress, obj_vals_rand_order_mins, xlab = "Number of Searches", ylab = "Best objective value")
+	invisible(list(obj_vals_rand_order_mins = obj_vals_rand_order_mins))
+}
+
+
+#' Starts the parallelized greedy design search. Once begun, this function cannot be run again.
 #' 
 #' @param obj 		The \code{greedy_experimental_design} object that will be running the search
 #' 
 #' @author Adam Kapelner
 #' @export
 startGreedySearch = function(obj){
+	if (.jcall(obj$java_obj, "Z", "began")){
+		stop("Search Already begun.")
+	}
 	.jcall(obj$java_obj, "V", "beginSearch")
 }
 
-#' Stops the parallelized greedy design search
+#' Stops the parallelized greedy design search. Once stopped, it cannot be restarted.
 #' 
 #' @param obj 		The \code{greedy_experimental_design} object that is currently running the search
 #' 
@@ -127,16 +155,21 @@ greedySearchCurrentProgress = function(obj){
 
 #' Returns the results (thus far) of the greedy design search
 #' 
-#' @param obj 		The \code{greedy_experimental_design} object that is currently running the search
+#' @param obj 			The \code{greedy_experimental_design} object that is currently running the search
+#' @param max_vectors	The number of design vectors you wish to return. \code{NULL} returns all of them 
+#' 						(default). This is not recommended as returning over 1,000 vectors is time-intensive.
 #' 
 #' @author Adam Kapelner
 #' @export
-resultsGreedySearch = function(obj){
+resultsGreedySearch = function(obj, max_vectors = NULL){
 	obj_vals = .jcall(obj$java_obj, "[D", "getObjectiveVals")
-	indicTs = t(sapply(.jcall(obj$java_obj, "[[I", "getEndingIndicTs"), .jevalArray))
 	#these two are in order, so let's order the indicTs by the final objective values
 	ordered_indices = order(obj_vals)
-	list(obj_vals = obj_vals[ordered_indices], indicTs = indicTs[ordered_indices, ])
+	last_index = ifelse(is.null(max_vectors), length(ordered_indices), max_vectors)
+	
+	
+	indicTs = t(sapply(.jcall(obj$java_obj, "[[I", "getEndingIndicTs", as.integer(ordered_indices[1 : last_index])), .jevalArray))
+	list(obj_vals = obj_vals[ordered_indices], indicTs = indicTs)
 }
 
 # PRIVATE: Creates a random binary vector which codes an experimental design

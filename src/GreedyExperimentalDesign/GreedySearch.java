@@ -6,20 +6,16 @@ import no.uib.cipr.matrix.DenseMatrix;
 
 public class GreedySearch {
 
-	public GreedySearch(double[][] Xstd, DenseMatrix sinvmat, int[] indicT, int[] ending_indicT, Double[] objective_vals, String objective, int d0) {
+	public GreedySearch(double[][] Xstd, DenseMatrix sinvmat, int[] indicT, int[] ending_indicT, Double[] objective_vals, int[] num_iters, String objective, int d0) {
 //		System.out.println("GreedySearch: ready to begin " + d0);
-		ObjectiveFunction objective_fun = null;
+		ObjectiveFunction obj_fun = null;
 		if (objective.equals(GreedyExperimentalDesign.MAHAL)){
-			objective_fun = new PropMahalObjective(sinvmat);
+			obj_fun = new PropMahalObjective(sinvmat);
 		} 
 		else if (objective.equals(GreedyExperimentalDesign.ABS)){
-			objective_fun = new AbsSumObjective();	
+			obj_fun = new AbsSumObjective();	
 		}
-//		System.out.println("indicT: [" + Tools.StringJoin(indicT) + "]");
-		beginSearch(Xstd, sinvmat, indicT, ending_indicT, objective_vals, d0, objective_fun);		
-	}
 
-	private void beginSearch(double[][] Xstd, DenseMatrix sinvmat, int[] indicT, int[] ending_indicT, Double[] objective_vals, int d0, ObjectiveFunction obj_fun) {
 		int n = Xstd.length;
 		int p = Xstd[0].length;		
 		int nT = Tools.count(indicT, 1);
@@ -89,7 +85,7 @@ public class GreedySearch {
 			ending_indicT[i] = indicT[i];
 		}
 		objective_vals[d0] = obj_val;
+		num_iters[d0] = iter;
 		System.out.println("SEARCH DONE obj_val " + objective_vals[d0]);
 	}
-
 }

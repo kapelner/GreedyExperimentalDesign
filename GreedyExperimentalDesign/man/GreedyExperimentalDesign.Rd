@@ -5,7 +5,7 @@
 \alias{GreedyExperimentalDesign-package}
 \title{Greedy Experimental Design Search}
 \description{
-A tool to select and run kernel PCA linear models for regression and classification
+A tool to find a priori experimental designs with good balance greedily
 }
 \author{
 Adam Kapelner \email{kapelner@qc.cuny.edu}

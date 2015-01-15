@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.FileHandler;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -64,37 +63,40 @@ public class GreedyExperimentalDesign {
 	private int[][] starting_indicTs;	
 	//temporary objects needed for search
 	private ExecutorService greedy_search_thread_pool;
+	private boolean began_search;
 	//output
 	private int[][] ending_indicTs;	
 	private Double[] objective_vals;
+	private int[] num_iters;
 	
-	public static void main(String[] args) throws Exception{
-		
-		GreedyExperimentalDesign gd = new GreedyExperimentalDesign();
-		gd.setNandP(20, 7);
-		for (int i = 0; i < 20; i++){
-			double[] x_i = {Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random()};
-			gd.setDataRow(0, x_i);
-		}
-		gd.setMaxDesigns(100);
-		int[] indicT = {0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0};
-		for (int i = 0; i < 100; i++){
-			gd.setDesignStartingPoint(i, indicT);
-		}
-		gd.setObjective(ABS);
-		gd.beginSearch();
-		System.out.println("progress: " + gd.progress());
-	}
+//	public static void main(String[] args) throws Exception{		
+//		GreedyExperimentalDesign gd = new GreedyExperimentalDesign();
+//		gd.setNandP(20, 7);
+//		for (int i = 0; i < 20; i++){
+//			double[] x_i = {Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random()};
+//			gd.setDataRow(0, x_i);
+//		}
+//		gd.setMaxDesigns(100);
+//		int[] indicT = {0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0};
+//		for (int i = 0; i < 100; i++){
+//			gd.setDesignStartingPoint(i, indicT);
+//		}
+//		gd.setObjective(ABS);
+//		gd.beginSearch();
+//		System.out.println("progress: " + gd.progress());
+//	}
 	
 	public GreedyExperimentalDesign(){
-		writeStdOutToLogFile();
-		System.out.println("GreedyExperimentalDesign");
+//		writeStdOutToLogFile();
+//		System.out.println("GreedyExperimentalDesign");
 	}
 	
 	public void beginSearch(){
-		System.out.println("beginSearch");
+//		System.out.println("beginSearch");
+		began_search = true;
 		//initialize all data
 		objective_vals = new Double[max_designs];
+		num_iters = new int[max_designs];
 		ending_indicTs = new int[max_designs][n];
 //		System.out.println("resulting data initialized");
 		
@@ -118,7 +120,7 @@ public class GreedyExperimentalDesign {
 			}
 	    	greedy_search_thread_pool.execute(new Runnable(){
 				public void run() {
-					new GreedySearch(Xstd, Sinvmat, starting_indicTs[d0], ending_indicTs[d0], objective_vals, objective, d0);
+					new GreedySearch(Xstd, Sinvmat, starting_indicTs[d0], ending_indicTs[d0], objective_vals, num_iters, objective, d0);
 				}
 			});
 		}
@@ -127,6 +129,10 @@ public class GreedyExperimentalDesign {
 //	         greedy_search_thread_pool.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS); //effectively infinity
 //	    } catch (InterruptedException ignored){}	
 //		System.out.println("greedy_search_thread_pool shut down");
+	}
+	
+	public boolean began(){
+		return began_search;
 	}
 	
 	public void stopSearch(){
@@ -140,9 +146,10 @@ public class GreedyExperimentalDesign {
 		if (objective_vals != null){
 			for (int d = 0; d < max_designs; d++){
 //				System.out.println("progress loop d = " + d);
-				if (objective_vals[d] != null){
-					done++;
+				if (objective_vals[d] == null){
+					break;
 				}
+				done++;
 			}
 		}
 		return done;
@@ -157,14 +164,22 @@ public class GreedyExperimentalDesign {
 		return objective_vals;
 	}
 	
-	public int[][] getEndingIndicTs(){
-		int d_finished = progress();
-		int[][] ending_indicTs = new int[d_finished][n];
-		for (int i = 0; i < d_finished; i++){
-			ending_indicTs[i] = this.ending_indicTs[i];
+//	public int[][] getEndingIndicTs(){
+//		int d_finished = progress();
+//		int[][] ending_indicTs = new int[d_finished][n];
+//		for (int i = 0; i < d_finished; i++){
+//			ending_indicTs[i] = this.ending_indicTs[i];
+//		}
+//		return ending_indicTs;
+//	}
+	
+	public int[][] getEndingIndicTs(int[] indicies){
+		int[][] ending_indicTs = new int[indicies.length][n];
+		for (int i = 0; i < indicies.length; i++){
+			ending_indicTs[i] = this.ending_indicTs[indicies[i]];
 		}
 		return ending_indicTs;
-	}
+	}	
 	
 	public void setMaxDesigns(int max_designs){
 		System.out.println("setMaxDesigns " + max_designs);
@@ -200,6 +215,15 @@ public class GreedyExperimentalDesign {
 		}
 	}
 	
+	public void setDataRow(int i0, double x_i){
+//		System.out.println("setDataRow " + i0 + "  " + x_i);
+		if (Xstd == null){
+			Xstd = new double[n][p];
+		}
+		double[] row = {x_i};
+		Xstd[i0] = row;
+	}	
+	
 	public void setInvVarCovRow(int j0, double[] Sinv_i){
 //		System.out.println("setInvVarCovRow " + j0 + "  " + Sinv_i);
 		if (Sinv == null){
@@ -208,6 +232,15 @@ public class GreedyExperimentalDesign {
 		for (int j = 0; j < p; j++){
 			Sinv[j0][j] = Sinv_i[j];
 		}
+	}
+	
+	public void setInvVarCovRow(int j0, double Sinv_i){
+//		System.out.println("setInvVarCovRow " + j0 + "  " + Sinv_i);
+		if (Sinv == null){
+			Sinv = new double[p][p];
+		}
+		double[] row = {Sinv_i};
+		Sinv[j0] = row;
 	}
 	
 	public void setDesignStartingPoint(int d0, int[] indicT){
