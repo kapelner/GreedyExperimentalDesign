@@ -81,7 +81,7 @@ public class Tools {
 			if (vec[i] == val){				
 				indicies[index] = i;
 				index++;
-				System.out.println("index found at loc = " + i + " tot = " + index);
+//				System.out.println("index found at loc = " + i + " tot = " + index);
 			}
 		}
 		return indicies;

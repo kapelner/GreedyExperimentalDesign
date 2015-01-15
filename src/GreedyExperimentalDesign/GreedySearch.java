@@ -38,7 +38,7 @@ public class GreedySearch {
 			int[] i_Cs = Tools.findIndicies(indicT, n - nT, 0);
 			for (int i_T : i_Ts){
 				for (int i_C : i_Cs){
-					System.out.println("i_T " + i_T + " i_C " + i_C);
+					
 					int[] indicT_proposal = indicT.clone();
 					//make the single switch
 					indicT_proposal[i_T] = 0;
@@ -56,12 +56,14 @@ public class GreedySearch {
 						indicTmin = indicT_proposal;
 						indicT = indicT_proposal;
 						min_obj_val = obj_val;
+						System.out.println("switdched i_T " + i_T + " and i_C " + i_C);
 						System.out.println("min_obj_val " + min_obj_val);
 					}
 				}				
 			}
 			//after searching through every possible switch, we didn't find anything, so break
 			if (indicTmin == null){
+				System.out.println("break");
 				break;
 			}			
 		}		
