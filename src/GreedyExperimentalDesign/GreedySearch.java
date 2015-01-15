@@ -69,7 +69,8 @@ public class GreedySearch {
 			if (indicTmin == null){
 				System.out.println("break");
 				break;
-			}			
+			}
+			System.out.println("after while true");
 		}		
 		
 		//search is over; ship back the data now
