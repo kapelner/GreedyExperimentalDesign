@@ -124,11 +124,7 @@ public class GreedyExperimentalDesign {
 				}
 			});
 		}
-		greedy_search_thread_pool.shutdown();
-//		try {	         
-//	         greedy_search_thread_pool.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS); //effectively infinity
-//	    } catch (InterruptedException ignored){}	
-//		System.out.println("greedy_search_thread_pool shut down");
+		greedy_search_thread_pool.shutdown(); //run em all (but not on this thread!)
 	}
 	
 	public boolean began(){

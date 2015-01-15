@@ -23,7 +23,10 @@ initGreedyExperimentalDesignObject = function(X, max_designs = 10000, objective 
 	
 	#standardize it
 	Xstd = apply(X, 2, function(xj){(xj - mean(xj)) / sd(xj)})
-	SinvXstd = solve(var(Xstd))
+	
+	if (p <= n){
+		SinvXstd = solve(var(Xstd))
+	}
 	
 	#we are about to construct a GreedyExperimentalDesign java object. First, let R garbage collect
 	#to clean up previous GreedyExperimentalDesign objects that are no longer in use. This is important
@@ -45,8 +48,10 @@ initGreedyExperimentalDesignObject = function(X, max_designs = 10000, objective 
 	}
 	
 	#feed in the inverse var-cov matrix
-	for (j in 1 : p){
-		.jcall(java_obj, "V", "setInvVarCovRow", as.integer(j - 1), SinvXstd[j, , drop = FALSE]) #java indexes from 0...n-1
+	if (p <= n){
+		for (j in 1 : p){
+			.jcall(java_obj, "V", "setInvVarCovRow", as.integer(j - 1), SinvXstd[j, , drop = FALSE]) #java indexes from 0...n-1
+		}
 	}
 	
 	#now feed into Java some starting points for the search since it's easier to do in R
@@ -108,14 +113,14 @@ plot.greedy_experimental_design_search = function(x, ...){
 	
 	progress = greedySearchCurrentProgress(x)
 	res = resultsGreedySearch(ged, max_vectors = 2)
-	hist(res$obj_vals, br = progress / 10, main = "", xlab = "objective value", ylab = NULL)
+	hist(res$obj_vals_orig_order, br = progress / 10, xlab = "objective value", ylab = NULL, main = paste("After", progress, "searches"))
 	
-	obj_vals_rand_order = res$obj_vals[order(rnorm(progress))]
+	obj_vals_rand_order = res$obj_vals_orig_order
 	obj_vals_rand_order_mins = array(NA, progress)
 	for (d in 1 : progress){
 		obj_vals_rand_order_mins[d] = min(obj_vals_rand_order[1 : d])
 	}
-	plot(1 : progress, obj_vals_rand_order_mins, xlab = "Number of Searches", ylab = "Best objective value")
+	plot(1 : progress, obj_vals_rand_order_mins, xlab = "Number of Searches", ylab = "Best objective value", ...)
 	invisible(list(obj_vals_rand_order_mins = obj_vals_rand_order_mins))
 }
 
@@ -169,7 +174,7 @@ resultsGreedySearch = function(obj, max_vectors = NULL){
 	
 	
 	indicTs = t(sapply(.jcall(obj$java_obj, "[[I", "getEndingIndicTs", as.integer(ordered_indices[1 : last_index])), .jevalArray))
-	list(obj_vals = obj_vals[ordered_indices], indicTs = indicTs)
+	list(obj_vals = obj_vals[ordered_indices], obj_vals_orig_order = obj_vals, indicTs = indicTs)
 }
 
 # PRIVATE: Creates a random binary vector which codes an experimental design

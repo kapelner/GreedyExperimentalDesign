@@ -17,7 +17,7 @@ generate_stdzied_design_matrix = function(n = 50, p = 1, covariate_dist = "iid_s
 }
 
 
-X = generate_stdzied_design_matrix(n = 100, p = 50)
+X = generate_stdzied_design_matrix(n = 100, p = 500)
 #ged = initGreedyExperimentalDesignObject(X, max_designs = 1000, num_cores = 3, objective = "mahal_dist")
 #ged$java_obj
 #greedySearchCurrentProgress(ged)
@@ -28,6 +28,9 @@ ged = initGreedyExperimentalDesignObject(X, max_designs = max_designs, num_cores
 
 startGreedySearch(ged)
 ged
+
+plot(ged)
+
 res = resultsGreedySearch(ged, max_vectors = 100)
 hist(res$obj_vals, br = max_designs / 10)
 
