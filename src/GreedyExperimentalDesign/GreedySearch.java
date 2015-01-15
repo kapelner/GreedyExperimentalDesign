@@ -38,6 +38,7 @@ public class GreedySearch {
 			int[] i_Cs = Tools.findIndicies(indicT, n - nT, 0);
 			for (int i_T : i_Ts){
 				for (int i_C : i_Cs){
+					System.out.println("i_T " + i_T + " i_C " + i_C);
 					int[] indicT_proposal = indicT.clone();
 					//make the single switch
 					indicT_proposal[i_T] = 0;
@@ -55,6 +56,7 @@ public class GreedySearch {
 						indicTmin = indicT_proposal;
 						indicT = indicT_proposal;
 						min_obj_val = obj_val;
+						System.out.println("min_obj_val " + min_obj_val);
 					}
 				}				
 			}
@@ -68,7 +70,8 @@ public class GreedySearch {
 		for (int i = 0; i < indicT.length; i++){
 			ending_indicT[i] = indicT[i];
 		}
-		objective_vals[d0] = obj_val;	
+		objective_vals[d0] = obj_val;
+		System.out.println("SEARCH DONE obj_val " + objective_vals[d0]);
 	}
 
 }

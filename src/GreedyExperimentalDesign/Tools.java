@@ -78,10 +78,10 @@ public class Tools {
 		int[] indicies = new int[n_val];
 		int index = 0;
 		for (int i = 0; i < vec.length; i++){
-			if (vec[i] == val){
-				System.out.println("index found at loc = " + i);
+			if (vec[i] == val){				
 				indicies[index] = i;
 				index++;
+				System.out.println("index found at loc = " + i + " tot = " + index);
 			}
 		}
 		return indicies;

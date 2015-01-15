@@ -93,9 +93,9 @@ public class GreedyExperimentalDesign {
 		greedy_search_thread_pool = Executors.newFixedThreadPool(num_cores);
 		for (int d = 0; d < max_designs; d++){
 			final int d0 = d;
-			if (d % 100 == 0){
-				System.out.println("worker added to thread pool #" + d);
-			}
+//			if (d % 100 == 0){
+//				System.out.println("worker added to thread pool #" + d);
+//			}
 //	    	greedy_search_thread_pool.execute(new Runnable(){
 //				public void run() {
 					new GreedySearch(Xstd, Sinvmat, starting_indicTs[d0], ending_indicTs[d0], objective_vals, objective, d0);
