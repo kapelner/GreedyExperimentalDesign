@@ -75,14 +75,17 @@ public class Tools {
 	}
 
 	public static int[] findIndicies(int[] vec, int n_val, int val) {
+//		System.out.println("findIndicies veclen = " + vec.length + " n_val = " + n_val + " val = " + val);
+//		System.out.println(StringJoin(vec));
 		int[] indicies = new int[n_val];
 		int index = 0;
-		for (int i = 0; i < vec.length; i++){
+		for (int i = 0; i < vec.length; i++){			
 			if (vec[i] == val){				
 				indicies[index] = i;
 				index++;
-//				System.out.println("index found at loc = " + i + " tot = " + index);
+//				System.out.println("    tot = " + index);
 			}
+//			System.out.println("i = " + i + " done");
 		}
 		return indicies;
 	}	

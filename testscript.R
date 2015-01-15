@@ -1,6 +1,6 @@
-setwd("C:\\Users\\kapelner\\workspace\\GreedyExperimentalDesign")
-library(roxygen2)
-roxygenise("GreedyExperimentalDesign", clean = TRUE)
+#setwd("C:\\Users\\kapelner\\workspace\\GreedyExperimentalDesign")
+#library(roxygen2)
+#roxygenise("GreedyExperimentalDesign", clean = TRUE)
 
 options(java.parameters = "-Xmx1000m")
 library(GreedyExperimentalDesign)
@@ -18,7 +18,7 @@ generate_stdzied_design_matrix = function(n = 50, p = 3, covariate_dist = "iid_s
 
 
 X = generate_stdzied_design_matrix()
-ged = initGreedyExperimentalDesignObject(X, max_designs = 10)
+ged = initGreedyExperimentalDesignObject(X, max_designs = 1000, num_cores = 3)
 #ged$java_obj
 #greedySearchCurrentProgress(ged)
 #ged

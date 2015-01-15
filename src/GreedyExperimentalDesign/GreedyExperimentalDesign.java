@@ -69,6 +69,7 @@ public class GreedyExperimentalDesign {
 	private Double[] objective_vals;
 	
 	public static void main(String[] args) throws Exception{
+		
 		GreedyExperimentalDesign gd = new GreedyExperimentalDesign();
 		gd.setNandP(20, 7);
 		for (int i = 0; i < 20; i++){
@@ -86,8 +87,8 @@ public class GreedyExperimentalDesign {
 	}
 	
 	public GreedyExperimentalDesign(){
-//		System.out.println("GreedyExperimentalDesign");
-//		writeStdOutToLogFile();
+		writeStdOutToLogFile();
+		System.out.println("GreedyExperimentalDesign");
 	}
 	
 	public void beginSearch(){
@@ -112,20 +113,20 @@ public class GreedyExperimentalDesign {
 		greedy_search_thread_pool = Executors.newFixedThreadPool(num_cores == null ? 1 : num_cores);
 		for (int d = 0; d < max_designs; d++){
 			final int d0 = d;
-//			if (d % 100 == 0){
-//				System.out.println("worker added to thread pool #" + d);
-//			}
-//	    	greedy_search_thread_pool.execute(new Runnable(){
-//				public void run() {
+			if (d % 100 == 0){
+				System.out.println("worker added to thread pool #" + d);
+			}
+	    	greedy_search_thread_pool.execute(new Runnable(){
+				public void run() {
 					new GreedySearch(Xstd, Sinvmat, starting_indicTs[d0], ending_indicTs[d0], objective_vals, objective, d0);
-//				}
-//			});
+				}
+			});
 		}
 		greedy_search_thread_pool.shutdown();
-		try {	         
-	         greedy_search_thread_pool.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS); //effectively infinity
-	    } catch (InterruptedException ignored){}	
-		System.out.println("greedy_search_thread_pool shut down");
+//		try {	         
+//	         greedy_search_thread_pool.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS); //effectively infinity
+//	    } catch (InterruptedException ignored){}	
+//		System.out.println("greedy_search_thread_pool shut down");
 	}
 	
 	public void stopSearch(){
@@ -134,11 +135,11 @@ public class GreedyExperimentalDesign {
 	
 
 	public int progress(){
-		System.out.println("max_designs " + max_designs);
+//		System.out.println("max_designs " + max_designs);
 		int done = 0;
 		if (objective_vals != null){
 			for (int d = 0; d < max_designs; d++){
-				System.out.println("progress loop d = " + d);
+//				System.out.println("progress loop d = " + d);
 				if (objective_vals[d] != null){
 					done++;
 				}
@@ -200,7 +201,7 @@ public class GreedyExperimentalDesign {
 	}
 	
 	public void setDesignStartingPoint(int d0, int[] indicT){
-		System.out.println("setDesignStartingPoint " + d0 + " [" + Tools.StringJoin(indicT) + "]");
+//		System.out.println("setDesignStartingPoint " + d0 + " [" + Tools.StringJoin(indicT) + "]");
 		if (starting_indicTs == null){
 			starting_indicTs = new int[max_designs][n];
 		}
