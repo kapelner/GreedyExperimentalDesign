@@ -104,6 +104,7 @@ summary.greedy_experimental_design_search = function(object, ...){
 #' 
 #' @param x			The \code{greedy_experimental_design_search} object to be summarized in the plot
 #' @param ...		Other parameters to pass to the default plot function
+#' @return			An array of order statistics from \link{\code{plot_obj_val_order_statistic}} as a list element
 #' 
 #' @author 			Adam Kapelner
 #' @method plot greedy_experimental_design_search
@@ -117,15 +118,33 @@ plot.greedy_experimental_design_search = function(x, ...){
 #	hist(res$num_iters, br = progress / 10, xlab = "# of search iterations", ylab = NULL, main = "")
 	
 	#now do the plot of number of searches needed
-	obj_vals_rand_order = res$obj_vals_orig_order
-	obj_vals_rand_order_mins = array(NA, progress)
-	for (d in 1 : progress){
-		obj_vals_rand_order_mins[d] = min(obj_vals_rand_order[1 : d])
-	}
-	plot(1 : progress, obj_vals_rand_order_mins, xlab = "Number of Searches", ylab = "Best objective value", ...)
-	invisible(list(obj_vals_rand_order_mins = obj_vals_rand_order_mins))
+	plot_obj_val_order_statistic(x)
 }
 
+#' Plots an order statistic of the object value as a function of number of searches
+#' 
+#' @param obj			The \code{greedy_experimental_design_search} object whose search history is to be visualized
+#' @param order_stat 	The order statistic that you wish to plot. The default is \code{1} for the minimum.
+#' @param type			The type parameter for plot.
+#' @param ... 			Other arguments to be passed to the plot function.
+#' @return 				An array of order statistics as a list element
+#' 
+#' @author 				Adam Kapelner
+#' @export
+plot_obj_val_order_statistic = function(obj, order_stat = 1, type = "l", ...){
+	progress = greedySearchCurrentProgress(obj)
+	res = resultsGreedySearch(ged, max_vectors = 2)	
+	vals = res$obj_vals_orig_order
+	val_order_stats = array(NA, progress)
+	for (d in order_stat : progress){
+		val_order_stats[d] = ifelse(order_stat == 1, min(vals[1 : d]), sort(vals[1 : d])[order_stat])
+	}
+	plot(1 : progress, val_order_stats, 
+			xlab = "Number of Searches", 
+			ylab = paste("objective value (", order_stat, ")", sep = ""), 
+			type = type, ...)
+	invisible(list(val_order_stats = val_order_stats))	
+}
 
 #' Starts the parallelized greedy design search. Once begun, this function cannot be run again.
 #' 
@@ -178,6 +197,27 @@ resultsGreedySearch = function(obj, max_vectors = NULL){
 	
 	indicTs = t(sapply(.jcall(obj$java_obj, "[[I", "getEndingIndicTs", as.integer(ordered_indices[1 : last_index])), .jevalArray))
 	list(obj_vals = obj_vals[ordered_indices], num_iters = num_iters[ordered_indices], obj_vals_orig_order = obj_vals, indicTs = indicTs)
+}
+
+
+compute_objectives = function(X, indic_T, inv_cov_X = NULL){
+	#saves computation sometimes to pass it in
+	if (is.null(inv_cov_X)){
+		inv_cov_X = solve(var(X))
+	}
+	
+	X_T = X[indic_T == 1, , drop = FALSE] #coerce as matrix in order to matrix multiply later
+	X_C = X[indic_T == 0, , drop = FALSE] #coerce as matrix in order to matrix multiply later
+	X_T_bar = colMeans(X_T)
+	X_C_bar = colMeans(X_C)
+	X_T_bar_minus_X_C_bar = as.matrix(X_T_bar - X_C_bar)
+	
+	abs_obj = sum(abs(X_T_bar_minus_X_C_bar))
+	#do the main calculation (eq 6) and return it as a scalar
+	
+	mahal_obj = as.numeric(t(X_T_bar_minus_X_C_bar) %*% inv_cov_X %*% X_T_bar_minus_X_C_bar)	
+	
+	list(abs_obj = abs_obj, mahal_obj = mahal_obj)
 }
 
 # PRIVATE: Creates a random binary vector which codes an experimental design

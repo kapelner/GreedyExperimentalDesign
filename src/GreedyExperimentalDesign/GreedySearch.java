@@ -7,7 +7,7 @@ import no.uib.cipr.matrix.DenseMatrix;
 public class GreedySearch {
 
 	public GreedySearch(double[][] Xstd, DenseMatrix sinvmat, int[] indicT, int[] ending_indicT, Double[] objective_vals, Integer[] num_iters, String objective, int d0) {
-//		System.out.println("GreedySearch: ready to begin " + d0);
+		System.out.println("GreedySearch: ready to begin " + d0);
 		ObjectiveFunction obj_fun = null;
 		if (objective.equals(GreedyExperimentalDesign.MAHAL)){
 			obj_fun = new PropMahalObjective(sinvmat);
@@ -19,25 +19,25 @@ public class GreedySearch {
 		int n = Xstd.length;
 		int p = Xstd[0].length;		
 		int nT = Tools.count(indicT, 1);
-//		System.out.println("beginSearch: nT = " + nT + " and nC = " + (n - nT));
+		System.out.println("beginSearch: nT = " + nT + " and nC = " + (n - nT));
 		
 		Double obj_val = null;
 		
 		double min_obj_val = Double.MAX_VALUE;
 		int iter = 0;
 		while (true){
-//			System.out.println("iter " + iter);
+			System.out.println("iter " + iter);
 			iter++;	
-//			System.out.println("iter++ " + iter);
+			System.out.println("iter++ " + iter);
 			
 			int[] indicTmin = null;
-//			System.out.println("indicTmin " + indicTmin);
+			System.out.println("indicTmin " + indicTmin);
 			int[] i_Ts = Tools.findIndicies(indicT, nT, 1);
-//			System.out.println("i_Ts " + i_Ts);
+			System.out.println("i_Ts " + i_Ts);
 			int[] i_Cs = Tools.findIndicies(indicT, n - nT, 0);
-//			System.out.println("i_Cs " + i_Cs);
+			System.out.println("i_Cs " + i_Cs);
 			
-//			System.out.println("iter " + iter + " #i_Ts: " + i_Ts.length + " #i_Cs: " + i_Cs.length);
+			System.out.println("iter " + iter + " #i_Ts: " + i_Ts.length + " #i_Cs: " + i_Cs.length);
 			indices_loop: {
 				for (int i_T : i_Ts){
 					for (int i_C : i_Cs){
@@ -62,8 +62,8 @@ public class GreedySearch {
 							indicTmin = indicT_proposal;
 							indicT = indicT_proposal;
 							min_obj_val = obj_val;
-//							System.out.println("switched i_T " + i_T + " and i_C " + i_C);
-//							System.out.println("min_obj_val " + min_obj_val);
+							System.out.println("switched i_T " + i_T + " and i_C " + i_C);
+							System.out.println("min_obj_val " + min_obj_val);
 							break indices_loop;
 						}
 					}	

@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.FileHandler;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -64,10 +65,13 @@ public class GreedyExperimentalDesign {
 	//temporary objects needed for search
 	private ExecutorService greedy_search_thread_pool;
 	private boolean began_search;
+	private long t0;
+	private long tf;	
 	//output
 	private int[][] ending_indicTs;	
 	private Double[] objective_vals;
 	private Integer[] num_iters;
+
 	
 //	public static void main(String[] args) throws Exception{		
 //		GreedyExperimentalDesign gd = new GreedyExperimentalDesign();
@@ -87,7 +91,7 @@ public class GreedyExperimentalDesign {
 //	}
 	
 	public GreedyExperimentalDesign(){
-//		writeStdOutToLogFile();
+		writeStdOutToLogFile();
 //		System.out.println("GreedyExperimentalDesign");
 	}
 	
@@ -111,6 +115,7 @@ public class GreedyExperimentalDesign {
 			System.out.println("Sinvmat initialized");
 		}
 		
+		t0 = System.currentTimeMillis();
 		//build the pool and all tasks to it
 		greedy_search_thread_pool = Executors.newFixedThreadPool(num_cores == null ? 1 : num_cores);
 		for (int d = 0; d < max_designs; d++){
@@ -125,6 +130,24 @@ public class GreedyExperimentalDesign {
 			});
 		}
 		greedy_search_thread_pool.shutdown(); //run em all (but not on this thread!)
+		new Thread(){
+			public void run(){
+				try {
+					greedy_search_thread_pool.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS); //infinity
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				tf = System.currentTimeMillis();
+			}
+		}.start();
+	}
+	
+	public long timeBegun(){
+		return t0;
+	}
+	
+	public long timeFinished(){
+		return tf;
 	}
 	
 	public boolean began(){

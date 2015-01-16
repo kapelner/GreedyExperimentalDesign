@@ -20,11 +20,11 @@
 %% almost as usual
 \author{Adam Kapelner \\ Queens College, City University of New York \\
 Department of Mathematics} \title{\pkg{GreedyExperimentalDesign}: Finding
-Experimental Design using Greedy Search with Random Restarts}
+Experimental Designs using Greedy Search with Random Restarts}
 
 %% for pretty printing and a nice hypersummary also set:
 \Plainauthor{Adam Kapelner} %% comma-separated
-\Plaintitle{GreedyExperimentalDesign: Finding Experimental Design using Greedy
+\Plaintitle{GreedyExperimentalDesign: Finding Experimental Designs using Greedy
 Search with Random Restarts} %% without formatting
 \Shorttitle{\pkg{GreedyExperimentalDesign}} %% a short title (if necessary)
 
@@ -50,6 +50,25 @@ Search with Random Restarts} %% without formatting
 \begin{document}
 
 \section{Introduction}
+
+Assume a randomized controlled two-arm experiment with $n$ subjects and treatment (T) and control (C) denoted by the $n$-binary vector $\indic{T}$ where entries of 1 in location $i$ indicates subject $i$ was administered T and entries of 0 indicates C. Define the number of treatments $n_T := \sum_{i=1}^n \indicTi$ and the number of controls $n_C := n - n_T$. For each subject, $p$ covariates $\X := \bracks{\x_1, \ldots, \x_p}$ are measured. Define $\XbarT$ as the $p$-vector of sample averages for each of the covariates in subjects where $\indic{T}  = 1$ (the treatments) and $\XbarC$ as the $p$-vector of sample averages for each of the covariates in subjects where $\indic{T}  = 0$ (the controls). The investigator will eventually measure one response for each subject collected in the $n$-vector $\y$, but this is not our current interest. We assume that each of the $p$ covariates is standardized.
+
+There are many functions of $\indic{T}$ and $\X$ that will yield higher efficiency when testing null hypotheses about effects of the treatment. Below are a few:\footnote
+{
+There are also metrics which measure the similarity between the two joint densities $f_T$ and $f_C$ which we may want to explore later.
+}
+
+\begin{enumerate}
+\item $n_T / n$ which measures the balance of treatment allocations. 0.5 is the optimal value.
+\item $\sum_{j=1}^p \abss{\Xbar_{T,j} - \Xbar_{C,j}}$ which is a measure of balance between the covariate distributions. Covariate distribution permitting, zero is the optimal value.
+\item $\overn{n_T n_C}\parens{\XbarT - \XbarC}^\top \Sinv_{\X} \parens{\XbarT - \XbarC}$ is a Mahalanobis-like distance metric. Covariate distribution permitting, zero is the optimal value.
+\end{enumerate}
+
+For many of our proposals below we will fix $n_T / n$ to be 0.5 and then minimize one of the other two objective functions. 
+
+\section{ Greedy Switches Algorithm}
+
+Draw one vector from the space of $\binom{n}{n/2}$ possible balanced $\indic{T}$ vectors. Create a list of the indices of size $n/2$ corresponding to where $\indic{T} = 1$ (call it $I_T$). Create a list of the indices of size $n/2$ corresponding to where $\indic{T} = 0$ (call it $I_C$). For every pair in $I_T \times I_C$, switch the 0 and 1 within $\indic{T}$ and record the resulting value of the objective function. For all possible $n^2/4$ possible switches (of which all preserve $n_T/n = 0.5$), find the switch which yielded the minimum value of the objective function. Make that switch inside $\indic{T}$. Continue in this fashion until you can no longer improve the objective value.
 
 
 \subsection*{Replication}
