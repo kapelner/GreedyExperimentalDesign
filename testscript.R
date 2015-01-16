@@ -18,7 +18,7 @@ generate_stdzied_design_matrix = function(n = 50, p = 1, covariate_dist = "iid_s
 
 
 X = generate_stdzied_design_matrix(n = 200, p = 40)
-ged = initGreedyExperimentalDesignObject(X, max_designs = 1000, num_cores = 3, objective = "mahal_dist")
+ged = initGreedyExperimentalDesignObject(X, max_designs = 1000, num_cores = 3, objective = "abs_sum_diff")
 ged
 
 startGreedySearch(ged)

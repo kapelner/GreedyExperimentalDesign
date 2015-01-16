@@ -83,6 +83,8 @@ print.greedy_experimental_design_search = function(x, ...){
 	progress = greedySearchCurrentProgress(x)
 	if (progress == 0){
 		cat("No progress on the GreedyExperimentalDesign. Did you run \"startGreedySearch?\"\n")
+	} else if (progress == x$max_designs){
+		cat("The search has completed.", progress, "vectors have been found.\n")
 	} else {
 		cat("The search has found ", progress, " vectors thus far (", round(progress / x$max_designs * 100), "%).\n", sep = "")
 	}
@@ -125,19 +127,22 @@ plot.greedy_experimental_design_search = function(x, ...){
 #' 
 #' @param obj			The \code{greedy_experimental_design_search} object whose search history is to be visualized
 #' @param order_stat 	The order statistic that you wish to plot. The default is \code{1} for the minimum.
+#' @param skip_every	Plot every nth point. This makes the plot generate much more quickly.
 #' @param type			The type parameter for plot.
 #' @param ... 			Other arguments to be passed to the plot function.
 #' @return 				An array of order statistics as a list element
 #' 
 #' @author 				Adam Kapelner
 #' @export
-plot_obj_val_order_statistic = function(obj, order_stat = 1, type = "l", ...){
+plot_obj_val_order_statistic = function(obj, order_stat = 1, skip_every = 5, type = "o", ...){
 	progress = greedySearchCurrentProgress(obj)
 	res = resultsGreedySearch(ged, max_vectors = 2)	
 	vals = res$obj_vals_orig_order
 	val_order_stats = array(NA, progress)
 	for (d in order_stat : progress){
-		val_order_stats[d] = ifelse(order_stat == 1, min(vals[1 : d]), sort(vals[1 : d])[order_stat])
+		if (d %% skip_every == 0){
+			val_order_stats[d] = ifelse(order_stat == 1, min(vals[1 : d]), sort(vals[1 : d])[order_stat])
+		}		
 	}
 	plot(1 : progress, val_order_stats, 
 			xlab = "Number of Searches", 

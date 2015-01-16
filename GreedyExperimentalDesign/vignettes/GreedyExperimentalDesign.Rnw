@@ -12,25 +12,26 @@
 \usepackage{algorithm}
 \usepackage{algorithmicx}
 \usepackage{algpseudocode}
+\usepackage{placeins}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% declarations for jss.cls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% almost as usual
-\author{Adam Kapelner \\ Queens College, City University of New York \\
+\author{Adam Kapelner et al. \\ Queens College, City University of New York \\
 Department of Mathematics} \title{\pkg{GreedyExperimentalDesign}: Finding
 Experimental Designs using Greedy Search with Random Restarts}
 
 %% for pretty printing and a nice hypersummary also set:
-\Plainauthor{Adam Kapelner} %% comma-separated
+\Plainauthor{Adam Kapelner et al.} %% comma-separated
 \Plaintitle{GreedyExperimentalDesign: Finding Experimental Designs using Greedy
 Search with Random Restarts} %% without formatting
 \Shorttitle{\pkg{GreedyExperimentalDesign}} %% a short title (if necessary)
 
 %% an abstract and keywords
 \Abstract{
-
+This package greedily finds experimental designs with good balance based on a balance metric of your choice.
 }
 \Keywords{experimental design, greedy search, optimization, \proglang{R}, \proglang{Java}}
 \Plainkeywords{experimental design, greedy search, optimization, R, Java}
@@ -51,40 +52,133 @@ Search with Random Restarts} %% without formatting
 
 \section{Introduction}
 
-Assume a randomized controlled two-arm experiment with $n$ subjects and treatment (T) and control (C) denoted by the $n$-binary vector $\indic{T}$ where entries of 1 in location $i$ indicates subject $i$ was administered T and entries of 0 indicates C. Define the number of treatments $n_T := \sum_{i=1}^n \indicTi$ and the number of controls $n_C := n - n_T$. For each subject, $p$ covariates $\X := \bracks{\x_1, \ldots, \x_p}$ are measured. Define $\XbarT$ as the $p$-vector of sample averages for each of the covariates in subjects where $\indic{T}  = 1$ (the treatments) and $\XbarC$ as the $p$-vector of sample averages for each of the covariates in subjects where $\indic{T}  = 0$ (the controls). The investigator will eventually measure one response for each subject collected in the $n$-vector $\y$, but this is not our current interest. We assume that each of the $p$ covariates is standardized.
+Assume a randomized controlled two-arm experiment with $n$ subjects and treatment (T) and control (C) denoted by the $n$-binary vector $\indic{T}$ where entries of 1 in location $i$ indicates subject $i$ was administered T and entries of 0 indicates C. Define the number of treatments $n_T := \sum_{i=1}^n \indicTi$ and the number of controls $n_C := n - n_T$. For each subject, $p$ covariates $\X := \bracks{\x_1, \ldots, \x_p}$ are measured. Define $\XbarT$ as the $p$-vector of sample averages for each of the covariates in subjects where $\indic{T,i}  = 1$ (the treatments) and $\XbarC$ as the $p$-vector of sample averages for each of the covariates in subjects where $\indic{T}  = 0$ (the controls). The investigator will eventually measure one response for each subject collected in the $n$-vector $\y$, but this is not our current interest. We assume that each of the $p$ covariates is standardized.
 
-There are many functions of $\indic{T}$ and $\X$ that will yield higher efficiency when testing null hypotheses about effects of the treatment. Below are a few:\footnote
+There are many functions of $\indic{T}$ and $\X$ that will yield higher efficiency when testing null hypotheses about effects of the treatment. Below are a couple:\footnote
 {
 There are also metrics which measure the similarity between the two joint densities $f_T$ and $f_C$ which we may want to explore later.
 }
 
 \begin{enumerate}
-\item $n_T / n$ which measures the balance of treatment allocations. 0.5 is the optimal value.
-\item $\sum_{j=1}^p \abss{\Xbar_{T,j} - \Xbar_{C,j}}$ which is a measure of balance between the covariate distributions. Covariate distribution permitting, zero is the optimal value.
-\item $\overn{n_T n_C}\parens{\XbarT - \XbarC}^\top \Sinv_{\X} \parens{\XbarT - \XbarC}$ is a Mahalanobis-like distance metric. Covariate distribution permitting, zero is the optimal value.
+\item (ABS) $\sum_{j=1}^p \abss{\Xbar_{T,j} - \Xbar_{C,j}}$ which is a measure of balance between the covariate distributions. Covariate distribution permitting, zero is the optimal value.
+\item (MAHAL) $\overn{n_T n_C}\parens{\XbarT - \XbarC}^\top \Sinv_{\X} \parens{\XbarT - \XbarC}$ is a Mahalanobis-like distance metric. Covariate distribution permitting, zero is the optimal value.
 \end{enumerate}
 
-For many of our proposals below we will fix $n_T / n$ to be 0.5 and then minimize one of the other two objective functions. 
+We will fix $n_T = n_C$ and then minimize one of the two objective functions above. Other balcne objective functions can be programmed in by extending the \code{ObjectiveFunction} class in \proglang{Java}.
 
-\section{ Greedy Switches Algorithm}
+\section{Greedy Switches Algorithm}
 
-Draw one vector from the space of $\binom{n}{n/2}$ possible balanced $\indic{T}$ vectors. Create a list of the indices of size $n/2$ corresponding to where $\indic{T} = 1$ (call it $I_T$). Create a list of the indices of size $n/2$ corresponding to where $\indic{T} = 0$ (call it $I_C$). For every pair in $I_T \times I_C$, switch the 0 and 1 within $\indic{T}$ and record the resulting value of the objective function. For all possible $n^2/4$ possible switches (of which all preserve $n_T/n = 0.5$), find the switch which yielded the minimum value of the objective function. Make that switch inside $\indic{T}$. Continue in this fashion until you can no longer improve the objective value.
+We begin with an $n$-subject dataset $\X$. Each subject can be assigned to treatment or control but $n_T = n_C$. Thus, the space of possible $\indic{T}$'s has $\binom{n}{n/2}$ elements. We outline the algorithm now below:
 
+\begin{algorithm}[h]
+\caption{Greedy search for design vector local maximum}
+\begin{algorithmic}[1]
+\State Let $\indic{T}^*$ be a random draw from the space of $\binom{n}{n/2}$ balanced vectors.
+\State Create a list of the indices of size $n/2$ corresponding to where $\indic{T}^* = 1$ (call it $I_T$). Create a list of the indices of size $n/2$ corresponding to where $\indic{T} = 0$ (call it $I_C$). 
+\State For every pair in $I_T \times I_C$ (i.e. $\frac{n}{2} \times \frac{n}{2} =\frac{n^2}{4}$ total pairs), switch the 0 and 1 within $\indic{T}^*$ and record the resulting value of the objective function. Find the switch which yielded the minimum value of the objective function. Make that switch inside $\indic{T}$. 
+\State Repeat the previous step until the minimum value of the objective function does not improve.
+\State Repeat the entire procedure (steps 1--4) $d$ times where $d$ is constrained only by your computing resources and time.
+\end{algorithmic}
+\label{alg:greedy_search}
+\end{algorithm}
+
+\section{The package}
+
+We first load the package which relies on \pkg{rJava}. Thus, the first line should give parameters for the Java Virtual Machine initialization. In our example, 1GB of memory is probably enough:
+
+\begin{Code}
+> options(java.parameters = "-Xmx1000m")
+> library(GreedyExperimentalDesign)
+\end{Code}
+
+To construct a \pkg{GreedyExperimentalDesign} object, use the function \code{initGreedyExperimental} \code{DesignObject}. This function takes your data as parameter \code{X} which can be a matrix or dataframe. You then specify the objective function which is either ABS or MAHAL. 
+
+The next thing to specify is \code{max_designs} which is the $d$ value in Algorithm~\ref{alg:greedy_search} line 5 which controls how many searches are done in the treatment vector space. As the speed of the algorithm depends on $n$, $p$ and the objective function, it is hard to gauge how long it will take to finish all searches. Luckily, it doesn't matter, since the searching is done in the background and you can stop it whenever you wish. Thus, we recommend making this parameter very large. As we will see in the examples, there is benefit to doing an exhaustive search on the $\indic{T}$ space (well, as exhaustive as you can).
+
+The last parameter is the number of cores. This should be all your cores if you are using a server.  On a workstation which you are using, all your cores less one if you still want your workstation to be usable. The algorithm is perfectly parallelized; thus doubling the cores will double your rate of vectors found.
+
+To begin the search use the \code{startGreedySearch} function.
+
+\begin{Code}
+> ged = initGreedyExperimentalDesignObject(X, 
+        max_designs = 1000, num_cores = 3, objective = "abs_sum_diff")
+> startGreedySearch(ged)
+\end{Code}
+
+For this example, $\X$ had 200 subjects with 40 measurements each and each measurement was generated as independent realizations of a standard normal.
+
+Once the search has begun, it runs in the background on the number of cores specified. At any time you can check the progress via printing the object:
+
+\begin{Code}
+> ged
+The search has found 144 vectors thus far (14%).
+\end{Code}
+
+When it is done, it will display:
+
+\begin{Code}
+> ged
+The search has completed. 1000 vectors have been found.
+\end{Code}
+
+You can plot the histogram of the objective values for each of the $d$ vectors found as well as the minimum objective value as a function of the number of searches via:
+
+\begin{Code}
+> plot(ged)
+\end{Code}
+
+which produces
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=6.5in]{plot_ged}
+\end{figure}
+\FloatBarrier
+
+An important application of this package is the ability to use these treatment vectors in experimentation. To run a hypothesis test, a permutation test can be used. Thus, you will need many vectors, let's say $c$ vectors. You can see the $c$th order statistic as a function of the search in realtime. For instance, if you want 200 vectors,
+
+\begin{Code}
+> plot_obj_val_order_statistic(ged, order_stat = 200)
+\end{Code}
+
+which produces 
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=3in]{100order}
+\end{figure}
+\FloatBarrier
+
+as we can see, there is benefit to running more than $d=1000$ here as we can still find a set of 200 treatment vectors with better balance.
+
+In fact, even at 100000 searches, there is still room for improvement.
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=3in]{200}
+\end{figure}
+\FloatBarrier
+
+If it any time you wish to stop the search, you can use 
+
+\begin{Code}
+> stopGreedySearch(ged)
+\end{Code}
+
+Results (including vectors) can be retrieved via the \code{resultsGreedySearch} method. This method  has a parameter \code{max_vectors} which will return this numbed of vectors with the smallest objective values. We do not recommend returning all $d$ vectors as this is an expensive operation. The result object is a list. We demonstrate how to pull out the best design 
+
+\begin{Code}
+> res = resultsGreedySearch(ged, max_vectors = 100)
+> best_design = res$indicTs[1, ]
+\end{Code}
 
 \subsection*{Replication}
 
-The stable version of \pkg{GreedyExperimentalDesign} will be soon on CRAN and
-the development version is located at 
-\url{https://github.com/kapelner/GreedyExperimentalDesign}. 
-The package code is under the GPL3 and LGPL licenses. 
-Results, tables, and figures found in this paper can be replicated via the scripts 
-located in the \texttt{GreedyExperimentalDesign/vignettes} folder within the
-\texttt{git} repository.
+The stable version of \pkg{GreedyExperimentalDesign} will be soon on CRAN and the development version is located at \url{https://github.com/kapelner/GreedyExperimentalDesign}. You can install the package by cloning the repository, then running \code{ant} to compile the Java code then running \code{R CMD INSTALL GreedyExperimentalDesign}. The package code is licensed under GPL3 and LGPL. Results, tables, and figures found in this paper can be replicated via the scripts located in the \texttt{git} repository in the folder \texttt{GreedyExperimentalDesign/vignettes}.
 
 \subsection*{Acknowledgements}
 
-We thank Abba Krieger and David Azriel for helpful discussions. We thank Simon
-Urbanek for his very generous help with \pkg{rJava}.
+We thank Simon Urbanek for his very generous help with \pkg{rJava}.
 
 \bibliography{GreedyExperimentalDesign}
 

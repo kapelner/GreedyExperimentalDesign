@@ -10,6 +10,9 @@
 
 \item{...}{Other parameters to pass to the default plot function}
 }
+\value{
+An array of order statistics from \link{\code{plot_obj_val_order_statistic}} as a list element
+}
 \description{
 Plots a summary of a \code{greedy_experimental_design_search} object
 }

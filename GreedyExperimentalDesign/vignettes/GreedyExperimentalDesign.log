@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (MiKTeX 2.9) (preloaded format=pdflatex 2012.9.2)  15 JAN 2015 21:46
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (MiKTeX 2.9) (preloaded format=pdflatex 2012.9.2)  16 JAN 2015 13:36
 entering extended mode
 **GreedyExperimentalDesign.Rnw
 
@@ -461,34 +461,34 @@ Document Style algorithmicx 1.2 - a greatly improved `algorithmic' style
 ) ("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\algorithmicx\algpseudocode.sty"
 Package: algpseudocode 
 Document Style - pseudocode environments for use with the `algorithmicx' style
+) ("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\placeins\placeins.sty"
+Package: placeins 2005/04/18  v 2.2
 )
 \@input{preamble.aux}
 
 (C:\Users\kapelner\workspace\GreedyExperimentalDesign\GreedyExperimentalDesign\
 vignettes\preamble.tex)
-(C:\Users\kapelner\workspace\GreedyExperimentalDesign\GreedyExperimentalDesign\
-vignettes\GreedyExperimentalDesign.aux)
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 50.
-LaTeX Font Info:    ... okay on input line 50.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 50.
-LaTeX Font Info:    ... okay on input line 50.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 50.
-LaTeX Font Info:    ... okay on input line 50.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 50.
-LaTeX Font Info:    ... okay on input line 50.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 50.
-LaTeX Font Info:    ... okay on input line 50.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 50.
-LaTeX Font Info:    ... okay on input line 50.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 50.
-LaTeX Font Info:    Try loading font information for TS1+cmr on input line 50.
-
+No file GreedyExperimentalDesign.aux.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 51.
+LaTeX Font Info:    ... okay on input line 51.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 51.
+LaTeX Font Info:    ... okay on input line 51.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 51.
+LaTeX Font Info:    ... okay on input line 51.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 51.
+LaTeX Font Info:    ... okay on input line 51.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 51.
+LaTeX Font Info:    ... okay on input line 51.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 51.
+LaTeX Font Info:    ... okay on input line 51.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 51.
+LaTeX Font Info:    Try loading font information for TS1+cmr on input line 51.
 ("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\base\ts1cmr.fd"
 File: ts1cmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
-LaTeX Font Info:    ... okay on input line 50.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 50.
-LaTeX Font Info:    ... okay on input line 50.
+LaTeX Font Info:    ... okay on input line 51.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 51.
+LaTeX Font Info:    ... okay on input line 51.
 
 ("C:\Program Files (x86)\MiKTeX 2.9\tex\context\base\supp-pdf.mkii"
 [Loading MPS to PDF converter (version 2006.09.02).]
@@ -505,7 +505,7 @@ LaTeX Font Info:    ... okay on input line 50.
 \everyMPtoPDFconversion=\toks25
 )
 \AtBeginShipoutBox=\box32
-Package hyperref Info: Link coloring ON on input line 50.
+Package hyperref Info: Link coloring ON on input line 51.
  ("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\hyperref\nameref.sty"
 Package: nameref 2012/07/31 v2.42 Cross-referencing by name of section
 
@@ -514,26 +514,21 @@ Package: gettitlestring 2010/12/03 v1.4 Cleanup title references (HO)
 )
 \c@section@level=\count132
 )
-LaTeX Info: Redefining \ref on input line 50.
-LaTeX Info: Redefining \pageref on input line 50.
-LaTeX Info: Redefining \nameref on input line 50.
-
-(C:\Users\kapelner\workspace\GreedyExperimentalDesign\GreedyExperimentalDesign\
-vignettes\GreedyExperimentalDesign.out)
-(C:\Users\kapelner\workspace\GreedyExperimentalDesign\GreedyExperimentalDesign\
-vignettes\GreedyExperimentalDesign.out)
+LaTeX Info: Redefining \ref on input line 51.
+LaTeX Info: Redefining \pageref on input line 51.
+LaTeX Info: Redefining \nameref on input line 51.
 \@outlinefile=\write4
-LaTeX Font Info:    Try loading font information for U+msa on input line 50.
+LaTeX Font Info:    Try loading font information for U+msa on input line 51.
 
 ("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\amsfonts\umsa.fd"
 File: umsa.fd 2009/06/22 v3.00 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 50.
+LaTeX Font Info:    Try loading font information for U+msb on input line 51.
 
 ("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\amsfonts\umsb.fd"
 File: umsb.fd 2009/06/22 v3.00 AMS symbols B
 )
-LaTeX Font Info:    Try loading font information for T1+aess on input line 50.
+LaTeX Font Info:    Try loading font information for T1+aess on input line 51.
 
 ("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\ae\t1aess.fd"
 File: t1aess.fd 1997/11/16 Font definitions for T1/aess.
@@ -541,45 +536,110 @@ File: t1aess.fd 1997/11/16 Font definitions for T1/aess.
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: float package is loaded.
 Package caption Info: End \AtBeginDocument code.
- [1
+LaTeX Font Info:    Try loading font information for T1+aett on input line 67.
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\ae\t1aett.fd"
+File: t1aett.fd 1997/11/16 Font definitions for T1/aett.
+) [1
 
 
 
 {C:/ProgramData/MiKTeX/2.9/pdftex/config/pdftex.map}]
-LaTeX Font Info:    Try loading font information for T1+aett on input line 78.
+Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
+put line 74.
 
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\ae\t1aett.fd"
-File: t1aett.fd 1997/11/16 Font definitions for T1/aett.
-)
-No file GreedyExperimentalDesign.bbl.
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 93.
+Overfull \hbox (0.27026pt too wide) in paragraph at lines 94--95
+[]\T1/aer/m/n/10.95 To con-struct a \T1/aer/b/n/10.95 Greedy-Ex-per-i-men-talDe
+-sign \T1/aer/m/n/10.95 ob-ject, use the func-tion \T1/aett/m/n/10.95 initGreed
+yExperimental
+ []
+
+
+LaTeX Warning: Reference `alg:greedy_search' on page 2 undefined on input line 
+96.
+
 LaTeX Font Info:    Font shape `T1/aer/b/sl' in size <10.95> not available
-(Font)              Font shape `T1/aer/bx/sl' tried instead on input line 93.
+(Font)              Font shape `T1/aer/bx/sl' tried instead on input line 109.
 
 Overfull \hbox (5.47499pt too wide) has occurred while \output is active
 \T1/aer/m/n/10.95 2 []
  []
 
-[2]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 93.
+[2] <plot_ged.pdf, id=42, 686.565pt x 237.88875pt>
+File: plot_ged.pdf Graphic file (type pdf)
+ <use plot_ged.pdf>
+Package pdftex.def Info: plot_ged.pdf used on input line 134.
+(pdftex.def)             Requested size: 469.75499pt x 162.76404pt.
+
+Overfull \hbox (27.10124pt too wide) in paragraph at lines 134--135
+ [][] 
+ []
+
+<100order.pdf, id=43, 372.39125pt x 333.245pt>
+File: 100order.pdf Graphic file (type pdf)
+ <use 100order.pdf>
+Package pdftex.def Info: 100order.pdf used on input line 148.
+(pdftex.def)             Requested size: 216.81pt x 194.02461pt.
+
+Overfull \hbox (5.47499pt too wide) has occurred while \output is active
+[] \T1/aer/m/n/10.95 3
+ []
+
+[3 <C:/Users/kapelner/workspace/GreedyExperimentalDesign/GreedyExperimentalDesi
+gn/vignettes/plot_ged.pdf>] <200.pdf, id=55, 356.33125pt x 336.25626pt>
+File: 200.pdf Graphic file (type pdf)
+
+<use 200.pdf>
+Package pdftex.def Info: 200.pdf used on input line 158.
+(pdftex.def)             Requested size: 216.81pt x 204.59267pt.
+
+Overfull \hbox (5.47499pt too wide) has occurred while \output is active
+\T1/aer/m/n/10.95 4 []
+ []
+
+[4 <C:/Users/kapelner/workspace/GreedyExperimentalDesign/GreedyExperimentalDesi
+gn/vignettes/100order.pdf> <C:/Users/kapelner/workspace/GreedyExperimentalDesig
+n/GreedyExperimentalDesign/vignettes/200.pdf>]
+No file GreedyExperimentalDesign.bbl.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 187.
+
+Overfull \hbox (5.47499pt too wide) has occurred while \output is active
+[] \T1/aer/m/n/10.95 5
+ []
+
+[5]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 187.
 
 (C:\Users\kapelner\workspace\GreedyExperimentalDesign\GreedyExperimentalDesign\
 vignettes\GreedyExperimentalDesign.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 93.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 93.
-Package rerunfilecheck Info: File `GreedyExperimentalDesign.out' has not change
-d.
-(rerunfilecheck)             Checksum: 5BDC168BB32A74AAB56445909066428C;154.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 93.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 187.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 187.
+
+
+Package rerunfilecheck Warning: File `GreedyExperimentalDesign.out' has changed
+.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
+
+Package rerunfilecheck Info: Checksums for `GreedyExperimentalDesign.out':
+(rerunfilecheck)             Before: <no file>
+(rerunfilecheck)             After:  B1EA14A009A5469D61EF7A49E3C6E624;213.
+
+LaTeX Warning: There were undefined references.
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 187.
  ) 
 Here is how much of TeX's memory you used:
- 9201 strings out of 493921
- 135215 string characters out of 3144868
- 216110 words of memory out of 3000000
- 12300 multiletter control sequences out of 15000+200000
- 53219 words of font info for 107 fonts, out of 3000000 for 9000
+ 9248 strings out of 493921
+ 135355 string characters out of 3144868
+ 215198 words of memory out of 3000000
+ 12336 multiletter control sequences out of 15000+200000
+ 53873 words of font info for 109 fonts, out of 3000000 for 9000
  841 hyphenation exceptions out of 8191
- 42i,9n,40p,955b,322s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 42i,9n,40p,957b,373s stack positions out of 5000i,500n,10000p,200000b,50000s
 <C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmb10.pfb><
 C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:
 /Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/P
@@ -595,14 +655,15 @@ s (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Program Files (
 x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Program Files (x86)
 /MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Program Files (x86)/MiK
 TeX 2.9/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Program Files (x86)/MiKTeX 
-2.9/fonts/type1/public/amsfonts/cm/cmss10.pfb><C:/Program Files (x86)/MiKTeX 2.
-9/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Program Files (x86)/MiKTeX 2.9/
-fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Program Files (x86)/MiKTeX 2.9/fon
-ts/type1/public/amsfonts/cm/cmti10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts
-/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on GreedyExperimentalDesign.pdf (2 pages, 215918 bytes).
+2.9/fonts/type1/public/amsfonts/cm/cmsl10.pfb><C:/Program Files (x86)/MiKTeX 2.
+9/fonts/type1/public/amsfonts/cm/cmss10.pfb><C:/Program Files (x86)/MiKTeX 2.9/
+fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fo
+nts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts
+/type1/public/amsfonts/cm/cmti10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/t
+ype1/public/amsfonts/cm/cmtt10.pfb>
+Output written on GreedyExperimentalDesign.pdf (5 pages, 296362 bytes).
 PDF statistics:
- 116 PDF objects out of 1000 (max. 8388607)
- 11 named destinations out of 1000 (max. 500000)
- 17 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 145 PDF objects out of 1000 (max. 8388607)
+ 18 named destinations out of 1000 (max. 500000)
+ 16 words of extra memory for PDF output out of 10000 (max. 10000000)
 
