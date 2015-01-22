@@ -29,6 +29,7 @@ import gnu.trove.list.array.TIntArrayList;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Random;
 
 import no.uib.cipr.matrix.DenseVector;
 
@@ -53,16 +54,26 @@ public class Tools {
 		return new DenseVector(tally);
 	}
 
-	public static ArrayList<double[]> subsetMatrix(double[][] Xstd, int nT, int p, int[] indices, int i_remove, int i_add) {
-		ArrayList<double[]> XstdT = new ArrayList<double[]>(nT);
+	public static ArrayList<double[]> subsetMatrix(double[][] X, int[] indices) {
+//		System.out.println("subsetMatrix indices: " + StringJoin(indices));
+		ArrayList<double[]> Xsub = new ArrayList<double[]>(indices.length);
 		for (int i : indices){
-			if (i != i_remove){
-				XstdT.add(Xstd[i]);
-			}			
+			Xsub.add(X[i]);
+//			System.out.println(StringJoin(X[i]));
 		}
-		XstdT.add(Xstd[i_add]);		
-		return XstdT;
+		return Xsub;
 	}
+	
+//	public static ArrayList<double[]> subsetMatrix(double[][] Xstd, int nT, int[] indices, int i_remove, int i_add) {
+//		ArrayList<double[]> XstdT = new ArrayList<double[]>(nT);
+//		for (int i : indices){
+//			if (i != i_remove){
+//				XstdT.add(Xstd[i]);
+//			}			
+//		}
+//		XstdT.add(Xstd[i_add]);		
+//		return XstdT;
+//	}
 
 	public static int count(int[] indicT, int val) {
 		int tally = 0;
@@ -87,8 +98,30 @@ public class Tools {
 			}
 //			System.out.println("i = " + i + " done");
 		}
+//		System.out.println("  indicies " + Tools.StringJoin(indicies));
 		return indicies;
 	}	
+	
+	//from http://algs4.cs.princeton.edu/11model/Knuth.java.html
+	public static int[] fisherYatesShuffle(int[] arr){
+	    int n = arr.length;
+        for (int i = 0; i < n; i++) {
+            // choose index uniformly in [i, N-1]
+            int r = i + (int) (Math.random() * (n - i));
+            int swap = arr[r];
+            arr[r] = arr[i];
+            arr[i] = swap;
+        }
+	    return arr;
+	}
+	
+	public static int[] newBlankDesign(int n){
+		int[] design = new int[n];
+		for (int i = 0; i < n; i++){
+			design[i] = i < n / 2 ? 1 : 0;
+		}
+		return design;
+	}
 	
 	/**
 	 * Joins a collection of strings into one string

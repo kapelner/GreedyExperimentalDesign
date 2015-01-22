@@ -9,10 +9,12 @@ public abstract class ObjectiveFunction {
 	public abstract double calc();
 
 	public void setXTbar(DenseVector XTbar){
+//		System.out.println("XTbar: " + Tools.StringJoin(XTbar.getData()));
 		this.XTbar = XTbar;
 	}
 	
 	public void setXCbar(DenseVector XCbar){
+//		System.out.println("XCbar: " + Tools.StringJoin(XCbar.getData()));
 		this.XCbar = XCbar;
 	}
 }

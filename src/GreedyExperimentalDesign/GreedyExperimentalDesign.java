@@ -37,7 +37,6 @@ import java.util.logging.StreamHandler;
 import CustomLogging.LoggingOutputStream;
 import CustomLogging.StdOutErrLevel;
 import CustomLogging.SuperSimpleFormatter;
-
 import no.uib.cipr.matrix.DenseMatrix;
 
 /**
@@ -59,7 +58,7 @@ public class GreedyExperimentalDesign {
 	private String objective;
 	private Integer num_cores;
 	//data inputed from the user's data
-	private double[][] Xstd;
+	protected double[][] Xstd;
 	private double[][] Sinv;
 	private int[][] starting_indicTs;	
 	//temporary objects needed for search
@@ -73,22 +72,29 @@ public class GreedyExperimentalDesign {
 	private Integer[] num_iters;
 
 	
-//	public static void main(String[] args) throws Exception{		
-//		GreedyExperimentalDesign gd = new GreedyExperimentalDesign();
-//		gd.setNandP(20, 7);
-//		for (int i = 0; i < 20; i++){
+	public static void main(String[] args) throws Exception{	
+		
+		GreedyExperimentalDesign gd = new GreedyExperimentalDesign();
+		int n = 100;
+		int p = 20;
+		gd.setNandP(n, p);
+		for (int i = 0; i < n; i++){
 //			double[] x_i = {Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random()};
-//			gd.setDataRow(0, x_i);
-//		}
-//		gd.setMaxDesigns(100);
-//		int[] indicT = {0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0};
-//		for (int i = 0; i < 100; i++){
-//			gd.setDesignStartingPoint(i, indicT);
-//		}
-//		gd.setObjective(ABS);
-//		gd.beginSearch();
-//		System.out.println("progress: " + gd.progress());
-//	}
+			double[] x_i = new double[p];
+			for (int j = 0; j < p; j++){
+				x_i[j] = Math.random();
+			}
+			gd.setDataRow(i, x_i);
+		}
+//		System.out.println("Xstd");
+//		for (int i = 0; i < n; i++){
+//			System.out.println(Tools.StringJoin(gd.Xstd[i]));
+//		}		
+		gd.setMaxDesigns(100);
+		gd.setObjective(ABS);
+		gd.beginSearch();
+		System.out.println("progress: " + gd.progress());
+	}
 	
 	public GreedyExperimentalDesign(){
 		writeStdOutToLogFile();
@@ -103,6 +109,8 @@ public class GreedyExperimentalDesign {
 		num_iters = new Integer[max_designs];
 		ending_indicTs = new int[max_designs][n];
 //		System.out.println("resulting data initialized");
+		
+		initializeStartingIndicTs();
 		
 		//convert Sinv to a matrix for easier multiplication inside the search
 		final DenseMatrix Sinvmat = new DenseMatrix(p, p);
@@ -142,6 +150,13 @@ public class GreedyExperimentalDesign {
 		}.start();
 	}
 	
+	private void initializeStartingIndicTs() {
+		starting_indicTs = new int[max_designs][n];
+		for (int d = 0; d < max_designs; d++){
+			starting_indicTs[d] = Tools.fisherYatesShuffle(Tools.newBlankDesign(n));
+		}
+	}
+
 	public long timeBegun(){
 		return t0;
 	}
@@ -201,7 +216,7 @@ public class GreedyExperimentalDesign {
 	}	
 	
 	public void setMaxDesigns(int max_designs){
-		System.out.println("setMaxDesigns " + max_designs);
+//		System.out.println("setMaxDesigns " + max_designs);
 		this.max_designs = max_designs;
 	}
 	
@@ -260,16 +275,6 @@ public class GreedyExperimentalDesign {
 		}
 		double[] row = {Sinv_i};
 		Sinv[j0] = row;
-	}
-	
-	public void setDesignStartingPoint(int d0, int[] indicT){
-//		System.out.println("setDesignStartingPoint " + d0 + " [" + Tools.StringJoin(indicT) + "]");
-		if (starting_indicTs == null){
-			starting_indicTs = new int[max_designs][n];
-		}
-		for (int i = 0; i < n; i++){
-			starting_indicTs[d0][i] = indicT[i];
-		}		
 	}
 	
 	public static void writeStdOutToLogFile(){

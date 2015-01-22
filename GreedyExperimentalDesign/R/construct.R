@@ -19,6 +19,9 @@ VERSION = "1.0"
 initGreedyExperimentalDesignObject = function(X, max_designs = 10000, objective = "abs_sum_diff", num_cores = 1){
 	#get dimensions immediately
 	n = nrow(X)
+	if (n %% 2 != 0){
+		stop("Design matrix must have even rows to have equal treatments and controls")
+	}
 	p = ncol(X)
 	
 	#standardize it
@@ -52,11 +55,6 @@ initGreedyExperimentalDesignObject = function(X, max_designs = 10000, objective 
 		for (j in 1 : p){
 			.jcall(java_obj, "V", "setInvVarCovRow", as.integer(j - 1), SinvXstd[j, , drop = FALSE]) #java indexes from 0...n-1
 		}
-	}
-	
-	#now feed into Java some starting points for the search since it's easier to do in R
-	for (d in 1 : max_designs){
-		.jcall(java_obj, "V", "setDesignStartingPoint", as.integer(d - 1), as.integer(create_random_dummy_vec(n))) #java indexes from 0...n-1
 	}
 		
 	#now return information as an object (just a list)
@@ -204,7 +202,7 @@ resultsGreedySearch = function(obj, max_vectors = NULL){
 	list(obj_vals = obj_vals[ordered_indices], num_iters = num_iters[ordered_indices], obj_vals_orig_order = obj_vals, indicTs = indicTs)
 }
 
-
+# PRIVATE
 compute_objectives = function(X, indic_T, inv_cov_X = NULL){
 	#saves computation sometimes to pass it in
 	if (is.null(inv_cov_X)){
@@ -232,9 +230,9 @@ compute_objectives = function(X, indic_T, inv_cov_X = NULL){
 # @return 			An array of length $n$ with $n \times p_w$ number of 1's and the rest 0's in a random order
 # 
 # @author Adam Kapelner
-create_random_dummy_vec = function(n, p_w = 0.5){
-	indic_T_dummy_permutation_vector = c(rep(1, n * p_w), rep(0, n * p_w)) #there are n_T 1's followed by n_C 0's dictated by p_w
-	sample(indic_T_dummy_permutation_vector)
-}
+#create_random_dummy_vec = function(n, p_w = 0.5){
+#	indic_T_dummy_permutation_vector = c(rep(1, n * p_w), rep(0, n * p_w)) #there are n_T 1's followed by n_C 0's dictated by p_w
+#	sample(indic_T_dummy_permutation_vector)
+#}
 
 
