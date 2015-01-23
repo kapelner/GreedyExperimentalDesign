@@ -3,7 +3,7 @@
 S3method(plot,greedy_experimental_design_search)
 S3method(print,greedy_experimental_design_search)
 S3method(summary,greedy_experimental_design_search)
-export(greedySearchCurrentProgress)
+export(generate_stdzied_design_matrix)
 export(initGreedyExperimentalDesignObject)
 export(plot_obj_val_order_statistic)
 export(resultsGreedySearch)

@@ -5,7 +5,7 @@
 a search through $1_{T}$ space.}
 \usage{
 initGreedyExperimentalDesignObject(X, max_designs = 10000,
-  objective = "abs_sum_diff", num_cores = 1)
+  objective = "abs_sum_diff", semigreedy = FALSE, num_cores = 1)
 }
 \arguments{
 \item{X}{The design matrix with $n$ rows (one for each subject) and $p$ columns
@@ -18,6 +18,8 @@ using the \code{\link{stopGreedySearch}} method}
 
 \item{objective}{The objective function to use when greedily searching design space. This is a string
 "\code{abs_sum_diff}" (default) or "\code{mahal_dist}."}
+
+\item{semigreedy}{Should we use a fully greedy approach or the quicker semi-greedy approach}
 
 \item{num_cores}{The number of CPU cores you wish to use during the search}
 }

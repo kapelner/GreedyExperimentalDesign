@@ -55,6 +55,7 @@ public class GreedyExperimentalDesign {
 	private int n;
 	private int p;
 	private int max_designs;
+	private boolean semigreedy;
 	private String objective;
 	private Integer num_cores;
 	//data inputed from the user's data
@@ -65,7 +66,7 @@ public class GreedyExperimentalDesign {
 	private ExecutorService greedy_search_thread_pool;
 	private boolean began_search;
 	private long t0;
-	private long tf;	
+	private Long tf;	
 	//output
 	private int[][] ending_indicTs;	
 	private Double[] objective_vals;
@@ -120,7 +121,7 @@ public class GreedyExperimentalDesign {
 					Sinvmat.set(i, j, Sinv[i][j]);
 				}			
 			}
-			System.out.println("Sinvmat initialized");
+//			System.out.println("Sinvmat initialized");
 		}
 		
 		t0 = System.currentTimeMillis();
@@ -128,12 +129,12 @@ public class GreedyExperimentalDesign {
 		greedy_search_thread_pool = Executors.newFixedThreadPool(num_cores == null ? 1 : num_cores);
 		for (int d = 0; d < max_designs; d++){
 			final int d0 = d;
-			if (d % 100 == 0){
-				System.out.println("worker added to thread pool #" + d);
-			}
+//			if (d % 100 == 0){
+//				System.out.println("worker added to thread pool #" + d);
+//			}
 	    	greedy_search_thread_pool.execute(new Runnable(){
 				public void run() {
-					new GreedySearch(Xstd, Sinvmat, starting_indicTs[d0], ending_indicTs[d0], objective_vals, num_iters, objective, d0);
+					new GreedySearch(Xstd, Sinvmat, starting_indicTs[d0], ending_indicTs[d0], objective_vals, num_iters, objective, d0, semigreedy);
 				}
 			});
 		}
@@ -157,8 +158,11 @@ public class GreedyExperimentalDesign {
 		}
 	}
 
-	public long timeBegun(){
-		return t0;
+	public int timeElapsedInSeconds(){
+		if (tf == null){
+			return (int)(System.currentTimeMillis() - t0) / 1000;
+		}
+		return (int)(tf - t0) / 1000;
 	}
 	
 	public long timeFinished(){
@@ -275,6 +279,10 @@ public class GreedyExperimentalDesign {
 		}
 		double[] row = {Sinv_i};
 		Sinv[j0] = row;
+	}
+	
+	public void setSemigreedy(){
+		semigreedy = true;
 	}
 	
 	public static void writeStdOutToLogFile(){

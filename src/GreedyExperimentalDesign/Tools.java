@@ -54,26 +54,26 @@ public class Tools {
 		return new DenseVector(tally);
 	}
 
-	public static ArrayList<double[]> subsetMatrix(double[][] X, int[] indices) {
-//		System.out.println("subsetMatrix indices: " + StringJoin(indices));
-		ArrayList<double[]> Xsub = new ArrayList<double[]>(indices.length);
-		for (int i : indices){
-			Xsub.add(X[i]);
-//			System.out.println(StringJoin(X[i]));
-		}
-		return Xsub;
-	}
-	
-//	public static ArrayList<double[]> subsetMatrix(double[][] Xstd, int nT, int[] indices, int i_remove, int i_add) {
-//		ArrayList<double[]> XstdT = new ArrayList<double[]>(nT);
+//	public static ArrayList<double[]> subsetMatrix(double[][] X, int[] indices) {
+////		System.out.println("subsetMatrix indices: " + StringJoin(indices));
+//		ArrayList<double[]> Xsub = new ArrayList<double[]>(indices.length);
 //		for (int i : indices){
-//			if (i != i_remove){
-//				XstdT.add(Xstd[i]);
-//			}			
+//			Xsub.add(X[i]);
+////			System.out.println(StringJoin(X[i]));
 //		}
-//		XstdT.add(Xstd[i_add]);		
-//		return XstdT;
+//		return Xsub;
 //	}
+	
+	public static ArrayList<double[]> subsetMatrix(double[][] Xstd, int nT, int[] indices, int i_remove, int i_add) {
+		ArrayList<double[]> XstdT = new ArrayList<double[]>(nT);
+		for (int i : indices){
+			if (i != i_remove){
+				XstdT.add(Xstd[i]);
+			}			
+		}
+		XstdT.add(Xstd[i_add]);		
+		return XstdT;
+	}
 
 	public static int count(int[] indicT, int val) {
 		int tally = 0;

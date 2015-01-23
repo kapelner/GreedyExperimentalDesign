@@ -11,12 +11,13 @@ VERSION = "1.0"
 #' 							using the \code{\link{stopGreedySearch}} method 
 #' @param objective			The objective function to use when greedily searching design space. This is a string
 #' 							"\code{abs_sum_diff}" (default) or "\code{mahal_dist}."
+#' @param semigreedy		Should we use a fully greedy approach or the quicker semi-greedy approach
 #' @param num_cores 		The number of CPU cores you wish to use during the search
 #' @return					An object of type \code{greedy_experimental_design_search} which can be further operated upon
 #' 
 #' @author Adam Kapelner
 #' @export
-initGreedyExperimentalDesignObject = function(X, max_designs = 10000, objective = "abs_sum_diff", num_cores = 1){
+initGreedyExperimentalDesignObject = function(X, max_designs = 10000, objective = "abs_sum_diff", semigreedy = FALSE, num_cores = 1){
 	#get dimensions immediately
 	n = nrow(X)
 	if (n %% 2 != 0){
@@ -56,10 +57,16 @@ initGreedyExperimentalDesignObject = function(X, max_designs = 10000, objective 
 			.jcall(java_obj, "V", "setInvVarCovRow", as.integer(j - 1), SinvXstd[j, , drop = FALSE]) #java indexes from 0...n-1
 		}
 	}
+	
+	#is it semigreedy? Set it...
+	if (semigreedy){
+		.jcall(java_obj, "V", "setSemigreedy")
+	}
 		
 	#now return information as an object (just a list)
 	greedy_experimental_design_search = list()
 	greedy_experimental_design_search$max_designs = max_designs
+	greedy_experimental_design_search$semigreedy = semigreedy
 	greedy_experimental_design_search$X = X
 	greedy_experimental_design_search$n = n
 	greedy_experimental_design_search$p = p
@@ -79,12 +86,13 @@ initGreedyExperimentalDesignObject = function(X, max_designs = 10000, objective 
 #' @export
 print.greedy_experimental_design_search = function(x, ...){
 	progress = greedySearchCurrentProgress(x)
+	time_elapsed = greedySearchTimeElapsed(x)
 	if (progress == 0){
 		cat("No progress on the GreedyExperimentalDesign. Did you run \"startGreedySearch?\"\n")
 	} else if (progress == x$max_designs){
-		cat("The search has completed.", progress, "vectors have been found.\n")
+		cat("The search completed in", time_elapsed," seconds.", progress, "vectors have been found.\n")
 	} else {
-		cat("The search has found ", progress, " vectors thus far (", round(progress / x$max_designs * 100), "%).\n", sep = "")
+		cat("The search has found ", progress, " vectors thus far (", round(progress / x$max_designs * 100), "%) in ", time_elapsed," seconds.\n", sep = "")
 	}
 }
 
@@ -172,25 +180,33 @@ stopGreedySearch = function(obj){
 	.jcall(obj$java_obj, "V", "stopSearch")
 }
 
-#' Returns the number of vectors found by the greedy design search
-#' 
-#' @param obj 		The \code{greedy_experimental_design} object that is currently running the search
-#' 
-#' @author Adam Kapelner
-#' @export
+# Returns the number of vectors found by the greedy design search
+# 
+# @param obj 		The \code{greedy_experimental_design} object that is currently running the search
+# 
+# @author Adam Kapelner
 greedySearchCurrentProgress = function(obj){
 	.jcall(obj$java_obj, "I", "progress")
+}
+
+# Returns the number of vectors found by the greedy design search
+# 
+# @param obj 		The \code{greedy_experimental_design} object that is currently running the search
+# 
+# @author Adam Kapelner
+greedySearchTimeElapsed = function(obj){
+	.jcall(obj$java_obj, "I", "timeElapsedInSeconds")
 }
 
 #' Returns the results (thus far) of the greedy design search
 #' 
 #' @param obj 			The \code{greedy_experimental_design} object that is currently running the search
-#' @param max_vectors	The number of design vectors you wish to return. \code{NULL} returns all of them 
-#' 						(default). This is not recommended as returning over 1,000 vectors is time-intensive.
+#' @param max_vectors	The number of design vectors you wish to return. \code{NULL} returns all of them. 
+#' 						This is not recommended as returning over 1,000 vectors is time-intensive. The default is 5. 
 #' 
 #' @author Adam Kapelner
 #' @export
-resultsGreedySearch = function(obj, max_vectors = NULL){
+resultsGreedySearch = function(obj, max_vectors = 5){
 	obj_vals = .jcall(obj$java_obj, "[D", "getObjectiveVals")
 	num_iters = .jcall(obj$java_obj, "[I", "getNumIters")
 	#these two are in order, so let's order the indicTs by the final objective values
@@ -198,7 +214,7 @@ resultsGreedySearch = function(obj, max_vectors = NULL){
 	last_index = ifelse(is.null(max_vectors), length(ordered_indices), max_vectors)
 	
 	
-	indicTs = t(sapply(.jcall(obj$java_obj, "[[I", "getEndingIndicTs", as.integer(ordered_indices[1 : last_index])), .jevalArray))
+	indicTs = sapply(.jcall(obj$java_obj, "[[I", "getEndingIndicTs", as.integer(ordered_indices[1 : last_index] - 1)), .jevalArray)
 	list(obj_vals = obj_vals[ordered_indices], num_iters = num_iters[ordered_indices], obj_vals_orig_order = obj_vals, indicTs = indicTs)
 }
 
@@ -221,6 +237,26 @@ compute_objectives = function(X, indic_T, inv_cov_X = NULL){
 	mahal_obj = as.numeric(t(X_T_bar_minus_X_C_bar) %*% inv_cov_X %*% X_T_bar_minus_X_C_bar)	
 	
 	list(abs_obj = abs_obj, mahal_obj = mahal_obj)
+}
+
+
+#' Generates a design matrix with standardized predictors. Useful for debugging.
+#' 
+#' @param n					Number of rows in the design matrix 
+#' @param p 				Number of columns in the design matrix
+#' @param covariate_dist	The distribution of the covariates (defaults to iid_std_normal) and the other option is iid_std_uniform
+#' @return 					THe design matrix
+#' 
+#' @author Adam Kapelner
+#' @export
+generate_stdzied_design_matrix = function(n = 50, p = 1, covariate_dist = "iid_std_normal"){
+	if (covariate_dist == "iid_std_uniform"){
+		X = matrix(runif(n * p), nrow = n, ncol = p)	
+	} else if (covariate_dist == "iid_std_normal"){
+		X = matrix(rnorm(n * p), nrow = n, ncol = p)
+	}
+	#now standardize the matrix to make things easier later
+	apply(X, 2, function(xj){(xj - mean(xj)) / sd(xj)})	
 }
 
 # PRIVATE: Creates a random binary vector which codes an experimental design
