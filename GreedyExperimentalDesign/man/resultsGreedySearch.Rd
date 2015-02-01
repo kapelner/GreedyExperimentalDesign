@@ -3,13 +3,13 @@
 \alias{resultsGreedySearch}
 \title{Returns the results (thus far) of the greedy design search}
 \usage{
-resultsGreedySearch(obj, max_vectors = NULL)
+resultsGreedySearch(obj, max_vectors = 5)
 }
 \arguments{
 \item{obj}{The \code{greedy_experimental_design} object that is currently running the search}
 
-\item{max_vectors}{The number of design vectors you wish to return. \code{NULL} returns all of them
-                        (default). This is not recommended as returning over 1,000 vectors is time-intensive.}
+\item{max_vectors}{The number of design vectors you wish to return. \code{NULL} returns all of them.
+                        This is not recommended as returning over 1,000 vectors is time-intensive. The default is 5.}
 }
 \description{
 Returns the results (thus far) of the greedy design search

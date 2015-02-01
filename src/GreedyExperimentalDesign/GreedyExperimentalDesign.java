@@ -92,7 +92,7 @@ public class GreedyExperimentalDesign {
 //			System.out.println(Tools.StringJoin(gd.Xstd[i]));
 //		}		
 		gd.setMaxDesigns(100);
-		gd.setObjective(ABS);
+		gd.setObjective(MAHAL);
 		gd.beginSearch();
 		System.out.println("progress: " + gd.progress());
 	}

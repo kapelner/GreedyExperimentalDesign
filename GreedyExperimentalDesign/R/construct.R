@@ -11,7 +11,8 @@ VERSION = "1.0"
 #' 							using the \code{\link{stopGreedySearch}} method 
 #' @param objective			The objective function to use when greedily searching design space. This is a string
 #' 							"\code{abs_sum_diff}" (default) or "\code{mahal_dist}."
-#' @param semigreedy		Should we use a fully greedy approach or the quicker semi-greedy approach
+#' @param semigreedy		Should we use a fully greedy approach or the quicker semi-greedy approach? The default is
+#' 							\code{FALSE} corresponding to the fully greedy approach.
 #' @param num_cores 		The number of CPU cores you wish to use during the search
 #' @return					An object of type \code{greedy_experimental_design_search} which can be further operated upon
 #' 
@@ -90,7 +91,7 @@ print.greedy_experimental_design_search = function(x, ...){
 	if (progress == 0){
 		cat("No progress on the GreedyExperimentalDesign. Did you run \"startGreedySearch?\"\n")
 	} else if (progress == x$max_designs){
-		cat("The search completed in", time_elapsed," seconds.", progress, "vectors have been found.\n")
+		cat("The search completed in", time_elapsed, "seconds.", progress, "vectors have been found.\n")
 	} else {
 		cat("The search has found ", progress, " vectors thus far (", round(progress / x$max_designs * 100), "%) in ", time_elapsed," seconds.\n", sep = "")
 	}
@@ -133,7 +134,7 @@ plot.greedy_experimental_design_search = function(x, ...){
 #' 
 #' @param obj			The \code{greedy_experimental_design_search} object whose search history is to be visualized
 #' @param order_stat 	The order statistic that you wish to plot. The default is \code{1} for the minimum.
-#' @param skip_every	Plot every nth point. This makes the plot generate much more quickly.
+#' @param skip_every	Plot every nth point. This makes the plot generate much more quickly. The default is \code{5}.
 #' @param type			The type parameter for plot.
 #' @param ... 			Other arguments to be passed to the plot function.
 #' @return 				An array of order statistics as a list element

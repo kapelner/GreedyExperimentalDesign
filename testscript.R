@@ -5,7 +5,7 @@
 options(java.parameters = "-Xmx3000m")
 library(GreedyExperimentalDesign)
 
-#X = generate_stdzied_design_matrix(n = 200, p = 40)
+X = generate_stdzied_design_matrix(n = 200, p = 40)
 ged = initGreedyExperimentalDesignObject(X, max_designs = 50000, num_cores = 2, objective = "abs_sum_diff", semigreedy = FALSE)
 startGreedySearch(ged)
 resultsGreedySearch(ged)$obj_vals[1]
@@ -18,3 +18,14 @@ plot(1:length(vals), log(log(vals)))
 plot(1:length(vals), vals^(-15))
 
 res = resultsGreedySearch(ged)
+
+
+options(java.parameters = "-Xmx3000m")
+library(GreedyExperimentalDesign)
+
+X = generate_stdzied_design_matrix(n = 200, p = 40)
+ged = initGreedyExperimentalDesignObject(X, max_designs = 100, num_cores = 2, objective = "mahal_dist")
+startGreedySearch(ged)
+resultsGreedySearch(ged)$obj_vals[1]
+data = plot_obj_val_order_statistic(ged, order_stat = 5, skip_every = 1)
+

@@ -19,7 +19,8 @@ using the \code{\link{stopGreedySearch}} method}
 \item{objective}{The objective function to use when greedily searching design space. This is a string
 "\code{abs_sum_diff}" (default) or "\code{mahal_dist}."}
 
-\item{semigreedy}{Should we use a fully greedy approach or the quicker semi-greedy approach}
+\item{semigreedy}{Should we use a fully greedy approach or the quicker semi-greedy approach? The default is
+\code{FALSE} corresponding to the fully greedy approach.}
 
 \item{num_cores}{The number of CPU cores you wish to use during the search}
 }

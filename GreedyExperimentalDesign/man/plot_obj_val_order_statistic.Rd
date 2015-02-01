@@ -11,7 +11,7 @@ plot_obj_val_order_statistic(obj, order_stat = 1, skip_every = 5,
 
 \item{order_stat}{The order statistic that you wish to plot. The default is \code{1} for the minimum.}
 
-\item{skip_every}{Plot every nth point. This makes the plot generate much more quickly.}
+\item{skip_every}{Plot every nth point. This makes the plot generate much more quickly. The default is \code{5}.}
 
 \item{type}{The type parameter for plot.}
 
