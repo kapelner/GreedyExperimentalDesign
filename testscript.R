@@ -26,6 +26,21 @@ library(GreedyExperimentalDesign)
 X = generate_stdzied_design_matrix(n = 200, p = 40)
 ged = initGreedyExperimentalDesignObject(X, max_designs = 100, num_cores = 2, objective = "mahal_dist")
 startGreedySearch(ged)
-resultsGreedySearch(ged)$obj_vals[1]
+
 data = plot_obj_val_order_statistic(ged, order_stat = 5, skip_every = 1)
+
+#check to make sure Java and R agree
+indicT = resultsGreedySearch(ged)$indicTs[, 1]
+xbartminxbarc = colMeans(X[indicT == 1, ]) - colMeans(X[indicT == 0, ])
+t(xbartminxbarc) %*% solve(var(X)) %*% t(t(xbartminxbarc))
+resultsGreedySearch(ged)$obj_vals[1]
+
+ged = initGreedyExperimentalDesignObject(X, max_designs = 100, num_cores = 2)
+startGreedySearch(ged)
+
+#check to make sure Java and R agree
+indicT = resultsGreedySearch(ged)$indicTs[, 1]
+xbartminxbarc = colMeans(X[indicT == 1, ]) - colMeans(X[indicT == 0, ])
+sum(abs(xbartminxbarc))
+resultsGreedySearch(ged)$obj_vals[1]
 
