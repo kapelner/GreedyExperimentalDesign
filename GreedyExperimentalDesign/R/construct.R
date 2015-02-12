@@ -261,17 +261,15 @@ compute_objectives = function(X, indic_T, inv_cov_X = NULL){
 #' 
 #' @param n					Number of rows in the design matrix 
 #' @param p 				Number of columns in the design matrix
-#' @param covariate_dist	The distribution of the covariates (defaults to iid_std_normal) and the other option is iid_std_uniform
+#' @param covariate_dist	The function to use to draw the covariate realizations (assumed to be iid).
+#' 							This defaults to \code{rnorm} for $N(0,1)$ draws.
+#' @param ...				Optional arguments to be passed to the \code{covariate_dist} function.
 #' @return 					THe design matrix
 #' 
 #' @author Adam Kapelner
 #' @export
-generate_stdzied_design_matrix = function(n = 50, p = 1, covariate_dist = "iid_std_normal"){
-	if (covariate_dist == "iid_std_uniform"){
-		X = matrix(runif(n * p), nrow = n, ncol = p)	
-	} else if (covariate_dist == "iid_std_normal"){
-		X = matrix(rnorm(n * p), nrow = n, ncol = p)
-	}
+generate_stdzied_design_matrix = function(n = 50, p = 1, covariate_gen = rnorm, ...){
+	X = matrix(covariate_gen(n * p, ...), nrow = n, ncol = p)
 	#now standardize the matrix to make things easier later
 	apply(X, 2, function(xj){(xj - mean(xj)) / sd(xj)})	
 }
