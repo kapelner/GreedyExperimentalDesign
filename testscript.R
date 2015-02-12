@@ -1,6 +1,6 @@
-#setwd("C:\\Users\\kapelner\\workspace\\GreedyExperimentalDesign")
-#library(roxygen2)
-#roxygenise("GreedyExperimentalDesign", clean = TRUE)
+setwd("C:\\Users\\kapelner\\workspace\\GreedyExperimentalDesign")
+library(roxygen2)
+roxygenise("GreedyExperimentalDesign", clean = TRUE)
 
 options(java.parameters = "-Xmx3000m")
 library(GreedyExperimentalDesign)
@@ -44,3 +44,16 @@ xbartminxbarc = colMeans(X[indicT == 1, ]) - colMeans(X[indicT == 0, ])
 sum(abs(xbartminxbarc))
 resultsGreedySearch(ged)$obj_vals[1]
 
+options(java.parameters = "-Xmx3000m")
+library(GreedyExperimentalDesign)
+
+X = generate_stdzied_design_matrix(n = 100, p = 1)
+ged = initGreedyExperimentalDesignObject(X, max_designs = 50, num_cores = 6, wait = TRUE)
+startGreedySearch(ged)
+res = resultsGreedySearch(ged)
+res
+
+ged = initGreedyExperimentalDesignObject(X, max_designs = 50, num_cores = 6, wait = TRUE, max_iters = 1)
+startGreedySearch(ged)
+res = resultsGreedySearch(ged)
+res

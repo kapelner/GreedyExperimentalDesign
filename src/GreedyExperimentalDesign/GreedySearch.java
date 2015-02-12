@@ -6,7 +6,7 @@ import no.uib.cipr.matrix.DenseMatrix;
 
 public class GreedySearch {
 
-	public GreedySearch(double[][] Xstd, DenseMatrix sinvmat, int[] indicT, int[] ending_indicT, Double[] objective_vals, Integer[] num_iters, String objective, int d0, boolean semigreedy) {
+	public GreedySearch(double[][] Xstd, DenseMatrix sinvmat, int[] indicT, int[] ending_indicT, Double[] objective_vals, Integer[] num_iters, String objective, int d0, boolean semigreedy, Integer max_iters) {
 //		System.out.println("GreedySearch: ready to begin " + d0);
 		ObjectiveFunction obj_fun = null;
 		if (objective.equals(GreedyExperimentalDesign.MAHAL)){
@@ -87,6 +87,10 @@ public class GreedySearch {
 				indicT = indicTmin;
 			}
 //			System.out.println("after indicTmin == null");
+			
+			if (max_iters != null && max_iters == iter){
+				break;
+			}
 		}	
 //		System.out.println("after while true");
 		

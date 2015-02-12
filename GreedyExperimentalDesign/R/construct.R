@@ -11,14 +11,24 @@ VERSION = "1.0"
 #' 							using the \code{\link{stopGreedySearch}} method 
 #' @param objective			The objective function to use when greedily searching design space. This is a string
 #' 							"\code{abs_sum_diff}" (default) or "\code{mahal_dist}."
+#' @param wait				Should the \code{R} terminal hang until all \code{max_designs} vectors are found? The 
+#' 							deafult is \code{FALSE}.
 #' @param semigreedy		Should we use a fully greedy approach or the quicker semi-greedy approach? The default is
 #' 							\code{FALSE} corresponding to the fully greedy approach.
-#' @param num_cores 		The number of CPU cores you wish to use during the search
+#' @param max_switches		Should we impose a maximum number of switches? The default is \code{NULL} which a flag 
+#' 							for ``no limit.''
+#' @param num_cores 		The number of CPU cores you wish to use during the search. The default is \code{1}.
 #' @return					An object of type \code{greedy_experimental_design_search} which can be further operated upon
 #' 
 #' @author Adam Kapelner
 #' @export
-initGreedyExperimentalDesignObject = function(X, max_designs = 10000, objective = "abs_sum_diff", semigreedy = FALSE, num_cores = 1){
+initGreedyExperimentalDesignObject = function(X, 
+		max_designs = 10000, 
+		objective = "abs_sum_diff", 
+		wait = FALSE, 
+		max_iters = NULL,
+		semigreedy = FALSE, 
+		num_cores = 1){
 	#get dimensions immediately
 	n = nrow(X)
 	if (n %% 2 != 0){
@@ -45,6 +55,12 @@ initGreedyExperimentalDesignObject = function(X, max_designs = 10000, objective 
 	.jcall(java_obj, "V", "setNumCores", as.integer(num_cores))
 	.jcall(java_obj, "V", "setNandP", as.integer(n), as.integer(p))
 	.jcall(java_obj, "V", "setObjective", objective)
+	if (wait){
+		.jcall(java_obj, "V", "setWait")
+	}
+	if (!is.null(max_iters)){
+		.jcall(java_obj, "V", "setMaxIters", as.integer(max_iters))
+	}
 	
 	
 	#feed in the data

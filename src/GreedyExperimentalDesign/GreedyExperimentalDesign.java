@@ -61,7 +61,9 @@ public class GreedyExperimentalDesign {
 	//data inputed from the user's data
 	protected double[][] Xstd;
 	private double[][] Sinv;
-	private int[][] starting_indicTs;	
+	private int[][] starting_indicTs;
+	private boolean wait;
+	private Integer max_iters;
 	//temporary objects needed for search
 	private ExecutorService greedy_search_thread_pool;
 	private boolean began_search;
@@ -134,12 +136,12 @@ public class GreedyExperimentalDesign {
 //			}
 	    	greedy_search_thread_pool.execute(new Runnable(){
 				public void run() {
-					new GreedySearch(Xstd, Sinvmat, starting_indicTs[d0], ending_indicTs[d0], objective_vals, num_iters, objective, d0, semigreedy);
+					new GreedySearch(Xstd, Sinvmat, starting_indicTs[d0], ending_indicTs[d0], objective_vals, num_iters, objective, d0, semigreedy, max_iters);
 				}
 			});
 		}
 		greedy_search_thread_pool.shutdown(); //run em all (but not on this thread!)
-		new Thread(){
+		Thread await_completion = new Thread(){
 			public void run(){
 				try {
 					greedy_search_thread_pool.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS); //infinity
@@ -148,7 +150,15 @@ public class GreedyExperimentalDesign {
 				}
 				tf = System.currentTimeMillis();
 			}
-		}.start();
+		};
+		await_completion.start();
+		if (wait){
+			try {
+				await_completion.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	private void initializeStartingIndicTs() {
@@ -283,6 +293,14 @@ public class GreedyExperimentalDesign {
 	
 	public void setSemigreedy(){
 		semigreedy = true;
+	}
+	
+	public void setWait(){
+		wait = true;
+	}
+	
+	public void setMaxIters(int max_iters){
+		this.max_iters = max_iters;
 	}
 	
 	public static void writeStdOutToLogFile(){

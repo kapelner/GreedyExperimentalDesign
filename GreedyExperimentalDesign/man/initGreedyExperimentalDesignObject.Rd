@@ -5,7 +5,8 @@
 a search through $1_{T}$ space.}
 \usage{
 initGreedyExperimentalDesignObject(X, max_designs = 10000,
-  objective = "abs_sum_diff", semigreedy = FALSE, num_cores = 1)
+  objective = "abs_sum_diff", wait = FALSE, max_iters = NULL,
+  semigreedy = FALSE, num_cores = 1)
 }
 \arguments{
 \item{X}{The design matrix with $n$ rows (one for each subject) and $p$ columns
@@ -19,10 +20,16 @@ using the \code{\link{stopGreedySearch}} method}
 \item{objective}{The objective function to use when greedily searching design space. This is a string
 "\code{abs_sum_diff}" (default) or "\code{mahal_dist}."}
 
+\item{wait}{Should the \code{R} terminal hang until all \code{max_designs} vectors are found? The
+deafult is \code{FALSE}.}
+
 \item{semigreedy}{Should we use a fully greedy approach or the quicker semi-greedy approach? The default is
 \code{FALSE} corresponding to the fully greedy approach.}
 
-\item{num_cores}{The number of CPU cores you wish to use during the search}
+\item{max_switches}{Should we impose a maximum number of switches? The default is \code{NULL} which a flag
+for ``no limit.''}
+
+\item{num_cores}{The number of CPU cores you wish to use during the search. The default is \code{1}.}
 }
 \value{
 An object of type \code{greedy_experimental_design_search} which can be further operated upon
