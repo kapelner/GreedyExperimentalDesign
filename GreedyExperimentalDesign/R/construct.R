@@ -15,7 +15,7 @@ VERSION = "1.0"
 #' 							deafult is \code{FALSE}.
 #' @param semigreedy		Should we use a fully greedy approach or the quicker semi-greedy approach? The default is
 #' 							\code{FALSE} corresponding to the fully greedy approach.
-#' @param max_switches		Should we impose a maximum number of switches? The default is \code{NULL} which a flag 
+#' @param max_switches		Should we impose a maximum number of switches? The default is \code{Inf} which a flag 
 #' 							for ``no limit.''
 #' @param num_cores 		The number of CPU cores you wish to use during the search. The default is \code{1}.
 #' @return					An object of type \code{greedy_experimental_design_search} which can be further operated upon
@@ -26,7 +26,7 @@ initGreedyExperimentalDesignObject = function(X,
 		max_designs = 10000, 
 		objective = "abs_sum_diff", 
 		wait = FALSE, 
-		max_iters = NULL,
+		max_iters = Inf,
 		semigreedy = FALSE, 
 		num_cores = 1){
 	#get dimensions immediately
@@ -58,7 +58,8 @@ initGreedyExperimentalDesignObject = function(X,
 	if (wait){
 		.jcall(java_obj, "V", "setWait")
 	}
-	if (!is.null(max_iters)){
+	if (max_iters <= 0){stop("max_iters must be positive")}
+	if (max_iters < Inf){
 		.jcall(java_obj, "V", "setMaxIters", as.integer(max_iters))
 	}
 	
@@ -230,8 +231,10 @@ resultsGreedySearch = function(obj, max_vectors = 5){
 	ordered_indices = order(obj_vals)
 	last_index = ifelse(is.null(max_vectors), length(ordered_indices), max_vectors)
 	
-	
-	indicTs = sapply(.jcall(obj$java_obj, "[[I", "getEndingIndicTs", as.integer(ordered_indices[1 : last_index] - 1)), .jevalArray)
+	indicTs = NULL
+	if (max_vectors > 0){
+		indicTs = sapply(.jcall(obj$java_obj, "[[I", "getEndingIndicTs", as.integer(ordered_indices[1 : last_index] - 1)), .jevalArray)
+	}
 	list(obj_vals = obj_vals[ordered_indices], num_iters = num_iters[ordered_indices], obj_vals_orig_order = obj_vals, indicTs = indicTs)
 }
 
