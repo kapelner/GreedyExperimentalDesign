@@ -29,7 +29,6 @@ import gnu.trove.list.array.TIntArrayList;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Random;
 
 import no.uib.cipr.matrix.DenseVector;
 

@@ -74,7 +74,7 @@ public class GreedyExperimentalDesign {
 	private Double[] objective_vals;
 	private Integer[] num_iters;
 
-	
+	//running the Java as standalone is for debug purposes ONLY!!!
 	public static void main(String[] args) throws Exception{	
 		
 		GreedyExperimentalDesign gd = new GreedyExperimentalDesign();
