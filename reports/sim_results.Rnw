@@ -12,21 +12,10 @@
 \begin{document}
 \maketitle
 
-
-<<set_directory_on_dev_machine, include=FALSE>>=
-#If I'm on my dev machine...
-if (Sys.info()['sysname'] == "Windows"){
-  setwd("C:\\Users\\kapelner\\workspace\\GreedyExperimentalDesign\\reports")
-}
-@
-
 <<load_packages_and_setup_knitr, include=FALSE>>=
 graphics.off()
 #First we load up the packages we need and set knitr options:
 options(repos = structure(c(CRAN = "http://lib.stat.cmu.edu/R/CRAN/")))
-tryCatch(library(knitr), 
-		error = function(e){install.packages("knitr")}, 
-		finally = library(knitr))
 tryCatch(library(ggplot2), 
 		error = function(e){install.packages("ggplot2")}, 
 		finally = library(ggplot2))
@@ -35,7 +24,7 @@ tryCatch(library(xtable),
 		finally = library(xtable))
 
 DEFAULT_COLORVEC = c("red", "green", "blue", "yellow2", "black", "violetred4", "cyan", "darkgrey", "orange2", "bisque3")
-DEFAULT_OFFSETS = sample(seq(-0.2, 0.2, 0.025))
+DEFAULT_OFFSETS = sample(seq(-0.2, 0.2, 0.005))
 @
 
 \section{Results for each Run}
@@ -62,30 +51,20 @@ for (max_iters in max_iterss){
 		y = X$val
 		lnx = log(x)
 		lny = log(y)
-		dataset = as.factor(X$dataset)
-		
 		
 		cat("\nexamine log-log linear regression\n")
 		lm_mod = lm(lny ~ lnx)
-		print(coef(summary(lm_mod)))
-		slope_int_res = rbind(slope_int_res, c(p, max_iters, coef(summary(lm_mod))[, 1]))
-		
+		print(coef(summary(lm_mod)))		
 		abline(lm_mod)
-		cat("\nensure log-law relationship\n")
-		lm_mod_1 = lm(lny ~ poly(lnx, 1))
-		lm_mod_curve = lm(lny ~ poly(lnx, 4))
-		print(anova(lm_mod_1, lm_mod_curve))
-		cat("\nensure no dataset effect\n")
-		lm_mod_fixed = lm(lny ~ lnx + dataset)
-		print(anova(lm_mod, lm_mod_fixed))
-		lm_mod_fixed_slopes = lm(lny ~ lnx * dataset)
-		print(anova(lm_mod, lm_mod_fixed_slopes))	
 		
 		for (d in unique(X$dataset)){
 			lnx = log(X[X$dataset == d, ]$n)
 			lny = log(X[X$dataset == d, ]$val)
-			points(lnx + DEFAULT_OFFSETS[d], lny, col = DEFAULT_COLORVEC[d], pch = 16, cex = 0.66)
+			points(lnx + DEFAULT_OFFSETS[d], lny, col = DEFAULT_COLORVEC[d %% length(DEFAULT_COLORVEC)], pch = 16, cex = 0.33)
 		}
+		
+		#record results
+		slope_int_res = rbind(slope_int_res, c(p, max_iters, coef(summary(lm_mod))[, 1]))
 	}
 }
 @
@@ -101,12 +80,13 @@ slope_int_res_inf = slope_int_res[slope_int_res$max_iters == Inf, ]
 plot(slope_int_res_inf$p, -slope_int_res_inf$slope, type = "o", xlab = "p", ylab = "-rate")
 plot(log(slope_int_res_inf$p), log(-slope_int_res_inf$slope), type = "o", xlab = "ln(p)", ylab = "ln(-rate)")
 @
-
-
-
-
 \end{document}
 
+
+library(knitr)
+if (Sys.info()['sysname'] == "Windows"){
+  setwd("C:\\Users\\kapelner\\workspace\\GreedyExperimentalDesign\\reports")
+}
 knit("sim_results.Rnw")
 system("pdflatex sim_results.tex")
 system("open sim_results.pdf")
