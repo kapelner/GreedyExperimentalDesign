@@ -25,6 +25,8 @@ tryCatch(library(xtable),
 
 DEFAULT_COLORVEC = c("red", "green", "blue", "yellow2", "black", "violetred4", "cyan", "darkgrey", "orange2", "bisque3")
 DEFAULT_OFFSETS = sample(seq(-0.2, 0.2, 0.005))
+
+setwd("C:\\Users\\kapelner\\workspace\\GreedyExperimentalDesign\\reports")
 @
 
 \section{Results for each Run}
@@ -32,41 +34,78 @@ DEFAULT_OFFSETS = sample(seq(-0.2, 0.2, 0.005))
 <<load_and_cleanup_data, fig.width = 7, fig.height = 6, echo=FALSE>>=
 Xraw = read.csv("all_results2.csv")
 
+#we don't need max_iterss since we went to Infinity always
+Xraw$max_iters = NULL
+table(Xraw$n) #num_samples
+table(Xraw$p) #dimension
+table(Xraw$dataset) #dataset
+
+ns = sort(unique(Xraw$n))
 ps = sort(unique(Xraw$p))
-#ns = sort(unique(Xraw$n))
-max_iterss = sort(unique(Xraw$max_iters), decr = T)
 ds = sort(unique(Xraw$d))
+rs = seq(from = 1, to = 200, by = 3)
 
 slope_int_res = matrix(NA, nrow = 0, ncol = 4)
-colnames(slope_int_res) = c("p", "max_iters", "int", "slope")
+slope_int_res = data.frame(slope_int_res)
 
-for (max_iters in max_iterss){
-	for (p in ps){
-		#all plots are on same scale!
-		plot(log(Xraw$n), log(Xraw$val), type = "n", xlab = "n", ylab = "ln(balance)", xaxt = "n", main = paste("p =", p, "max_iters =", max_iters))
-		axis(1, at = log(Xraw$n), labels = exp(log(Xraw$n)))
-		X = Xraw[Xraw$p == p & Xraw$max_iters == max_iters, ]
-		cat("p =", p, "max iters =", max_iters, "\n\n\n")
+
+plot = FALSE
+
+
+for (p in ps){
+	#all plots are on same scale!
+
+	Xp = Xraw[Xraw$p == p, ]
+	cat("p =", p, "\n\n\n")
 	
-		x = X$n
-		y = X$val
-		lnx = log(x)
-		lny = log(y)
+	for (r in rs){
+		if (plot){
+			windows()
+			plot(log(Xraw$n), log(Xraw$val), type = "n", xlab = "n", ylab = "ln(balance)", xaxt = "n", main = paste("p =", p, " r = ", r))
+			axis(1, at = log(Xraw$n), labels = exp(log(Xraw$n)))
+		}
+		#now we have to generate the dataset
+		Xpr = matrix(NA, nrow = 0, ncol = 4)
+		colnames(Xpr) = colnames(Xraw)
+		for (n in ns){
+			for (d in ds){
+				Xpdn = Xp[Xp$d == d & Xp$n == n, ]
+				#this is already in minimum order, thus we need to randomize the order
+				Xpdn = Xpdn[sample(1 : nrow(Xpdn)), ]
+				Xpr = rbind(Xpr, c(n, p, d, min(Xpdn[1 : r, ]$val)))
+			}
+		}
+		Xpr = data.frame(Xpr)
 		
-		cat("\nexamine log-log linear regression\n")
+		x = Xpr$n
+		y = Xpr$val
+		lnx = log(x)
+		lny = log(y)		
+		cat("\nexamine log-log linear regression\n")		
 		lm_mod = lm(lny ~ lnx)
 		print(coef(summary(lm_mod)))		
-		abline(lm_mod)
+			
 		
-		for (d in unique(X$dataset)){
-			lnx = log(X[X$dataset == d, ]$n)
-			lny = log(X[X$dataset == d, ]$val)
-			points(lnx + DEFAULT_OFFSETS[d], lny, col = DEFAULT_COLORVEC[d %% length(DEFAULT_COLORVEC)], pch = 16, cex = 0.33)
+		if (plot){
+			abline(lm_mod)
+			for (d in ds){
+				Xprd = Xpr[Xpr$d == d, ]
+				lnxd = log(Xprd[Xprd$d == d, ]$n)
+				lnyd = log(Xprd[Xprd$d == d, ]$val)
+				points(lnxd + DEFAULT_OFFSETS[d], lnyd, col = DEFAULT_COLORVEC[d %% length(DEFAULT_COLORVEC)], pch = 16, cex = 0.33)
+			}
 		}
 		
 		#record results
-		slope_int_res = rbind(slope_int_res, c(p, max_iters, coef(summary(lm_mod))[, 1]))
+		
+		slope_int_res = rbind(slope_int_res, c(p, r, coef(summary(lm_mod))[, 1]))		
 	}
+	
+	cat("does r affect rate for p =", p, "?\n")
+	colnames(slope_int_res) = c("p", "r", "int", "slope")
+	plot(slope_int_res$r, slope_int_res$slope)
+	
+	plot(slope_int_res$r, slope_int_res$int)
 }
 @
 
@@ -77,7 +116,7 @@ slope_int_res = data.frame(slope_int_res)
 xtable(slope_int_res, digits = 4)
 
 
-slope_int_res_inf = slope_int_res[slope_int_res$max_iters == Inf, ]
+slope_int_res_inf = slope_int_res
 plot(slope_int_res_inf$p, -slope_int_res_inf$slope, type = "o", xlab = "p", ylab = "-rate")
 plot(log(slope_int_res_inf$p), log(-slope_int_res_inf$slope), type = "o", xlab = "ln(p)", ylab = "ln(-rate)")
 @
