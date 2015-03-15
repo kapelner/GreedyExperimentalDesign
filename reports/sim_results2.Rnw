@@ -31,7 +31,7 @@ setwd("C:\\Users\\kapelner\\workspace\\GreedyExperimentalDesign\\reports")
 
 \section{Results for each Run}
 
-<<load_and_cleanup_data, fig.width = 7, fig.height = 6, echo=FALSE>>=
+<<load_and_cleanup_data, fig.width = 7, fig.height = 6, echo=FALSE, cache=TRUE>>=
 Xraw = read.csv("all_results2.csv")
 
 #we don't need max_iterss since we went to Infinity always
@@ -43,83 +43,131 @@ table(Xraw$dataset) #dataset
 ns = sort(unique(Xraw$n))
 ps = sort(unique(Xraw$p))
 ds = sort(unique(Xraw$d))
-rs = seq(from = 1, to = 200, by = 3)
-
-slope_int_res = matrix(NA, nrow = 0, ncol = 4)
-slope_int_res = data.frame(slope_int_res)
+rs = seq(from = 1, to = 200, by = 5)
+NUM_REP = 200
 
 
 plot = FALSE
 
+X = matrix(NA, nrow = 0, ncol = 4)
+
+#unfortunately results were sorted already... randomize them
+for (p in ps){
+	for (n in ns){
+		for (d in ds){
+			Xpdn = Xraw[Xraw$p == p & Xraw$d == d & Xraw$n == n, ]
+			Xpdn = Xpdn[sample(nrow(Xpdn)), ]
+			X = rbind(X, Xpdn)
+		}
+	}
+}
+
+
+slope_int_res = matrix(NA, nrow = 0, ncol = 4)
+slope_int_res = data.frame(slope_int_res)
+colnames(slope_int_res) = c("p", "r", "int", "slope")
 
 for (p in ps){
 	#all plots are on same scale!
+	slope_int_res_p = matrix(NA, nrow = 0, ncol = 3)
+	slope_int_res_p = data.frame(slope_int_res_p)
 
-	Xp = Xraw[Xraw$p == p, ]
+	Xp = X[X$p == p, ]
 	cat("p =", p, "\n\n\n")
 	
 	for (r in rs){
 		if (plot){
 			windows()
-			plot(log(Xraw$n), log(Xraw$val), type = "n", xlab = "n", ylab = "ln(balance)", xaxt = "n", main = paste("p =", p, " r = ", r))
-			axis(1, at = log(Xraw$n), labels = exp(log(Xraw$n)))
+			plot(log(X$n), log(X$val), type = "n", xlab = "n", ylab = "ln(balance)", xaxt = "n", main = paste("p =", p, " r = ", r))
+			axis(1, at = log(X$n), labels = exp(log(X$n)))
 		}
-		#now we have to generate the dataset
-		Xpr = matrix(NA, nrow = 0, ncol = 4)
-		colnames(Xpr) = colnames(Xraw)
-		for (n in ns){
-			for (d in ds){
-				Xpdn = Xp[Xp$d == d & Xp$n == n, ]
-				#this is already in minimum order, thus we need to randomize the order
-				Xpdn = Xpdn[sample(1 : nrow(Xpdn)), ]
-				Xpr = rbind(Xpr, c(n, p, d, min(Xpdn[1 : r, ]$val)))
+		r0 = 1
+		while (TRUE){
+			rf = r0 + r	
+			if (rf > NUM_REP){ ####R IS RETARDED
+				break 
+			}		
+			#now we have to generate the dataset
+			Xpr = matrix(NA, nrow = 0, ncol = 4)
+			colnames(Xpr) = colnames(X)
+			for (n in ns){
+				for (d in ds){
+					Xpdn = Xp[Xp$d == d & Xp$n == n, ]								
+					Xpr = rbind(Xpr, c(n, p, d, min(Xpdn[r0 : rf, ]$val)))
+					
+				}				
 			}
-		}
-		Xpr = data.frame(Xpr)
-		
-		x = Xpr$n
-		y = Xpr$val
-		lnx = log(x)
-		lny = log(y)		
-		cat("\nexamine log-log linear regression\n")		
-		lm_mod = lm(lny ~ lnx)
-		print(coef(summary(lm_mod)))		
+
 			
-		
-		if (plot){
-			abline(lm_mod)
-			for (d in ds){
-				Xprd = Xpr[Xpr$d == d, ]
-				lnxd = log(Xprd[Xprd$d == d, ]$n)
-				lnyd = log(Xprd[Xprd$d == d, ]$val)
-				points(lnxd + DEFAULT_OFFSETS[d], lnyd, col = DEFAULT_COLORVEC[d %% length(DEFAULT_COLORVEC)], pch = 16, cex = 0.33)
+			Xpr = data.frame(Xpr)
+			
+			x = Xpr$n
+			y = Xpr$val
+			lnx = log(x)
+			lny = log(y)		
+			cat("\nexamine log-log linear regression for r =", r, "\n")		
+			lm_mod = lm(lny ~ lnx)
+			print(coef(summary(lm_mod)))		
+			
+			
+			if (plot){
+				abline(lm_mod)
+				for (d in ds){
+					Xprd = Xpr[Xpr$d == d, ]
+					lnxd = log(Xprd[Xprd$d == d, ]$n)
+					lnyd = log(Xprd[Xprd$d == d, ]$val)
+					points(lnxd + DEFAULT_OFFSETS[d], lnyd, col = DEFAULT_COLORVEC[d %% length(DEFAULT_COLORVEC)], pch = 16, cex = 0.33)
+				}
 			}
+			
+			#record results
+			
+			slope_int_res = rbind(slope_int_res, c(p, r, coef(summary(lm_mod))[, 1]))	
+			slope_int_res_p = rbind(slope_int_res_p, c(r, coef(summary(lm_mod))[, 1]))
+			
+			#bump up to the next set
+			r0 = r0 + r	
 		}
 		
-		#record results
-		
-		slope_int_res = rbind(slope_int_res, c(p, r, coef(summary(lm_mod))[, 1]))		
 	}
 	
 	cat("does r affect rate for p =", p, "?\n")
 	colnames(slope_int_res) = c("p", "r", "int", "slope")
-	plot(slope_int_res$r, slope_int_res$slope)
-	
-	plot(slope_int_res$r, slope_int_res$int)
+	colnames(slope_int_res_p) = c("r", "int", "slope")
+
+	par(mfrow = c(1, 2))
+	plot(slope_int_res_p$r, slope_int_res_p$slope, xlab = "r", ylab = "slope of ln(bal) vs ln(n)", main = paste("slope for p =", p))
+	plot(slope_int_res_p$r, slope_int_res_p$int, xlab = "r", ylab = "intercept of ln(bal) vs ln(n)", main = paste("intercept for p =", p))
 }
 @
 
-\section{Multiple and Rate Results over all Runs}
+Now try to figure out the relationship between r and the intercept:
 
-<<results_table, results="asis", echo=FALSE, fig.width = 5, fig.height = 5>>=
-slope_int_res = data.frame(slope_int_res)
-xtable(slope_int_res, digits = 4)
+<<intercept_invest, fig.width = 6, fig.height = 6, echo=FALSE>>=
 
-
-slope_int_res_inf = slope_int_res
-plot(slope_int_res_inf$p, -slope_int_res_inf$slope, type = "o", xlab = "p", ylab = "-rate")
-plot(log(slope_int_res_inf$p), log(-slope_int_res_inf$slope), type = "o", xlab = "ln(p)", ylab = "ln(-rate)")
+r_rate_p = array(NA, length(ps))
+for (ip in 1 : length(ps)){
+	p = ps[ip]
+	slope_int_res_p = slope_int_res[slope_int_res$p == p, ]
+	ln_r = log(slope_int_res_p$r)
+	lm_mod = lm(slope_int_res_p$int ~ ln_r)
+	coefs = coef(summary(lm_mod))
+	r_rate_p[ip] = coefs[2, 1]
+	
+	plot(ln_r, slope_int_res_p$int, xlab = "ln(r)", ylab = "ln(int)", main = paste("ln(int) vs ln(r) for p =", p))
+	abline(lm_mod)
+	print(coefs)
+	cat("\\pagebreak\n")
+}
+r_rate_p
+plot(log(ps), log(-r_rate_p))
+lm_mod = lm(log(-r_rate_p) ~ log(ps))
+coefs = coef(summary(lm_mod))
+print(coefs)
+abline(lm_mod)
 @
+
+
 \end{document}
 
 
@@ -127,6 +175,6 @@ library(knitr)
 if (Sys.info()['sysname'] == "Windows"){
   setwd("C:\\Users\\kapelner\\workspace\\GreedyExperimentalDesign\\reports")
 }
-knit("sim_results.Rnw")
-system("pdflatex sim_results.tex")
-system("open sim_results.pdf")
+knit("sim_results2.Rnw")
+system("pdflatex sim_results2.tex")
+system("open sim_results2.pdf")
