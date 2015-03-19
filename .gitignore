@@ -3,6 +3,8 @@ reports/*.log
 reports/*.tex
 reports/*.aux
 reports/*.pdf
+adranp.f
+java_log.*
 /bin/
 /bin/
 /bin/

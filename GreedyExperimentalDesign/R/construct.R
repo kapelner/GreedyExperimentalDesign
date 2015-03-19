@@ -13,6 +13,7 @@ VERSION = "1.0"
 #' 							"\code{abs_sum_diff}" (default) or "\code{mahal_dist}."
 #' @param wait				Should the \code{R} terminal hang until all \code{max_designs} vectors are found? The 
 #' 							deafult is \code{FALSE}.
+#' @param start				Should we start searching immediately (default is \code{TRUE}).
 #' @param semigreedy		Should we use a fully greedy approach or the quicker semi-greedy approach? The default is
 #' 							\code{FALSE} corresponding to the fully greedy approach.
 #' @param max_switches		Should we impose a maximum number of switches? The default is \code{Inf} which a flag 
@@ -26,6 +27,7 @@ initGreedyExperimentalDesignObject = function(X,
 		max_designs = 10000, 
 		objective = "abs_sum_diff", 
 		wait = FALSE, 
+		start = TRUE,
 		max_iters = Inf,
 		semigreedy = FALSE, 
 		num_cores = 1){
@@ -91,6 +93,11 @@ initGreedyExperimentalDesignObject = function(X,
 	greedy_experimental_design_search$objective = objective
 	greedy_experimental_design_search$java_obj = java_obj
 	class(greedy_experimental_design_search) = "greedy_experimental_design_search"
+	#if the user wants to run it immediately...
+	if (start){
+		startGreedySearch(greedy_experimental_design_search)
+	}
+	#return the final object
 	greedy_experimental_design_search
 }
 

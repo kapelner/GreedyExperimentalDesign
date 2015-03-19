@@ -26,6 +26,7 @@ package GreedyExperimentalDesign;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -73,19 +74,24 @@ public class GreedyExperimentalDesign {
 	private int[][] ending_indicTs;	
 	private Double[] objective_vals;
 	private Integer[] num_iters;
+	public Random r;
 
 	//running the Java as standalone is for debug purposes ONLY!!!
 	public static void main(String[] args) throws Exception{	
+
 		
 		GreedyExperimentalDesign gd = new GreedyExperimentalDesign();
-		int n = 100;
+		//set seed here for reproducibility during debugging
+		gd.r.setSeed(1984);
+
+		int n = 1000;
 		int p = 20;
 		gd.setNandP(n, p);
 		for (int i = 0; i < n; i++){
 //			double[] x_i = {Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random()};
 			double[] x_i = new double[p];
 			for (int j = 0; j < p; j++){
-				x_i[j] = Math.random();
+				x_i[j] = gd.r.nextDouble();
 			}
 			gd.setDataRow(i, x_i);
 		}
@@ -93,15 +99,16 @@ public class GreedyExperimentalDesign {
 //		for (int i = 0; i < n; i++){
 //			System.out.println(Tools.StringJoin(gd.Xstd[i]));
 //		}		
-		gd.setMaxDesigns(100);
-		gd.setObjective(MAHAL);
+		gd.setMaxDesigns(25);
+		gd.setObjective(ABS);
 		gd.beginSearch();
-		System.out.println("progress: " + gd.progress());
+//		System.out.println("progress: " + gd.progress());
 	}
 	
 	public GreedyExperimentalDesign(){
-		writeStdOutToLogFile();
+//		writeStdOutToLogFile();
 //		System.out.println("GreedyExperimentalDesign");
+		r = new Random();
 	}
 	
 	public void beginSearch(){
@@ -136,7 +143,7 @@ public class GreedyExperimentalDesign {
 //			}
 	    	greedy_search_thread_pool.execute(new Runnable(){
 				public void run() {
-					new GreedySearch(Xstd, Sinvmat, starting_indicTs[d0], ending_indicTs[d0], objective_vals, num_iters, objective, d0, semigreedy, max_iters);
+					new GreedySearch(Xstd, Sinvmat, starting_indicTs[d0], ending_indicTs[d0], objective_vals, num_iters, objective, d0, semigreedy, max_iters, r);
 				}
 			});
 		}
@@ -164,7 +171,7 @@ public class GreedyExperimentalDesign {
 	private void initializeStartingIndicTs() {
 		starting_indicTs = new int[max_designs][n];
 		for (int d = 0; d < max_designs; d++){
-			starting_indicTs[d] = Tools.fisherYatesShuffle(Tools.newBlankDesign(n));
+			starting_indicTs[d] = Tools.fisherYatesShuffle(Tools.newBlankDesign(n), r);
 		}
 	}
 
@@ -294,6 +301,10 @@ public class GreedyExperimentalDesign {
 	public void setSemigreedy(){
 		semigreedy = true;
 	}
+	
+	public void setSeed(int seed){
+		r.setSeed(seed);
+	}	
 	
 	public void setWait(){
 		wait = true;

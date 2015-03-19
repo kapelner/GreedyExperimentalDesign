@@ -29,6 +29,7 @@ import gnu.trove.list.array.TIntArrayList;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Random;
 
 import no.uib.cipr.matrix.DenseVector;
 
@@ -39,7 +40,7 @@ import no.uib.cipr.matrix.DenseVector;
  */
 public class Tools {	
 
-	public static DenseVector colAvg(ArrayList<double[]> X, int p) {
+	public static double[] colAvg(ArrayList<double[]> X, int p) {
 		int n = X.size();	
 		double[] tally = new double[p];
 		for (int i = 0; i < n; i++){
@@ -50,18 +51,18 @@ public class Tools {
 		for (int j = 0; j < p; j++){
 			tally[j] /= n;
 		}
-		return new DenseVector(tally);
+		return tally;
 	}
 
-//	public static ArrayList<double[]> subsetMatrix(double[][] X, int[] indices) {
-////		System.out.println("subsetMatrix indices: " + StringJoin(indices));
-//		ArrayList<double[]> Xsub = new ArrayList<double[]>(indices.length);
-//		for (int i : indices){
-//			Xsub.add(X[i]);
-////			System.out.println(StringJoin(X[i]));
-//		}
-//		return Xsub;
-//	}
+	public static ArrayList<double[]> subsetMatrix(double[][] X, int[] indices) {
+//		System.out.println("subsetMatrix indices: " + StringJoin(indices));
+		ArrayList<double[]> Xsub = new ArrayList<double[]>(indices.length);
+		for (int i : indices){
+			Xsub.add(X[i]);
+//			System.out.println(StringJoin(X[i]));
+		}
+		return Xsub;
+	}
 	
 	public static ArrayList<double[]> subsetMatrix(double[][] Xstd, int nT, int[] indices, int i_remove, int i_add) {
 		ArrayList<double[]> XstdT = new ArrayList<double[]>(nT);
@@ -102,11 +103,11 @@ public class Tools {
 	}	
 	
 	//from http://algs4.cs.princeton.edu/11model/Knuth.java.html
-	public static int[] fisherYatesShuffle(int[] arr){
+	public static int[] fisherYatesShuffle(int[] arr, Random rand){
 	    int n = arr.length;
         for (int i = 0; i < n; i++) {
             // choose index uniformly in [i, N-1]
-            int r = i + (int) (Math.random() * (n - i));
+            int r = i + (int) (rand.nextDouble() * (n - i));
             int swap = arr[r];
             arr[r] = arr[i];
             arr[i] = swap;

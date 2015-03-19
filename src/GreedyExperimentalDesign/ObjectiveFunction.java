@@ -1,19 +1,17 @@
 package GreedyExperimentalDesign;
 
-import no.uib.cipr.matrix.DenseVector;
-
 public abstract class ObjectiveFunction {
-	protected DenseVector XTbar;
-	protected DenseVector XCbar;
+	protected double[] XTbar;
+	protected double[] XCbar;
 
-	public abstract double calc();
+	public abstract double calc(boolean debug_mode);
 
-	public void setXTbar(DenseVector XTbar){
+	public void setXTbar(double[] XTbar){
 //		System.out.println("XTbar: " + Tools.StringJoin(XTbar.getData()));
 		this.XTbar = XTbar;
 	}
 	
-	public void setXCbar(DenseVector XCbar){
+	public void setXCbar(double[] XCbar){
 //		System.out.println("XCbar: " + Tools.StringJoin(XCbar.getData()));
 		this.XCbar = XCbar;
 	}
