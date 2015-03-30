@@ -25,8 +25,6 @@ tryCatch(library(xtable),
 
 DEFAULT_COLORVEC = c("red", "green", "blue", "yellow2", "black", "violetred4", "cyan", "darkgrey", "orange2", "bisque3")
 DEFAULT_OFFSETS = sample(seq(-0.2, 0.2, 0.005))
-
-setwd("C:\\Users\\kapelner\\workspace\\GreedyExperimentalDesign\\reports")
 @
 
 \section{Results for each Run}
@@ -36,9 +34,9 @@ Xraw = read.csv("all_results2.csv")
 
 #we don't need max_iterss since we went to Infinity always
 Xraw$max_iters = NULL
-table(Xraw$n) #num_samples
-table(Xraw$p) #dimension
-table(Xraw$dataset) #dataset
+#table(Xraw$n) #num_samples
+#table(Xraw$p) #dimension
+#table(Xraw$d) #dataset
 
 ns = sort(unique(Xraw$n))
 ps = sort(unique(Xraw$p))

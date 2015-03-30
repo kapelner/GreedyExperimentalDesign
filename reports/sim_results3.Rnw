@@ -1,0 +1,155 @@
+\documentclass{article}
+\usepackage[T1]{fontenc}
+\usepackage{datetime}
+\usepackage[margin=1in]{geometry}
+
+\newcommand{\qu}[1]{``#1''}%
+
+\title{Simulation Result Report}
+\author{Adam Kapelner}
+\date{\today, \currenttime}
+
+\begin{document}
+\maketitle
+
+<<load_packages_and_setup_knitr, include=FALSE>>=
+graphics.off()
+#First we load up the packages we need and set knitr options:
+options(repos = structure(c(CRAN = "http://lib.stat.cmu.edu/R/CRAN/")))
+tryCatch(library(ggplot2), 
+		error = function(e){install.packages("ggplot2")}, 
+		finally = library(ggplot2))
+tryCatch(library(xtable), 
+		error = function(e){install.packages("xtable")}, 
+		finally = library(xtable))
+
+DEFAULT_COLORVEC = c("red", "green", "blue", "yellow2", "black", "violetred4", "cyan", "darkgrey", "orange2", "bisque3")
+DEFAULT_OFFSETS = sample(seq(-0.2, 0.2, 0.005))
+@
+
+\section{Results for each Run}
+
+<<load_and_cleanup_data, fig.width = 7, fig.height = 6, echo=FALSE, cache=TRUE>>=
+Xraw = read.csv("all_results3.csv")
+head(Xraw)
+table(Xraw$n) #num_samples
+table(Xraw$p) #dimension
+table(Xraw$r) #reps
+table(Xraw$d) #dataset
+
+ns = sort(unique(Xraw$n))
+ps = sort(unique(Xraw$p))
+rs = sort(unique(Xraw$r))
+ds = sort(unique(Xraw$d))
+
+ps = ps[1 : 5] #kill 100
+rs = rs[1 : 4] #kill 100, 500
+invps = ps^-1
+coefs = list()
+mods = list()
+rate_mods = list()
+
+for (j in 1 : length(rs)){
+	r = rs[j]
+	coefsr = array(NA, length(ps))
+	modsr = list()
+	###look at some plots
+	for (i in 1 : length(ps)){
+		p = ps[i]
+		Xpr = Xraw[Xraw$r == r & Xraw$p == p, ]
+		mod = lm(log(val) ~ log(n), data = Xpr)
+		cat("model for p =", p, "r =", r, "expected regression coef:", round(-(1 + 2 / p), 3), "\n") 
+		print(coef(summary(mod)))
+		
+		coefsr[i] = coef(summary(mod))[2, 1]
+		modsr[[p]] = mod
+	}
+	coefs[[as.character(r)]] = coefsr
+	mods[[as.character(r)]] = modsr
+	
+	mod = lm(log(-coefsr) ~ invps)
+	
+	rate_mods[[as.character(r)]] = summary(mod)
+	windows()
+	plot(invps , log(-coefsr), main = paste("r = ", r))
+	
+	abline(mod, col = "red")	
+}
+
+lapply(rate_mods, coef)
+
+
+Xregr = Xraw[Xraw$p %in% c(1, 5, 10, 20, 30) & Xraw$r %in% c(1, 5, 30), ]
+table(Xregr$n) #num_samples
+table(Xregr$p) #dimension
+table(Xregr$r) #reps
+
+Xregr$invp = Xregr$p^-1
+
+Xregr$expinvp = exp(Xregr$p^-1)
+
+
+#model time
+mod = lm(log(val) ~ log(n), data = Xregr)
+summary(mod)
+
+
+mod = lm(log(val) ~ log(n) * invp, data = Xregr)
+summary(mod)
+
+mod = lm(log(val) ~ log(r) + log(n) * expinvp, data = Xregr)
+summary(mod)
+
+mod = lm(log(val) ~ log(r) + log(p) + log(n) * expinvp, data = Xregr)
+summary(mod)
+
+mod = lm(log(val) ~ log(p) + log(n) * expinvp * log(r), data = Xregr)
+summary(mod)
+
+mod1 = lm(log(val) ~ as.factor(r) + log(p) + log(n) * expinvp, data = Xregr)
+summary(mod1)
+
+mod2 = lm(log(val) ~ log(p) + log(n) * expinvp * as.factor(r), data = Xregr)
+summary(mod2)
+
+anova(mod1, mod2)
+
+sd(Xraw[Xraw$p == 1 & Xraw$n == 50 & Xraw$r == 1, "val"])
+sd(Xraw[Xraw$p == 1 & Xraw$n == 100 & Xraw$r == 1, "val"])
+sd(Xraw[Xraw$p == 1 & Xraw$n == 200 & Xraw$r == 1, "val"])
+sd(Xraw[Xraw$p == 1 & Xraw$n == 400 & Xraw$r == 1, "val"])
+sd(Xraw[Xraw$p == 1 & Xraw$n == 1000 & Xraw$r == 1, "val"])
+
+sd(Xraw[Xraw$p == 5 & Xraw$n == 50 & Xraw$r == 1, "val"])
+sd(Xraw[Xraw$p == 5 & Xraw$n == 100 & Xraw$r == 1, "val"])
+sd(Xraw[Xraw$p == 5 & Xraw$n == 200 & Xraw$r == 1, "val"])
+sd(Xraw[Xraw$p == 5 & Xraw$n == 400 & Xraw$r == 1, "val"])
+sd(Xraw[Xraw$p == 5 & Xraw$n == 1000 & Xraw$r == 1, "val"])
+
+sd(Xraw[Xraw$p == 10 & Xraw$n == 50 & Xraw$r == 1, "val"])
+sd(Xraw[Xraw$p == 10 & Xraw$n == 100 & Xraw$r == 1, "val"])
+sd(Xraw[Xraw$p == 10 & Xraw$n == 200 & Xraw$r == 1, "val"])
+sd(Xraw[Xraw$p == 10 & Xraw$n == 400 & Xraw$r == 1, "val"])
+sd(Xraw[Xraw$p == 10 & Xraw$n == 1000 & Xraw$r == 1, "val"])
+
+
+
+sd(Xraw[Xraw$p == 5 & Xraw$n == 50 & Xraw$r == 1, "val"])
+sd(Xraw[Xraw$p == 10 & Xraw$n == 50 & Xraw$r == 1, "val"])
+sd(Xraw[Xraw$p == 20 & Xraw$n == 50 & Xraw$r == 1, "val"])
+sd(Xraw[Xraw$p == 30 & Xraw$n == 50 & Xraw$r == 1, "val"])
+sd(Xraw[Xraw$p == 100 & Xraw$n == 50 & Xraw$r == 1, "val"])
+
+@
+
+
+\end{document}
+
+
+library(knitr)
+if (Sys.info()['sysname'] == "Windows"){
+  setwd("C:\\Users\\kapelner\\workspace\\GreedyExperimentalDesign\\reports")
+}
+knit("sim_results2.Rnw")
+system("pdflatex sim_results2.tex")
+system("open sim_results2.pdf")
