@@ -1,0 +1,125 @@
+\documentclass{article}
+\usepackage[T1]{fontenc}
+\usepackage{datetime}
+\usepackage[margin=1in]{geometry}
+
+\newcommand{\qu}[1]{``#1''}%
+
+\title{Simulation Result Report}
+\author{Adam Kapelner}
+\date{\today, \currenttime}
+
+\begin{document}
+\maketitle
+
+<<load_packages_and_setup_knitr, include=FALSE>>=
+graphics.off()
+#First we load up the packages we need and set knitr options:
+options(repos = structure(c(CRAN = "http://lib.stat.cmu.edu/R/CRAN/")))
+tryCatch(library(ggplot2), 
+		error = function(e){install.packages("ggplot2")}, 
+		finally = library(ggplot2))
+tryCatch(library(xtable), 
+		error = function(e){install.packages("xtable")}, 
+		finally = library(xtable))
+
+DEFAULT_COLORVEC = c("red", "green", "blue", "yellow2", "black", "violetred4", "cyan", "darkgrey", "orange2", "bisque3")
+DEFAULT_OFFSETS = sample(seq(-0.2, 0.2, 0.005))
+
+setwd("C:\\Users\\kapelner\\workspace\\GreedyExperimentalDesign\\reports")
+@
+
+\section{Results for each Run}
+
+<<load_and_cleanup_data, fig.width = 7, fig.height = 6, echo=FALSE, cache=TRUE>>=
+Xraw = read.csv("abba_results.csv")
+
+#we don't need max_iterss since we went to Infinity always
+table(Xraw$n) #num_samples
+table(Xraw$p) #dimension
+table(Xraw$d) #dataset
+@
+
+Now try to figure out the relationship between r and the intercept:
+
+<<intercept_invest, fig.width = 6, fig.height = 6, echo=FALSE>>=
+
+mod = lm(log(val) ~ log(n), Xraw)
+summary(mod)
+@
+
+<<big_regression>>=
+
+regr_rs = c(5, 10, 20, 50, 100)
+
+Xregr = matrix(NA, nrow = 0, ncol = 5)
+Xregr = data.frame(Xregr)
+colnames(Xregr) = c("n", "p", "r", "d", "val")
+
+for (p in ps){
+	#all plots are on same scale!
+	slope_int_res_p = matrix(NA, nrow = 0, ncol = 3)
+	slope_int_res_p = data.frame(slope_int_res_p)
+	
+	Xp = X[X$p == p, ]
+	cat("p =", p, "\n\n\n")
+	
+	for (r in regr_rs){
+		r0 = 1
+		while (TRUE){
+			rf = r0 + r	
+			if (rf > NUM_REP){
+				break 
+			}		
+			#now we have to generate the dataset
+			Xpr = matrix(NA, nrow = 0, ncol = 5)
+			
+			for (n in ns){
+				for (d in ds){
+					Xpdn = Xp[Xp$d == d & Xp$n == n, ]		
+					val = min(Xpdn[r0 : rf, ]$val)
+					if (is.na(val)){
+						next
+					}
+					Xpr = rbind(Xpr, c(n, p, r, d, val))					
+				}				
+			}
+			
+			Xregr = rbind(Xregr, Xpr)
+			
+			#bump up to the next set
+			r0 = r0 + r	+ 1
+		}		
+	}
+}
+colnames(Xregr) = c("n", "p", "r", "d", "val")
+invp = Xregr$p^-1
+
+#model time
+mod = lm(log(val) ~ log(n), data = Xregr)
+summary(mod)
+
+
+mod = lm(log(val) ~ log(n) * invp, data = Xregr)
+summary(mod)
+
+mod1 = lm(log(val) ~ log(p) + log(n) * invp, data = Xregr)
+summary(mod1)
+
+mod2 = lm(log(val) ~ log(r) * log(p) + log(n) * invp, data = Xregr)
+summary(mod2)
+
+anova(mod1, mod2)
+@
+
+
+\end{document}
+
+
+library(knitr)
+if (Sys.info()['sysname'] == "Windows"){
+  setwd("C:\\Users\\kapelner\\workspace\\GreedyExperimentalDesign\\reports")
+}
+knit("sim_results2.Rnw")
+system("pdflatex sim_results2.tex")
+system("open sim_results2.pdf")
