@@ -1,13 +1,11 @@
 package GreedyExperimentalDesign;
 
-import no.uib.cipr.matrix.DenseMatrix;
-
 public class PropMahalObjective extends ObjectiveFunction {
 
-	private DenseMatrix Sinvmat;
+//	private double[][] Sinvmat;
 
-	public PropMahalObjective(DenseMatrix Sinvmat) {
-		this.Sinvmat = Sinvmat;
+	public PropMahalObjective(double[][] Sinvmat) {
+//		this.Sinvmat = Sinvmat;
 	}
 
 	@Override
@@ -22,15 +20,15 @@ public class PropMahalObjective extends ObjectiveFunction {
 		}
 		
 //		System.out.println("X_T_bar_minus_X_C_bar.toString() = " + X_T_bar_minus_X_C_bar.toString());
-		DenseMatrix temp = new DenseMatrix(1, p);
+//		DenseMatrix temp = new DenseMatrix(1, p);
 //		System.out.println("temp.toString() = " + temp.toString());
 //		X_T_bar_minus_X_C_bar_t.mult(Sinvmat, temp);
 //		System.out.println("temp.toString() = " + temp.toString());
-		DenseMatrix temp2 = new DenseMatrix(1, 1);
+//		DenseMatrix temp2 = new DenseMatrix(1, 1);
 //		System.out.println("temp2.toString() = " + temp2.toString());
 //		temp.mult(X_T_bar_minus_X_C_bar, temp2);
 //		System.out.println("temp2.toString() = " + temp2.toString());
-		return temp2.get(0, 0); //it's a scalar at the end
+		return 0; //temp2.get(0, 0); //it's a scalar at the end
 	}
 
 }

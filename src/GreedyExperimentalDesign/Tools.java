@@ -24,14 +24,9 @@
 
 package GreedyExperimentalDesign;
 
-import gnu.trove.list.array.TDoubleArrayList;
-import gnu.trove.list.array.TIntArrayList;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Random;
-
-import no.uib.cipr.matrix.DenseVector;
 
 /**
  * A class that contains many generally useful convenience methods.
@@ -145,20 +140,6 @@ public class Tools {
 	 * @param joinby	the token that joins the substrings
 	 * @return			the final product: str1 + joinby + str2 + . . . + strN
 	 */	
-	public static String StringJoin(TIntArrayList all, String joinby){
-		if (all == null){
-			return " NULL ARRAY ";
-		}		
-		return StringJoin(all.toArray(), joinby);
-	}	
-	
-	/**
-	 * Joins a collection of strings into one string
-	 * 
-	 * @param all		the collection of substrings
-	 * @param joinby	the token that joins the substrings
-	 * @return			the final product: str1 + joinby + str2 + . . . + strN
-	 */	
 	public static String StringJoin(double[] all, String joinby){
 		if (all == null){
 			return " NULL ARRAY ";
@@ -198,16 +179,6 @@ public class Tools {
 	 * @param all		the collection of substrings
 	 * @return			the final product: str1 + joinby + str2 + . . . + strN
 	 */	
-	public static String StringJoin(TIntArrayList all){
-		return StringJoin(all.toArray(), ", ");
-	}	
-	
-	/**
-	 * Joins a collection of strings into one string with commas
-	 * 
-	 * @param all		the collection of substrings
-	 * @return			the final product: str1 + joinby + str2 + . . . + strN
-	 */	
 	public static String StringJoin(boolean[] all){
 		int[] all_ints = new int[all.length];
 		for (int i = 0; i < all.length; i++){
@@ -225,16 +196,6 @@ public class Tools {
 	public static String StringJoin(int[] all){
 		return StringJoin(all, ", ");
 	}
-	
-	/**
-	 * Joins a collection of strings into one string with commas
-	 * 
-	 * @param all		the collection of substrings
-	 * @return			the final product: str1 + joinby + str2 + . . . + strN
-	 */	
-	public static String StringJoin(TDoubleArrayList all){
-		return StringJoin(all.toArray(), ", ");
-	}	
 	
 	/**
 	 * Joins a collection of strings into one string with commas

@@ -3,15 +3,13 @@ package GreedyExperimentalDesign;
 import java.util.ArrayList;
 import java.util.Random;
 
-import no.uib.cipr.matrix.DenseMatrix;
-
 public class GreedySearch {
 
 	private double[][] Xstdscaled;
 	private double[][] Xstd;
 	private int nT;
 
-	public GreedySearch(double[][] Xstd, DenseMatrix sinvmat, int[] indicT, int[] ending_indicT, Double[] objective_vals, Integer[] num_iters, String objective, int d0, boolean semigreedy, Integer max_iters, Random r) {
+	public GreedySearch(double[][] Xstd, double[][] sinvmat, int[] indicT, int[] ending_indicT, Double[] objective_vals, Integer[] num_iters, String objective, int d0, boolean semigreedy, Integer max_iters, Random r) {
 		this.Xstd = Xstd;
 		
 //		System.out.println("GreedySearch: ready to begin " + d0);

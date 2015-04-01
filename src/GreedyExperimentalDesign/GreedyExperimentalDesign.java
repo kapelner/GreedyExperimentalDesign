@@ -38,7 +38,6 @@ import java.util.logging.StreamHandler;
 import CustomLogging.LoggingOutputStream;
 import CustomLogging.StdOutErrLevel;
 import CustomLogging.SuperSimpleFormatter;
-import no.uib.cipr.matrix.DenseMatrix;
 
 /**
  * This class handles initializing many greedy searches for a treatment vector
@@ -123,11 +122,11 @@ public class GreedyExperimentalDesign {
 		initializeStartingIndicTs();
 		
 		//convert Sinv to a matrix for easier multiplication inside the search
-		final DenseMatrix Sinvmat = new DenseMatrix(p, p);
+		final double[][] Sinvmat = new double[p][p];
 		if (Sinv != null){
 			for (int i = 0; i < p; i++){
 				for (int j = 0; j < p; j++){
-					Sinvmat.set(i, j, Sinv[i][j]);
+					Sinvmat[i][j] = Sinv[i][j];
 				}			
 			}
 //			System.out.println("Sinvmat initialized");
