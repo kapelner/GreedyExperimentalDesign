@@ -96,6 +96,9 @@ initGreedyExperimentalDesignObject = function(X,
 	greedy_experimental_design_search = list()
 	greedy_experimental_design_search$max_designs = max_designs
 	greedy_experimental_design_search$semigreedy = semigreedy
+	greedy_experimental_design_search$start = start
+	greedy_experimental_design_search$wait = wait
+	greedy_experimental_design_search$diagnostics = diagnostics
 	greedy_experimental_design_search$X = X
 	greedy_experimental_design_search$n = n
 	greedy_experimental_design_search$p = p
@@ -247,11 +250,28 @@ resultsGreedySearch = function(obj, max_vectors = 5){
 	ordered_indices = order(obj_vals)
 	last_index = ifelse(is.null(max_vectors), length(ordered_indices), max_vectors)
 	
-	indicTs = NULL
+	ending_indicTs = NULL
+	starting_indicTs = NULL
+	switches = NULL
+	xbarj_diffs = NULL
 	if (max_vectors > 0){
-		indicTs = sapply(.jcall(obj$java_obj, "[[I", "getEndingIndicTs", as.integer(ordered_indices[1 : last_index] - 1)), .jevalArray)
+		ending_indicTs = sapply(.jcall(obj$java_obj, "[[I", "getEndingIndicTs", as.integer(ordered_indices[1 : last_index] - 1)), .jevalArray)
+		if (obj$diagnostics){
+			starting_indicTs = sapply(.jcall(obj$java_obj, "[[I", "getStartingIndicTs", as.integer(ordered_indices[1 : last_index] - 1)), .jevalArray)
+			switches = sapply(.jcall(obj$java_obj, "[[I", "getSwitchedPairs", as.integer(ordered_indices[1 : last_index] - 1)), .jevalArray)
+			#we should make switches into a list now
+			xbarj_diffs = sapply(.jcall(obj$java_obj, "[[I", "getSwitchedPairs", as.integer(ordered_indices[1 : last_index] - 1)), .jevalArray)
+		}
 	}
-	list(obj_vals = obj_vals[ordered_indices], num_iters = num_iters[ordered_indices], obj_vals_orig_order = obj_vals, indicTs = indicTs)
+	list(
+		obj_vals = obj_vals[ordered_indices], 
+		num_iters = num_iters[ordered_indices], 
+		obj_vals_orig_order = obj_vals, 
+		ending_indicTs = ending_indicTs,
+		starting_indicTs = starting_indicTs,
+		switches = switches,
+		xbarj_diffs = xbarj_diffs
+	)
 }
 
 # PRIVATE

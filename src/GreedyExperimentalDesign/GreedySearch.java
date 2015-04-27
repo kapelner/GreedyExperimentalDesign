@@ -9,7 +9,21 @@ public class GreedySearch {
 	private double[][] Xstd;
 	private int nT;
 
-	public GreedySearch(double[][] Xstd, double[][] sinvmat, int[] indicT, int[] ending_indicT, ArrayList<int[]> switched_pairs, Double[] objective_vals, Integer[] num_iters, String objective, int d0, boolean semigreedy, boolean diagnostics, Integer max_iters, Random r) {
+	public GreedySearch(double[][] Xstd, 
+			double[][] sinvmat, 
+			int[] indicT, 
+			int[] ending_indicT, 
+			ArrayList<int[]> switched_pairs, 
+			ArrayList<double[]> xbardiffjs_by_iteration,
+			Double[] objective_vals, 
+			Integer[] num_iters, 
+			String objective, 
+			int d0, 
+			boolean semigreedy, 
+			boolean diagnostics, 
+			Integer max_iters, 
+			Random r) 
+	{
 		this.Xstd = Xstd;
 		
 //		System.out.println("GreedySearch: ready to begin " + d0);
@@ -18,7 +32,7 @@ public class GreedySearch {
 			obj_fun = new PropMahalObjective(sinvmat);
 		} 
 		else if (diagnostics && objective.equals(GreedyExperimentalDesign.ABS)){
-			obj_fun = new AbsSumObjectiveWithDiagnostics();	
+			obj_fun = new AbsSumObjectiveWithDiagnostics(xbardiffjs_by_iteration);	
 		}
 		else if (objective.equals(GreedyExperimentalDesign.ABS)){
 			obj_fun = new AbsSumObjective();	

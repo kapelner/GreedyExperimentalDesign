@@ -31,7 +31,7 @@ setwd("C:\\Users\\kapelner\\workspace\\GreedyExperimentalDesign\\reports")
 \section{Results for each Run}
 
 <<load_and_cleanup_data, fig.width = 7, fig.height = 6, echo=FALSE, cache=TRUE>>=
-Xraw = read.csv("all_results4.csv")
+Xraw = read.csv("all_results_big_n.csv")
 head(Xraw)
 table(Xraw$n) #num_samples
 table(Xraw$p) #dimension

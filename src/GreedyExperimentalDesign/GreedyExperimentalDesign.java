@@ -74,6 +74,7 @@ public class GreedyExperimentalDesign {
 	//output
 	private int[][] ending_indicTs;	
 	private ArrayList<ArrayList<int[]>> switched_pairs;
+	private ArrayList<ArrayList<double[]>> xbardiffjs_by_iterations;
 	private Double[] objective_vals;
 	private Integer[] num_iters;
 	public Random r;
@@ -108,7 +109,7 @@ public class GreedyExperimentalDesign {
 	}
 	
 	public GreedyExperimentalDesign(){
-//		writeStdOutToLogFile();
+		writeStdOutToLogFile();
 //		System.out.println("GreedyExperimentalDesign");
 		r = new Random();
 	}
@@ -124,6 +125,10 @@ public class GreedyExperimentalDesign {
 		for (int d = 0; d < max_designs; d++){
 			switched_pairs.add(new ArrayList<int[]>());
 		}
+		xbardiffjs_by_iterations = new ArrayList<ArrayList<double[]>>(max_designs);
+		for (int d = 0; d < max_designs; d++){
+			xbardiffjs_by_iterations.add(new ArrayList<double[]>());
+		}		
 //		System.out.println("resulting data initialized");
 		
 		initializeStartingIndicTs();
@@ -155,6 +160,7 @@ public class GreedyExperimentalDesign {
 							starting_indicTs[d0], 
 							ending_indicTs[d0], 
 							switched_pairs.get(d0),
+							xbardiffjs_by_iterations.get(d0),
 							objective_vals, 
 							num_iters, 
 							objective, 
@@ -263,6 +269,34 @@ public class GreedyExperimentalDesign {
 		return ending_indicTs;
 	}	
 	
+	public int[][][] getSwitchedPairs(int[] indicies){		
+		int[][][] pairs_by_iteration_per_search = new int[indicies.length][][];
+		for (int i = 0; i < indicies.length; i++){
+			ArrayList<int[]> iteration_switched_pairs_raw = switched_pairs.get(indicies[i]);
+			int iters = iteration_switched_pairs_raw.size();
+			int[][] iteration_switched_pairs = new int[iters][];
+			for (int j = 0; j < iters; j++){
+				iteration_switched_pairs[j] = iteration_switched_pairs_raw.get(j);
+			}
+			pairs_by_iteration_per_search[i] = iteration_switched_pairs;
+		}
+		return pairs_by_iteration_per_search;
+	}
+	
+	public double[][][] getXbarjDiffs(int[] indicies){		
+		double[][][] xbarj_diffs_per_search = new double[indicies.length][][];
+		for (int i = 0; i < indicies.length; i++){
+			ArrayList<double[]> xbarj_diffs_raw = xbardiffjs_by_iterations.get(indicies[i]);
+			int iters = xbarj_diffs_raw.size();
+			double[][] xbarj_diffs = new double[iters][];
+			for (int j = 0; j < iters; j++){
+				xbarj_diffs[j] = xbarj_diffs_raw.get(j);
+			}
+			xbarj_diffs_per_search[i] = xbarj_diffs;
+		}
+		return xbarj_diffs_per_search;
+	}	
+		
 	public void setMaxDesigns(int max_designs){
 //		System.out.println("setMaxDesigns " + max_designs);
 		this.max_designs = max_designs;

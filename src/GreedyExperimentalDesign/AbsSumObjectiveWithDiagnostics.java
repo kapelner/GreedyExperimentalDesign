@@ -5,6 +5,10 @@ import java.util.ArrayList;
 public class AbsSumObjectiveWithDiagnostics extends ObjectiveFunction {
 	
 	private ArrayList<double[]> xbardiffjs_by_iteration;
+	
+	public AbsSumObjectiveWithDiagnostics(ArrayList<double[]> xbardiffjs_by_iteration){
+		this.xbardiffjs_by_iteration = xbardiffjs_by_iteration;
+	}
 
 	public ArrayList<double[]> getXbardiffjs_by_iteration() {
 		return xbardiffjs_by_iteration;

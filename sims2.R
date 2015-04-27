@@ -1,16 +1,16 @@
-options(java.parameters = "-Xmx40000m")
-install.packages("GreedyExperimentalDesign_1.0.tar.gz", repos=NULL, type= "source", lib="~")
+options(java.parameters = "-Xmx4000m")
+#install.packages("GreedyExperimentalDesign_1.0.tar.gz", repos=NULL, type= "source", lib="~")
 library(GreedyExperimentalDesign)
 
-NUM_CORES = 31
+NUM_CORES = 1
 
-n= 100
+n = 100
 p = 1
 r = 1
-ns = c(1000)
-ps = c(1, 5)
-rs = c(1, 5, 30)
-DUPS = 25 #number of repeats per cell in the grid
+ns = c(100, 200, 500, 1000, 2000, 4000, 6000, 8000, 10000)
+ps = c(10)
+rs = c(1)
+DUPS = 2 #number of repeats per cell in the grid
 
 all_results = data.frame(matrix(NA, nrow = 0, ncol = 5))
 
@@ -53,8 +53,10 @@ summary(mod)
 mod = lm(log(val) ~ log(n), data = X[X$p == 5, ])
 summary(mod)
 
-mod = lm(log(val) ~ log(n), data = X[X$p == 10, ])
+mod = lm(log(val)[1:8] ~ log(n)[1:8], data = X[X$p == 10, ])
 summary(mod)
+plot(log(X$n), log(X$val))
+abline(mod, col = "red")
 
 mod = lm(log(val) ~ log(n), data = X[X$p == 20, ])
 summary(mod)
