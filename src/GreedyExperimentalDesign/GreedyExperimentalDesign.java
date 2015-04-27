@@ -26,6 +26,7 @@ package GreedyExperimentalDesign;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -55,6 +56,7 @@ public class GreedyExperimentalDesign {
 	private int n;
 	private int p;
 	private int max_designs;
+	private boolean diagnostics;
 	private boolean semigreedy;
 	private String objective;
 	private Integer num_cores;
@@ -71,6 +73,7 @@ public class GreedyExperimentalDesign {
 	private Long tf;	
 	//output
 	private int[][] ending_indicTs;	
+	private ArrayList<ArrayList<int[]>> switched_pairs;
 	private Double[] objective_vals;
 	private Integer[] num_iters;
 	public Random r;
@@ -117,6 +120,10 @@ public class GreedyExperimentalDesign {
 		objective_vals = new Double[max_designs];
 		num_iters = new Integer[max_designs];
 		ending_indicTs = new int[max_designs][n];
+		switched_pairs = new ArrayList<ArrayList<int[]>>(max_designs);
+		for (int d = 0; d < max_designs; d++){
+			switched_pairs.add(new ArrayList<int[]>());
+		}
 //		System.out.println("resulting data initialized");
 		
 		initializeStartingIndicTs();
@@ -142,7 +149,20 @@ public class GreedyExperimentalDesign {
 //			}
 	    	greedy_search_thread_pool.execute(new Runnable(){
 				public void run() {
-					new GreedySearch(Xstd, Sinvmat, starting_indicTs[d0], ending_indicTs[d0], objective_vals, num_iters, objective, d0, semigreedy, max_iters, r);
+					new GreedySearch(
+							Xstd, 
+							Sinvmat, 
+							starting_indicTs[d0], 
+							ending_indicTs[d0], 
+							switched_pairs.get(d0),
+							objective_vals, 
+							num_iters, 
+							objective, 
+							d0, 
+							semigreedy, 
+							diagnostics, 
+							max_iters, 
+							r);
 				}
 			});
 		}
@@ -227,6 +247,14 @@ public class GreedyExperimentalDesign {
 		return objective_vals;
 	}
 	
+	public int[][] getStartingIndicTs(int[] indicies){
+		int[][] starting_indicTs = new int[indicies.length][n];
+		for (int i = 0; i < indicies.length; i++){
+			starting_indicTs[i] = this.starting_indicTs[indicies[i]];
+		}
+		return starting_indicTs;
+	}
+	
 	public int[][] getEndingIndicTs(int[] indicies){
 		int[][] ending_indicTs = new int[indicies.length][n];
 		for (int i = 0; i < indicies.length; i++){
@@ -295,6 +323,10 @@ public class GreedyExperimentalDesign {
 		}
 		double[] row = {Sinv_i};
 		Sinv[j0] = row;
+	}
+	
+	public void setDiagnostics(){
+		diagnostics = true;
 	}
 	
 	public void setSemigreedy(){

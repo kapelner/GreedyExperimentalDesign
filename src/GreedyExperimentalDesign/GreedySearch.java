@@ -9,7 +9,7 @@ public class GreedySearch {
 	private double[][] Xstd;
 	private int nT;
 
-	public GreedySearch(double[][] Xstd, double[][] sinvmat, int[] indicT, int[] ending_indicT, Double[] objective_vals, Integer[] num_iters, String objective, int d0, boolean semigreedy, Integer max_iters, Random r) {
+	public GreedySearch(double[][] Xstd, double[][] sinvmat, int[] indicT, int[] ending_indicT, ArrayList<int[]> switched_pairs, Double[] objective_vals, Integer[] num_iters, String objective, int d0, boolean semigreedy, boolean diagnostics, Integer max_iters, Random r) {
 		this.Xstd = Xstd;
 		
 //		System.out.println("GreedySearch: ready to begin " + d0);
@@ -17,6 +17,9 @@ public class GreedySearch {
 		if (objective.equals(GreedyExperimentalDesign.MAHAL)){
 			obj_fun = new PropMahalObjective(sinvmat);
 		} 
+		else if (diagnostics && objective.equals(GreedyExperimentalDesign.ABS)){
+			obj_fun = new AbsSumObjectiveWithDiagnostics();	
+		}
 		else if (objective.equals(GreedyExperimentalDesign.ABS)){
 			obj_fun = new AbsSumObjective();	
 		}
@@ -30,11 +33,10 @@ public class GreedySearch {
 //		int[] i_Tss = Tools.findIndicies(indicT, nT, 1);
 //		System.out.println("i_Ts " + Tools.StringJoin(i_Tss));
 		
-		Double obj_val = null;
-		
-		
+		Double obj_val = null;		
 		
 		double min_obj_val = Double.MAX_VALUE;
+		
 		int iter = 0;
 		while (true){
 //			System.out.println("iter " + iter);
@@ -59,7 +61,8 @@ public class GreedySearch {
 			double[] avg_Cs = Tools.colAvg(XC, p);
 //			System.out.println("INIT XTbar: " + Tools.StringJoin(avg_Ts.getData(), ","));
 //			System.out.println("INIT XCbar: " + Tools.StringJoin(avg_Cs.getData(), ","));
-
+			int[] switched_pair = new int[2];
+			
 //			System.out.println("iter " + iter + " #i_Ts: " + i_Ts.length + " #i_Cs: " + i_Cs.length);
 			indices_loop: {
 				for (int i_T : i_Ts){
@@ -105,6 +108,10 @@ public class GreedySearch {
 							if (semigreedy){ //semigreedy means as soon as we find improvement, we ditch
 								break indices_loop;
 							}
+							if (diagnostics){
+								switched_pair[0] = i_T;
+								switched_pair[1] = i_C;
+							}
 						}
 						
 						//reset the avg vecs
@@ -113,6 +120,12 @@ public class GreedySearch {
 					}	
 				}
 			}
+			//we've finished one iteration by checking every possible switch
+			//record this switch
+			if (diagnostics){
+				switched_pairs.add(switched_pair);
+			}
+			
 //			System.out.println("end of double loop");
 //			System.out.println("indicT: " + indicT + " indicTmin: " + indicTmin);
 			//after searching through every possible switch, we didn't find anything, so break
@@ -120,11 +133,12 @@ public class GreedySearch {
 //				System.out.println("break");
 				break;
 			}
+			//otherwise - continue and update the binary search vector
 			else {
 				indicT = indicTmin;
 			}
-//			System.out.println("after indicTmin == null");
-			
+
+			//we can also be done if we hit our upper limit of iterations
 			if (max_iters != null && max_iters == iter){
 				break;
 			}

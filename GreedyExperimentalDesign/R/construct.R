@@ -16,8 +16,11 @@ VERSION = "1.0"
 #' @param start				Should we start searching immediately (default is \code{TRUE}).
 #' @param semigreedy		Should we use a fully greedy approach or the quicker semi-greedy approach? The default is
 #' 							\code{FALSE} corresponding to the fully greedy approach.
-#' @param max_switches		Should we impose a maximum number of switches? The default is \code{Inf} which a flag 
+#' @param max_iters			Should we impose a maximum number of greedy switches? The default is \code{Inf} which a flag 
 #' 							for ``no limit.''
+#' @param diagnostics		Returns diagnostic information about the iterations including (a) the initial starting
+#' 							vectors, the switches at every iteration and information about the objective function
+#' 							at every iteration (default is \code{FALSE} due to speed concerns).
 #' @param num_cores 		The number of CPU cores you wish to use during the search. The default is \code{1}.
 #' @return					An object of type \code{greedy_experimental_design_search} which can be further operated upon
 #' 
@@ -30,6 +33,7 @@ initGreedyExperimentalDesignObject = function(X,
 		start = TRUE,
 		max_iters = Inf,
 		semigreedy = FALSE, 
+		diagnostics = FALSE,
 		num_cores = 1){
 	#get dimensions immediately
 	n = nrow(X)
@@ -76,6 +80,11 @@ initGreedyExperimentalDesignObject = function(X,
 		for (j in 1 : p){
 			.jcall(java_obj, "V", "setInvVarCovRow", as.integer(j - 1), SinvXstd[j, , drop = FALSE]) #java indexes from 0...n-1
 		}
+	}
+	
+	#do we want diagnostics? Set it...
+	if (diagnostics){
+		.jcall(java_obj, "V", "setDiagnostics")
 	}
 	
 	#is it semigreedy? Set it...
