@@ -1,7 +1,7 @@
 Package: GreedyExperimentalDesign
 Type: Package
 Title: Greedy Experimental Design
-Version: 1.0
+Version: 1.1
 Date: 2015-02-01
 Author: Adam Kapelner, see COPYRIGHTS file for the authors of the java libraries
 Maintainer: Adam Kapelner <kapelner@qc.cuny.edu>

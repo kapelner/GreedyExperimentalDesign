@@ -1,4 +1,4 @@
-VERSION = "1.0"
+VERSION = "1.1"
 
 #' This method creates an object of type greedy_experimental_design and will immediately initiate
 #' a search through $1_{T}$ space.
@@ -248,27 +248,30 @@ resultsGreedySearch = function(obj, max_vectors = 5){
 	num_iters = .jcall(obj$java_obj, "[I", "getNumIters")
 	#these two are in order, so let's order the indicTs by the final objective values
 	ordered_indices = order(obj_vals)
-	last_index = ifelse(is.null(max_vectors), length(ordered_indices), max_vectors)
+	last_index = ifelse(is.null(max_vectors), obj$max_designs, min(max_vectors, obj$max_designs))
 	
 	ending_indicTs = NULL
 	starting_indicTs = NULL
 	switches = NULL
 	xbarj_diffs = NULL
+	pct_vec_same = NULL
 	if (max_vectors > 0){
 		ending_indicTs = sapply(.jcall(obj$java_obj, "[[I", "getEndingIndicTs", as.integer(ordered_indices[1 : last_index] - 1)), .jevalArray)
 		if (obj$diagnostics){
 			starting_indicTs = sapply(.jcall(obj$java_obj, "[[I", "getStartingIndicTs", as.integer(ordered_indices[1 : last_index] - 1)), .jevalArray)
-			switches = sapply(.jcall(obj$java_obj, "[[I", "getSwitchedPairs", as.integer(ordered_indices[1 : last_index] - 1)), .jevalArray)
+			switches = lapply(.jcall(obj$java_obj, "[[[I", "getSwitchedPairs", as.integer(ordered_indices[1 : last_index] - 1)), sapply, .jevalArray)
 			#we should make switches into a list now
-			xbarj_diffs = sapply(.jcall(obj$java_obj, "[[I", "getSwitchedPairs", as.integer(ordered_indices[1 : last_index] - 1)), .jevalArray)
+			xbarj_diffs = lapply(.jcall(obj$java_obj, "[[[D", "getXbarjDiffs", as.integer(ordered_indices[1 : last_index] - 1)), sapply, .jevalArray)
+			pct_vec_same = colSums(starting_indicTs == ending_indicTs) / length(starting_indicTs[,1]) * 100
 		}
 	}
 	list(
 		obj_vals = obj_vals[ordered_indices], 
 		num_iters = num_iters[ordered_indices], 
-		obj_vals_orig_order = obj_vals, 
+		orig_order = ordered_indices, 
 		ending_indicTs = ending_indicTs,
 		starting_indicTs = starting_indicTs,
+		pct_vec_same = pct_vec_same,
 		switches = switches,
 		xbarj_diffs = xbarj_diffs
 	)

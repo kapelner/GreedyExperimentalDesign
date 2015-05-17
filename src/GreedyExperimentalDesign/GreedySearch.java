@@ -32,7 +32,7 @@ public class GreedySearch {
 			obj_fun = new PropMahalObjective(sinvmat);
 		} 
 		else if (diagnostics && objective.equals(GreedyExperimentalDesign.ABS)){
-			obj_fun = new AbsSumObjectiveWithDiagnostics(xbardiffjs_by_iteration);	
+			obj_fun = new AbsSumObjectiveWithDiagnostics();	
 		}
 		else if (objective.equals(GreedyExperimentalDesign.ABS)){
 			obj_fun = new AbsSumObjective();	
@@ -58,6 +58,7 @@ public class GreedySearch {
 //			System.out.println("iter++ " + iter);
 			
 			int[] indicTmin = null;
+			double[] xbardiffjs = null;
 //			System.out.println("indicTmin " + indicTmin);
 			int[] i_Ts = Tools.findIndicies(indicT, nT, 1);
 //			System.out.println("i_Ts " + Tools.StringJoin(i_Ts));
@@ -119,13 +120,16 @@ public class GreedySearch {
 //							obj_fun.calc(true);
 							
 //							System.out.println("min_obj_val " + min_obj_val + " for iter " + iter);
-							if (semigreedy){ //semigreedy means as soon as we find improvement, we ditch
-								break indices_loop;
-							}
+
 							if (diagnostics){
 								switched_pair[0] = i_T;
 								switched_pair[1] = i_C;
+								xbardiffjs = ((AbsSumObjectiveWithDiagnostics)obj_fun).getXbardiffjs().clone();
 							}
+							
+							if (semigreedy){ //semigreedy means as soon as we find improvement, we ditch
+								break indices_loop;
+							}							
 						}
 						
 						//reset the avg vecs
@@ -135,16 +139,14 @@ public class GreedySearch {
 				}
 			}
 			//we've finished one iteration by checking every possible switch
-			//record this switch
-			if (diagnostics){
+			//record this switch only if it is a real switch
+			if (diagnostics && indicTmin != null){
 				switched_pairs.add(switched_pair);
+				xbardiffjs_by_iteration.add(xbardiffjs);
 			}
 			
-//			System.out.println("end of double loop");
-//			System.out.println("indicT: " + indicT + " indicTmin: " + indicTmin);
 			//after searching through every possible switch, we didn't find anything, so break
 			if (indicTmin == null){
-//				System.out.println("break");
 				break;
 			}
 			//otherwise - continue and update the binary search vector
@@ -165,8 +167,8 @@ public class GreedySearch {
 		}
 //		System.out.println("ending_indicT " + Tools.StringJoin(ending_indicT));
 		objective_vals[d0] = min_obj_val;
-		num_iters[d0] = iter;
-		System.out.println("SEARCH DONE obj_val " + min_obj_val + " iters " + iter);
+		num_iters[d0] = iter - 1;
+		System.out.println("SEARCH DONE obj_val " + min_obj_val + " iters " + (iter - 1));
 	}
 
 	private void createScaledXstd() {
