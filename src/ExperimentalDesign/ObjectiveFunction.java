@@ -1,4 +1,4 @@
-package GreedyExperimentalDesign;
+package ExperimentalDesign;
 
 public abstract class ObjectiveFunction {
 	protected double[] XTbar;

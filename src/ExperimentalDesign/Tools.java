@@ -22,7 +22,7 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-package GreedyExperimentalDesign;
+package ExperimentalDesign;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -419,6 +419,18 @@ public class Tools {
 			sum[i] = (arr1[i] >= 1 ? 1 : 0) + (arr2[i] >= 1 ? 1 : 0);
 		}
 		return sum;
+	}
+
+	public static int min_index(double[] vals) {
+		int index_of_min = -99;
+		double max_so_far = Double.MAX_VALUE;
+		for (int i = 0; i < vals.length; i++){
+			if (vals[i] < max_so_far){
+				max_so_far = vals[i];
+				index_of_min = i;
+			}
+		}
+		return index_of_min;
 	}
 
 }

@@ -1,4 +1,4 @@
-package GreedyExperimentalDesign;
+package ExperimentalDesign;
 
 public class AbsSumObjectiveWithDiagnostics extends ObjectiveFunction {
 

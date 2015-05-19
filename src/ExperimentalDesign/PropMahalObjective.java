@@ -1,4 +1,4 @@
-package GreedyExperimentalDesign;
+package ExperimentalDesign;
 
 public class PropMahalObjective extends ObjectiveFunction {
 

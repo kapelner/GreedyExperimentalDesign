@@ -3,6 +3,8 @@ package GreedyExperimentalDesign;
 import java.util.ArrayList;
 import java.util.Random;
 
+import ExperimentalDesign.*;
+
 public class GreedySearch {
 
 	private double[][] Xstdscaled;
