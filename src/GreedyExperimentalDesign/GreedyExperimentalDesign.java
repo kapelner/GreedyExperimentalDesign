@@ -25,6 +25,7 @@
 package GreedyExperimentalDesign;
 
 import java.util.ArrayList;
+
 import ExperimentalDesign.AllExperimentalDesigns;
 import ExperimentalDesign.Tools;
 
@@ -49,6 +50,7 @@ public class GreedyExperimentalDesign extends AllExperimentalDesigns {
 	private int[][] ending_indicTs;	
 	private ArrayList<ArrayList<int[]>> switched_pairs;
 	private ArrayList<ArrayList<double[]>> xbardiffjs_by_iterations;
+	private ArrayList<ArrayList<Double>> min_obj_val_by_iterations;
 	private Double[] objective_vals;
 	private Integer[] num_iters;
 	
@@ -61,8 +63,8 @@ public class GreedyExperimentalDesign extends AllExperimentalDesigns {
 		//set seed here for reproducibility during debugging
 		gd.r.setSeed(1984);
 
-		int n = 1000;
-		int p = 20;
+		int n = 300;
+		int p = 5;
 		gd.setNandP(n, p);
 		for (int i = 0; i < n; i++){
 //			double[] x_i = {Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random()};
@@ -78,6 +80,8 @@ public class GreedyExperimentalDesign extends AllExperimentalDesigns {
 //		}		
 		gd.setMaxDesigns(25);
 		gd.setObjective(ABS);
+		gd.setDiagnostics();
+		gd.setWait();
 		gd.beginSearch();
 //		System.out.println("progress: " + gd.progress());
 	}
@@ -96,7 +100,11 @@ public class GreedyExperimentalDesign extends AllExperimentalDesigns {
 		xbardiffjs_by_iterations = new ArrayList<ArrayList<double[]>>(max_designs);
 		for (int d = 0; d < max_designs; d++){
 			xbardiffjs_by_iterations.add(new ArrayList<double[]>());
-		}		
+		}	
+		min_obj_val_by_iterations = new ArrayList<ArrayList<Double>>(max_designs);
+		for (int d = 0; d < max_designs; d++){
+			min_obj_val_by_iterations.add(new ArrayList<Double>());
+		}			
 //		System.out.println("resulting data initialized");
 		
 		initializeStartingIndicTs();
@@ -126,6 +134,7 @@ public class GreedyExperimentalDesign extends AllExperimentalDesigns {
 							starting_indicTs[d0], 
 							ending_indicTs[d0], 
 							switched_pairs.get(d0),
+							min_obj_val_by_iterations.get(d0),
 							xbardiffjs_by_iterations.get(d0),
 							objective_vals, 
 							num_iters, 
@@ -139,6 +148,9 @@ public class GreedyExperimentalDesign extends AllExperimentalDesigns {
 			});
 		}		
 		afterBeginSearch();
+		System.out.println("min_obj_val_by_iterations: " + min_obj_val_by_iterations);
+		System.out.println("num_iters: " + num_iters);
+		
 	}
 
 
@@ -225,6 +237,21 @@ public class GreedyExperimentalDesign extends AllExperimentalDesigns {
 		}
 		return xbarj_diffs_per_search;
 	}	
+	
+	public double[][] getObjValByIter(int[] indicies){		
+		double[][] min_obj_val_by_iterations_prim = new double[indicies.length][];
+		for (int i = 0; i < indicies.length; i++){
+			ArrayList<Double> min_obj_val_by_iteration = min_obj_val_by_iterations.get(indicies[i]);
+			int iters = min_obj_val_by_iteration.size();
+			double[] min_obj_val_by_iteration_prim = new double[iters];
+			for (int j = 0; j < iters; j++){
+				min_obj_val_by_iteration_prim[j] = min_obj_val_by_iteration.get(j);
+			}
+			min_obj_val_by_iterations_prim[i] = min_obj_val_by_iteration_prim;
+		}
+		return min_obj_val_by_iterations_prim;
+	}	
+	
 		
 	public void setMaxDesigns(int max_designs){
 //		System.out.println("setMaxDesigns " + max_designs);

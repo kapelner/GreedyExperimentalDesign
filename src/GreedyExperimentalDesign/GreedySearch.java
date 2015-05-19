@@ -15,7 +15,8 @@ public class GreedySearch {
 			double[][] sinvmat, 
 			int[] indicT, 
 			int[] ending_indicT, 
-			ArrayList<int[]> switched_pairs, 
+			ArrayList<int[]> switched_pairs,
+			ArrayList<Double> min_obj_val_by_iteration,
 			ArrayList<double[]> xbardiffjs_by_iteration,
 			Double[] objective_vals, 
 			Integer[] num_iters, 
@@ -145,6 +146,7 @@ public class GreedySearch {
 			if (diagnostics && indicTmin != null){
 				switched_pairs.add(switched_pair);
 				xbardiffjs_by_iteration.add(xbardiffjs);
+				min_obj_val_by_iteration.add(min_obj_val);
 			}
 			
 			//after searching through every possible switch, we didn't find anything, so break

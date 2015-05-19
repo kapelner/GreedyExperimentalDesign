@@ -254,6 +254,7 @@ resultsGreedySearch = function(obj, max_vectors = 5){
 	starting_indicTs = NULL
 	switches = NULL
 	xbarj_diffs = NULL
+	obj_val_by_iters = NULL
 	pct_vec_same = NULL
 	if (max_vectors > 0){
 		ending_indicTs = sapply(.jcall(obj$java_obj, "[[I", "getEndingIndicTs", as.integer(ordered_indices[1 : last_index] - 1)), .jevalArray)
@@ -262,19 +263,36 @@ resultsGreedySearch = function(obj, max_vectors = 5){
 			switches = lapply(.jcall(obj$java_obj, "[[[I", "getSwitchedPairs", as.integer(ordered_indices[1 : last_index] - 1)), sapply, .jevalArray)
 			#we should make switches into a list now
 			xbarj_diffs = lapply(.jcall(obj$java_obj, "[[[D", "getXbarjDiffs", as.integer(ordered_indices[1 : last_index] - 1)), sapply, .jevalArray)
+			obj_val_by_iters = sapply(.jcall(obj$java_obj, "[[D", "getObjValByIter", as.integer(ordered_indices[1 : last_index] - 1)), .jevalArray)
 			pct_vec_same = colSums(starting_indicTs == ending_indicTs) / length(starting_indicTs[,1]) * 100
 		}
 	}
-	list(
+	greedy_experimental_design_search_results = list(
 		obj_vals = obj_vals[ordered_indices], 
 		num_iters = num_iters[ordered_indices], 
 		orig_order = ordered_indices, 
 		ending_indicTs = ending_indicTs,
 		starting_indicTs = starting_indicTs,
+		obj_val_by_iters = obj_val_by_iters,
 		pct_vec_same = pct_vec_same,
 		switches = switches,
 		xbarj_diffs = xbarj_diffs
 	)
+	class(greedy_experimental_design_search_results) = "greedy_experimental_design_search_results"
+	#return the final object
+	greedy_experimental_design_search_results
+}
+
+#' Plots a summary of a \code{greedy_experimental_design_search_results} object
+#' 
+#' @param x			The \code{greedy_experimental_design_search_results} object to be summarized in the plot
+#' @param ...		Other parameters to pass to the default plot function
+#' 
+#' @author 			Adam Kapelner
+#' @method 			plot greedy_experimental_design_search
+#' @export
+plot.greedy_experimental_design_search_results = function(x, ...){
+	
 }
 
 # PRIVATE
