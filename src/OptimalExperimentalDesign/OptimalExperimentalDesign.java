@@ -28,6 +28,7 @@ import ExperimentalDesign.AbsSumObjective;
 
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.HashMap;
 
 import ExperimentalDesign.AllExperimentalDesigns;
 import ExperimentalDesign.ObjectiveFunction;
@@ -52,7 +53,10 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 	private static final int BATCH_SIZE = 100000;
 	
 	//temp stuff
-	private ArrayList<BitSet> all_indicTs;
+	private static HashMap<Integer, ArrayList<BitSet>> all_indicTs;
+	static {
+		all_indicTs = new HashMap<Integer, ArrayList<BitSet>>();
+	}
 	private int max_designs;
 	private int n_over_two;
 	
@@ -63,30 +67,31 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 	//running the Java as standalone is for debug purposes ONLY!!!
 	public static void main(String[] args) throws Exception{	
 
-		OptimalExperimentalDesign od = new OptimalExperimentalDesign();
-		//set seed here for reproducibility during debugging
-		od.r.setSeed(1984);
-
-		int n = 6;
-		int p = 1;
-		od.setNandP(n, p);
-		for (int i = 0; i < n; i++){
-//			double[] x_i = {Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random()};
-			double[] x_i = new double[p];
-			for (int j = 0; j < p; j++){
-				x_i[j] = od.r.nextDouble();
+		for (int g = 0; g < 1; g++){
+			OptimalExperimentalDesign od = new OptimalExperimentalDesign();
+			//set seed here for reproducibility during debugging
+			od.r.setSeed(1984);
+	
+			int n = 26;
+			int p = g;
+			od.setNandP(n, p);
+			for (int i = 0; i < n; i++){
+	//			double[] x_i = {Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random()};
+				double[] x_i = new double[p];
+				for (int j = 0; j < p; j++){
+					x_i[j] = od.r.nextDouble();
+				}
+				od.setDataRow(i, x_i);
 			}
-			od.setDataRow(i, x_i);
+	//		System.out.println("Xstd");
+	//		for (int i = 0; i < n; i++){
+	//			System.out.println(Tools.StringJoin(od.Xstd[i]));
+	//		}
+			od.setObjective(ABS);
+			od.setNumCores(3);
+			od.setWait();
+			od.beginSearch();
 		}
-//		System.out.println("Xstd");
-//		for (int i = 0; i < n; i++){
-//			System.out.println(Tools.StringJoin(od.Xstd[i]));
-//		}
-		od.setObjective(ABS);
-		od.setNumCores(3);
-		od.setWait();
-		od.beginSearch();
-		
 //		System.out.println("progress: " + od.progress());
 	}
 	
@@ -107,9 +112,9 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 				public void run() {
 					int stop = Math.min(max_designs, d0 + BATCH_SIZE);
 					for (int d00 = d0; d00 < stop; d00++){
-//						if (d00 % 1000000 == 0){
-//							System.out.println("million");
-//						}
+						if (d00 % 1000000 == 0){
+							System.out.println("million");
+						}
 						ObjectiveFunction obj_fun = null;
 						if (objective.equals(GreedyExperimentalDesign.MAHAL)){
 							obj_fun = new PropMahalObjective(Sinv);
@@ -119,7 +124,7 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 						}
 						
 						//get the vector for this run
-						BitSet indicTbit = all_indicTs.get(d00);
+						BitSet indicTbit = all_indicTs.get(n).get(d00);
 //						System.out.println((d0 + 1) + " bitvector: " + Tools.StringJoin(indicTbit, ""));
 						int[] indicT = Tools.convert_bitvector_to_intvector(indicTbit, n);
 //						System.out.println((d0 + 1) + "intvector: " + Tools.StringJoin(indicT, ""));
@@ -156,24 +161,29 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 	}
 	
 	private void initializeStartingIndicTs() {
-//		System.out.println("begin initializeStartingIndicTs");
+		if (all_indicTs.containsKey(n)){
+			max_designs = all_indicTs.get(n).size();
+			return;
+		}		
+		System.out.println("begin initializeStartingIndicTs");
 		max_designs = (int)n_choose_k(n, n / 2);
-		all_indicTs = new ArrayList<BitSet>(max_designs);
+
+		all_indicTs.put(n, new ArrayList<BitSet>(max_designs));
 
 		recursivelyFindAllBinaryVecs(new BitSet(), 0, 0, 0);
 //		for (int i = 0; i < max_designs; i++){
 //			System.out.println((i + 1) + ": " + Tools.StringJoin(all_indicTs.get(i), ""));
 //		}
-//		System.out.println("end initializeStartingIndicTs");
+		System.out.println("end initializeStartingIndicTs");
 	}
 
 	private void recursivelyFindAllBinaryVecs(BitSet bitSet, int pos, int on, int off) {
 		//if we've made it to the end, we're done
 		if (pos == n){
-			all_indicTs.add(bitSet);
-//			if (all_indicTs.size() % 1000000 == 0){
-//				System.out.println("million");
-//			}
+			all_indicTs.get(n).add(bitSet);
+			if (all_indicTs.size() % 1000000 == 0){
+				System.out.println("million");
+			}
 			return;
 		}
 		
