@@ -8,7 +8,7 @@ VERSION = "1.1"
 #' 							to search for a more optimal design.
 #' @param max_designs 		The maximum number of designs to be returned. Default is 10,000. Make this large 
 #' 							so you can search however long you wish as the search can be stopped at any time by
-#' 							using the \code{\link{stopGreedySearch}} method 
+#' 							using the \code{\link{stopSearch}} method 
 #' @param objective			The objective function to use when greedily searching design space. This is a string
 #' 							"\code{abs_sum_diff}" (default) or "\code{mahal_dist}."
 #' @param wait				Should the \code{R} terminal hang until all \code{max_designs} vectors are found? The 
@@ -45,7 +45,7 @@ initGreedyExperimentalDesignObject = function(X,
 	#standardize it
 	Xstd = apply(X, 2, function(xj){(xj - mean(xj)) / sd(xj)})
 	
-	if (p <= n){
+	if (p < n){
 		SinvXstd = solve(var(Xstd))
 	}
 	
@@ -76,7 +76,7 @@ initGreedyExperimentalDesignObject = function(X,
 	}
 	
 	#feed in the inverse var-cov matrix
-	if (p <= n){
+	if (p < n){
 		for (j in 1 : p){
 			.jcall(java_obj, "V", "setInvVarCovRow", as.integer(j - 1), SinvXstd[j, , drop = FALSE]) #java indexes from 0...n-1
 		}
@@ -107,7 +107,7 @@ initGreedyExperimentalDesignObject = function(X,
 	class(greedy_experimental_design_search) = "greedy_experimental_design_search"
 	#if the user wants to run it immediately...
 	if (start){
-		startGreedySearch(greedy_experimental_design_search)
+		startSearch(greedy_experimental_design_search)
 	}
 	#return the final object
 	greedy_experimental_design_search
@@ -123,9 +123,9 @@ initGreedyExperimentalDesignObject = function(X,
 #' @export
 print.greedy_experimental_design_search = function(x, ...){
 	progress = greedySearchCurrentProgress(x)
-	time_elapsed = greedySearchTimeElapsed(x)
+	time_elapsed = searchTimeElapsed(x)
 	if (progress == 0){
-		cat("No progress on the GreedyExperimentalDesign. Did you run \"startGreedySearch?\"\n")
+		cat("No progress on the GreedyExperimentalDesign. Did you run \"startSearch?\"\n")
 	} else if (progress == x$max_designs){
 		cat("The search completed in", time_elapsed, "seconds.", progress, "vectors have been found.\n")
 	} else {
@@ -166,6 +166,30 @@ plot.greedy_experimental_design_search = function(x, ...){
 	plot_obj_val_order_statistic(x)
 }
 
+#' Plots the objective value by iteration
+#' 
+#' @param res 		Results from a greedy search object
+#' @param runs 		A vector of run indices you would like to see plotted (default is to plot the first up to 9)
+#' 
+#' @author 			Adam Kapelner
+#' @export
+plot_obj_val_by_iter = function(res, runs = NULL){
+	if (is.null(res$obj_val_by_iters)){
+		stop("You need to set diagnostics = TRUE on the search object.")
+	}
+	
+	if (is.null(runs)){
+		runs = 1 : min(length(res$obj_val_by_iters), 9)
+	}
+	num_to_plot = length(runs)
+	
+	par(mfrow = c(ceiling(sqrt(num_to_plot)), ceiling(sqrt(num_to_plot))))
+	for (run in runs){
+		obj_vals = res$obj_val_by_iters[[run]]
+		plot(1 : length(obj_vals), obj_vals, main = paste("Run #", run), xlab = "iteration", ylab = "objective value", type = "o")
+	}
+} 
+
 #' Plots an order statistic of the object value as a function of number of searches
 #' 
 #' @param obj			The \code{greedy_experimental_design_search} object whose search history is to be visualized
@@ -200,7 +224,7 @@ plot_obj_val_order_statistic = function(obj, order_stat = 1, skip_every = 5, typ
 #' 
 #' @author Adam Kapelner
 #' @export
-startGreedySearch = function(obj){
+startSearch = function(obj){
 	if (.jcall(obj$java_obj, "Z", "began")){
 		stop("Search Already begun.")
 	}
@@ -213,7 +237,7 @@ startGreedySearch = function(obj){
 #' 
 #' @author Adam Kapelner
 #' @export
-stopGreedySearch = function(obj){
+stopSearch = function(obj){
 	.jcall(obj$java_obj, "V", "stopSearch")
 }
 
@@ -231,7 +255,7 @@ greedySearchCurrentProgress = function(obj){
 # @param obj 		The \code{greedy_experimental_design} object that is currently running the search
 # 
 # @author Adam Kapelner
-greedySearchTimeElapsed = function(obj){
+searchTimeElapsed = function(obj){
 	.jcall(obj$java_obj, "I", "timeElapsedInSeconds")
 }
 
@@ -239,11 +263,11 @@ greedySearchTimeElapsed = function(obj){
 #' 
 #' @param obj 			The \code{greedy_experimental_design} object that is currently running the search
 #' @param max_vectors	The number of design vectors you wish to return. \code{NULL} returns all of them. 
-#' 						This is not recommended as returning over 1,000 vectors is time-intensive. The default is 5. 
+#' 						This is not recommended as returning over 1,000 vectors is time-intensive. The default is 9. 
 #' 
 #' @author Adam Kapelner
 #' @export
-resultsGreedySearch = function(obj, max_vectors = 5){
+resultsGreedySearch = function(obj, max_vectors = 9){
 	obj_vals = .jcall(obj$java_obj, "[D", "getObjectiveVals")
 	num_iters = .jcall(obj$java_obj, "[I", "getNumIters")
 	#these two are in order, so let's order the indicTs by the final objective values

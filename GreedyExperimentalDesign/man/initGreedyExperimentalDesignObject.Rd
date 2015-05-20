@@ -16,7 +16,7 @@ to search for a more optimal design.}
 
 \item{max_designs}{The maximum number of designs to be returned. Default is 10,000. Make this large
 so you can search however long you wish as the search can be stopped at any time by
-using the \code{\link{stopGreedySearch}} method}
+using the \code{\link{stopSearch}} method}
 
 \item{objective}{The objective function to use when greedily searching design space. This is a string
 "\code{abs_sum_diff}" (default) or "\code{mahal_dist}."}

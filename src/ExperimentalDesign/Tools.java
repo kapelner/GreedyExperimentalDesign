@@ -25,6 +25,7 @@
 package ExperimentalDesign;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.Random;
 
@@ -172,6 +173,22 @@ public class Tools {
 		}
 		return joined;
 	}
+	
+
+	public static String StringJoin(BitSet all, String joinby) {
+		if (all == null){
+			return " NULL ARRAY ";
+		}		
+		String joined = "";
+		int n = all.length();
+//		System.out.println("n = " + n);
+		for (int i = 0; i < n; i++){
+			joined += all.get(i) ? "1" : "0";
+			if (i < n - 1)
+				joined += joinby;
+		}
+		return joined;
+	}	
 	
 	/**
 	 * Joins a collection of strings into one string with commas
@@ -432,5 +449,14 @@ public class Tools {
 		}
 		return index_of_min;
 	}
+
+	public static int[] convert_bitvector_to_intvector(BitSet bitvector, int n) {
+		int[] intvector = new int[n];
+		for (int i = 0; i < n; i++){
+			intvector[i] = bitvector.get(i) ? 1 : 0;
+		}
+		return intvector;
+	}
+
 
 }

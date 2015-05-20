@@ -25,7 +25,10 @@
 package OptimalExperimentalDesign;
 
 import ExperimentalDesign.AbsSumObjective;
+
 import java.util.ArrayList;
+import java.util.BitSet;
+
 import ExperimentalDesign.AllExperimentalDesigns;
 import ExperimentalDesign.ObjectiveFunction;
 import ExperimentalDesign.PropMahalObjective;
@@ -45,9 +48,11 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 	//valid objective functions
 	public static final String MAHAL = "mahal_dist";
 	public static final String ABS = "abs_sum_diff";
+
+	private static final int BATCH_SIZE = 100000;
 	
 	//temp stuff
-	private ArrayList<int[]> all_indicTs;
+	private ArrayList<BitSet> all_indicTs;
 	private int max_designs;
 	private int n_over_two;
 	
@@ -62,7 +67,7 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 		//set seed here for reproducibility during debugging
 		od.r.setSeed(1984);
 
-		int n = 28;
+		int n = 6;
 		int p = 1;
 		od.setNandP(n, p);
 		for (int i = 0; i < n; i++){
@@ -78,9 +83,10 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 //			System.out.println(Tools.StringJoin(od.Xstd[i]));
 //		}
 		od.setObjective(ABS);
-		od.setNumCores(2);
-		od.beginSearch();
+		od.setNumCores(3);
 		od.setWait();
+		od.beginSearch();
+		
 //		System.out.println("progress: " + od.progress());
 	}
 	
@@ -94,38 +100,45 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 			objective_vals[d] = NOT_REACHED_YET;
 		}
 		
-		for (int d = 0; d < max_designs; d++){
+		for (int d = 0; d < max_designs; d += BATCH_SIZE){
 			final int d0 = d;
-//			if (d % 100 == 0){
-//				System.out.println("worker added to thread pool #" + d);
-//			}
+
 	    	search_thread_pool.execute(new Runnable(){
 				public void run() {
-					ObjectiveFunction obj_fun = null;
-					if (objective.equals(GreedyExperimentalDesign.MAHAL)){
-						obj_fun = new PropMahalObjective(Sinv);
+					int stop = Math.min(max_designs, d0 + BATCH_SIZE);
+					for (int d00 = d0; d00 < stop; d00++){
+//						if (d00 % 1000000 == 0){
+//							System.out.println("million");
+//						}
+						ObjectiveFunction obj_fun = null;
+						if (objective.equals(GreedyExperimentalDesign.MAHAL)){
+							obj_fun = new PropMahalObjective(Sinv);
+						}
+						else if (objective.equals(GreedyExperimentalDesign.ABS)){
+							obj_fun = new AbsSumObjective();	
+						}
+						
+						//get the vector for this run
+						BitSet indicTbit = all_indicTs.get(d00);
+//						System.out.println((d0 + 1) + " bitvector: " + Tools.StringJoin(indicTbit, ""));
+						int[] indicT = Tools.convert_bitvector_to_intvector(indicTbit, n);
+//						System.out.println((d0 + 1) + "intvector: " + Tools.StringJoin(indicT, ""));
+						//get the indicies
+						int[] i_Ts = Tools.findIndicies(indicT, n_over_two, 1);
+//						System.out.println("i_Ts " + Tools.StringJoin(i_Ts));
+						int[] i_Cs = Tools.findIndicies(indicT, n - n_over_two, 0);
+						//get the rows for each group
+						ArrayList<double[]> XT = Tools.subsetMatrix(Xstd, i_Ts); 
+						ArrayList<double[]> XC = Tools.subsetMatrix(Xstd, i_Cs); 
+						//compute the averages
+						double[] avg_Ts = Tools.colAvg(XT, p);
+						double[] avg_Cs = Tools.colAvg(XC, p);
+						obj_fun.setXTbar(avg_Ts);
+						obj_fun.setXCbar(avg_Cs);
+						
+						//calculate our objective function (according to the user's specification)
+						objective_vals[d00] = obj_fun.calc(false);						
 					}
-					else if (objective.equals(GreedyExperimentalDesign.ABS)){
-						obj_fun = new AbsSumObjective();	
-					}
-					
-					//get the vector for this run
-					int[] indicT = all_indicTs.get(d0);
-					//get the indicies
-					int[] i_Ts = Tools.findIndicies(indicT, n_over_two, 1);
-//					System.out.println("i_Ts " + Tools.StringJoin(i_Ts));
-					int[] i_Cs = Tools.findIndicies(indicT, n - n_over_two, 0);
-					//get the rows for each group
-					ArrayList<double[]> XT = Tools.subsetMatrix(Xstd, i_Ts); 
-					ArrayList<double[]> XC = Tools.subsetMatrix(Xstd, i_Cs); 
-					//compute the averages
-					double[] avg_Ts = Tools.colAvg(XT, p);
-					double[] avg_Cs = Tools.colAvg(XC, p);
-					obj_fun.setXTbar(avg_Ts);
-					obj_fun.setXCbar(avg_Cs);
-					
-					//calculate our objective function (according to the user's specification)
-					objective_vals[d0] = obj_fun.calc(false);
 				}
 			});
 		}
@@ -136,44 +149,44 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 //		}
 		//now return the min
 		d_opt = Tools.min_index(objective_vals);
+		System.out.println("size of space: " + max_designs);
 		System.out.println("d_opt: " + (d_opt + 1));
 		System.out.println("obj_opt: " + objective_vals[d_opt]);
 		System.out.println("time elapsed in sec: " + timeElapsedInSeconds());
 	}
 	
 	private void initializeStartingIndicTs() {
-		System.out.println("begin initializeStartingIndicTs");
+//		System.out.println("begin initializeStartingIndicTs");
 		max_designs = (int)n_choose_k(n, n / 2);
-		all_indicTs = new ArrayList<int[]>(max_designs);
-//		int[] start = new int[n];
-//		for (int i = 0; i < n; i++){
-//			start[i] = 3;
-//		}
-//		recursivelyFindAllBinaryVecs(start, 0, 0, 0);
+		all_indicTs = new ArrayList<BitSet>(max_designs);
+
+		recursivelyFindAllBinaryVecs(new BitSet(), 0, 0, 0);
 //		for (int i = 0; i < max_designs; i++){
 //			System.out.println((i + 1) + ": " + Tools.StringJoin(all_indicTs.get(i), ""));
 //		}
-		recursivelyFindAllBinaryVecs(new int[n], 0, 0, 0);
-		System.out.println("end initializeStartingIndicTs");
+//		System.out.println("end initializeStartingIndicTs");
 	}
 
-	private void recursivelyFindAllBinaryVecs(int[] vec, int pos, int on, int off) {
+	private void recursivelyFindAllBinaryVecs(BitSet bitSet, int pos, int on, int off) {
 		//if we've made it to the end, we're done
 		if (pos == n){
-			all_indicTs.add(vec);
+			all_indicTs.add(bitSet);
+//			if (all_indicTs.size() % 1000000 == 0){
+//				System.out.println("million");
+//			}
 			return;
 		}
 		
 		//now set the next position on and recurse
-		int[] next_vec_on = vec.clone();
-		next_vec_on[pos] = 1;
+		BitSet next_vec_on = (BitSet)bitSet.clone();
+		next_vec_on.set(pos, true);
 		if (on + 1 <= n_over_two){
 			recursivelyFindAllBinaryVecs(next_vec_on, pos + 1, on + 1, off);
 		}		
 		
 		//now set the next position off and recurse
-		int[] next_vec_off = vec.clone();
-		next_vec_off[pos] = 0;
+		BitSet next_vec_off =  (BitSet)bitSet.clone();
+		next_vec_off.set(pos, false);
 		if (off + 1 <= n_over_two){
 			recursivelyFindAllBinaryVecs(next_vec_off, pos + 1, on, off + 1);
 		}
@@ -194,7 +207,7 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 		return sum;
 	}
 
-	public int progress(){
+	private int num_vectors_checked(){
 //		System.out.println("max_designs " + max_designs);
 		int done = 0;
 		if (objective_vals != null){
@@ -209,15 +222,21 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 		return done;
 	}
 	
+	public double progress(){
+		return num_vectors_checked() / (double)objective_vals.length;
+	}	
+	
 	public double[] getObjectiveVals(){		
-		int d_finished = progress();
+		int d_finished = num_vectors_checked();
 		double[] objective_vals = new double[d_finished];
 		for (int i = 0; i < d_finished; i++){
 			objective_vals[i] = this.objective_vals[i];
 		}
 		return objective_vals;
 	}
-	
+	public double getOptObjectiveVal(){		
+		return objective_vals[d_opt];
+	}	
 	
 	public void setNandP(int n, int p) throws Exception {
 		super.setNandP(n, p);
