@@ -4,9 +4,7 @@
 #' @param X					The design matrix with $n$ rows (one for each subject) and $p$ columns 
 #' 							(one for each measurement on the subject). This is the design matrix you wish 
 #' 							to search for a more karp design.
-#' @param objective			The objective function to use when greedily searching design space. This is a string
-#' 							"\code{abs_sum_diff}" (default) or "\code{mahal_dist}."
-#' @param balanced			Should the final vector be balanced. Default is \code{TRUE}.
+#' @param balanced			Should the final vector be balanced? Default and recommended is \code{TRUE}.
 #' @param wait				Should the \code{R} terminal hang until all \code{max_designs} vectors are found? The 
 #' 							deafult is \code{FALSE}.
 #' @param start				Should we start searching immediately (default is \code{TRUE}).
@@ -116,10 +114,10 @@ summary.karp_experimental_design_search = function(object, ...){
 #' @author Adam Kapelner
 #' @export
 resultsKarpSearch = function(obj){
-	obj_val = .jcall(obj$java_obj, "D", "getObjectiveVal")
-	indicT = .jcall(obj$java_obj, "[I", "getIndicT", .jevalArray)
+	obj_val = .jcall(obj$java_obj, "D", "getKarpObjectiveVal")
+	indicT = .jcall(obj$java_obj, "[I", "getKarpIndicT", .jevalArray)
 	list(
-			obj_val = obj_val,
-			indicT = indicT
+		obj_val = obj_val,
+		indicT = indicT
 	)
 }
