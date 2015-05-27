@@ -45,9 +45,9 @@ public class KarpExperimentalDesign extends AllExperimentalDesigns {
 			}
 		});
 		afterBeginSearch();	
-		System.out.println("FINAL INDIC_T: " + Tools.StringJoin(getKarpIndicT()));
-		System.out.println("Num T: " + Tools.sum_array(getKarpIndicT()) + " n: " + n);
-		System.out.println("Final obj val: " + getKarpObjectiveVal());
+//		System.out.println("FINAL INDIC_T: " + Tools.StringJoin(getKarpIndicT()));
+//		System.out.println("Num T: " + Tools.sum_array(getKarpIndicT()) + " n: " + n);
+//		System.out.println("Final obj val: " + getKarpObjectiveVal());
 	}
 	
 	public void setBalanced(){
@@ -63,6 +63,6 @@ public class KarpExperimentalDesign extends AllExperimentalDesigns {
 	}	
 	
 	public double progress(){
-		return keds.progress();
+		return keds == null ? 0 : keds.progress();
 	}	
 }

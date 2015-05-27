@@ -1,43 +1,56 @@
-
 options(java.parameters = "-Xmx3000m")
 library(GreedyExperimentalDesign)
 
-ked = initKarpExperimentalDesignObject(X, wait = TRUE)
-res = resultsGreedySearch(ked)
-res
+ns = c(4, 20, 50, 100, 200, 400, 1000, 2000)
+num_reps = 50
+karp_obj_vals = matrix(NA, nrow = 0, ncol = 2)
+colnames(karp_obj_vals) = c("n", "obj_val")
+karp_obj_vals_tab = matrix(NA, nrow = length(ns), ncol = num_reps)
 
+for (i in 1 : length(ns)){
+	for (j in 1 : num_reps){
+		X = generate_stdzied_design_matrix(n = ns[i], p = 1)	
+		ked = initKarpExperimentalDesignObject(X, wait = TRUE)
+		karp_obj_vals = rbind(karp_obj_vals, c(ns[i], resultsKarpSearch(ked)$obj_val))	
+		karp_obj_vals_tab[i, j] = resultsKarpSearch(ked)$obj_val
+	}
+}
 
-n = 26
-ps = c(1, 2, 5, 10, 20)
-rs = c(1, 5, 10, 100, 1000, 10000)
-opt_obj_vals = array(NA, length(ps))
+karp_obj_vals = as.data.frame(karp_obj_vals)
+plot(log(karp_obj_vals$n), log(karp_obj_vals$obj_val), ylab = "log obj val", xlab = "log n")
+mod = lm(log(obj_val) ~ log(n), data = karp_obj_vals)
+summary(mod)
+abline(mod)
+
+###COMPARE to greedy
+
+NUM_CORES = 3
+rs = c(1, 5, 10, 30) #, 1000, 10000
+karp_obj_vals = array(NA, length(ns))
 greedy_obj_vals = list() 
 for (r in 1 : length(rs)){
-	greedy_obj_vals[[r]] = array(NA, length(ps))
+	greedy_obj_vals[[r]] = array(NA, length(ns))
 }
 
 
-for (i in 1 : length(ps)){
-	X = generate_stdzied_design_matrix(n = n, p = ps[i])
+for (i in 1 : length(ns)){
+	X = generate_stdzied_design_matrix(n = ns[i], p = 1)
+	ked = initKarpExperimentalDesignObject(X, wait = TRUE)
+	karp_obj_vals[i] = resultsKarpSearch(ked)$obj_val
 	
 	for (r in 1 : length(rs)){
 		ged = initGreedyExperimentalDesignObject(X, max_designs = rs[r], num_cores = NUM_CORES, wait = TRUE)
 		greedy_obj_vals[[r]][i] = resultsGreedySearch(ged, max_vectors = 0)$obj_vals[1]
 	}
-	
-	oed = initOptimalExperimentalDesignObject(X, num_cores = NUM_CORES, objective = "abs_sum_diff", wait = TRUE)
-	opt_obj_vals[i] = resultsOptimalSearch(oed)$obj_val
 }
 
-log_greedy_obj_vals = log(greedy_obj_vals) / log(10)
-log_opt_obj_vals = log(opt_obj_vals) / log(10)
-log_ps = log(ps) / log(10)
+log_karp_obj_vals = log(karp_obj_vals) / log(10)
 
-plot(log_ps, log(greedy_obj_vals[[1]]) / log(10), ylim = c(min(log_opt_obj_vals), max(log(greedy_obj_vals[[1]]) / log(10))),
+plot(ns, log(greedy_obj_vals[[1]]) / log(10), ylim = c(min(log_karp_obj_vals, log(greedy_obj_vals[[length(rs)]]) / log(10)), max(log_karp_obj_vals, log(greedy_obj_vals[[1]]) / log(10))),
 		type = "o", col = "blue", 
-		ylab = "log10 obj function", xlab = "log10 p", main = paste("greedy switch vs optimal for n =", n))
-points(log_ps, log_opt_obj_vals, type = "o", col = "green")
+		ylab = "log10 obj function", xlab = "n", main = paste("greedy switch vs karp for values of n"))
+points(ns, log_karp_obj_vals, type = "o", col = "green")
 for (r in 1 : length(rs)){
-	points(log_ps, log(greedy_obj_vals[[r]]) / log(10), type = "o", col = "blue")
+	points(ns, log(greedy_obj_vals[[r]]) / log(10), type = "o", col = "blue")
 }
 

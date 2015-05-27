@@ -4,5 +4,5 @@
 
 .onAttach = function(libname, pkgname){
   num_gigs_ram_available = .jcall(.jnew("java/lang/Runtime"), "J", "maxMemory") / 1e9
-  packageStartupMessage(paste("Welcome to GreedyExperimentalDesign v", VERSION, ".\n", round(num_gigs_ram_available, 2), "GB memory available for the Java searcher.\n", sep = ""))
+  packageStartupMessage(paste("Welcome to GreedyExperimentalDesign v", packageVersion("GreedyExperimentalDesign"), ".\n", round(num_gigs_ram_available, 2), "GB memory available for the Java searcher.\n", sep = ""))
 }
