@@ -248,6 +248,10 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 		return objective_vals[d_opt];
 	}	
 	
+	public int[] getOptIndicT() {
+		return Tools.convert_bitvector_to_intvector(all_indicTs.get(n).get(d_opt), n);
+	}
+	
 	public void setNandP(int n, int p) throws Exception {
 		super.setNandP(n, p);
 		n_over_two = n / 2;

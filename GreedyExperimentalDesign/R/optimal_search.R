@@ -87,7 +87,7 @@ initOptimalExperimentalDesignObject = function(X,
 #' @method print optimal_experimental_design_search
 #' @export
 print.optimal_experimental_design_search = function(x, ...){
-	progress = optimalSearchCurrentProgress(x)
+	progress = .jcall(x$java_obj, "D", "progress")
 	time_elapsed = searchTimeElapsed(x)
 	if (progress == 0){
 		cat("No progress on the OptimalExperimentalDesign. Did you run \"startOptimalSearch?\"\n")
@@ -110,15 +110,6 @@ summary.optimal_experimental_design_search = function(object, ...){
 	print(object, ...)
 }
 
-# Returns the number of vectors found by the optimal design search
-# 
-# @param obj 		The \code{optimal_experimental_design} object that is currently running the search
-# 
-# @author Adam Kapelner
-optimalSearchCurrentProgress = function(obj){
-	.jcall(obj$java_obj, "D", "progress")
-}
-
 #' Returns the results (thus far) of the optimal design search
 #' 
 #' @param obj 			The \code{optimal_experimental_design} object that is currently running the search
@@ -127,8 +118,9 @@ optimalSearchCurrentProgress = function(obj){
 #' @export
 resultsOptimalSearch = function(obj){
 	obj_val = .jcall(obj$java_obj, "D", "getOptObjectiveVal")
-
+	indicT = .jcall(obj$java_obj, "[I", "getOptIndicT", .jevalArray)
 	list(
-		obj_val = obj_val
+		obj_val = obj_val,
+		indicT = indicT
 	)
 }

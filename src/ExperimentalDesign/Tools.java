@@ -97,6 +97,7 @@ public class Tools {
 //		System.out.println("  indicies " + Tools.StringJoin(indicies));
 		return indicies;
 	}	
+
 	
 	//from http://algs4.cs.princeton.edu/11model/Knuth.java.html
 	public static int[] fisherYatesShuffle(int[] arr, Random rand){
@@ -318,6 +319,19 @@ public class Tools {
     	}
     	return sum;
     }
+    /**
+     * Sums an array
+     * 
+     * @param arr	The values of interest
+     * @return		The sum of those values
+     */
+    public static int sum_array(int[] arr){
+    	int sum = 0;
+    	for (int i = 0; i < arr.length; i++){
+    		sum += arr[i];
+    	}
+    	return sum;
+    }    
     
     /**
      * Sums the inverse values of an array
@@ -458,5 +472,30 @@ public class Tools {
 		return intvector;
 	}
 
+	public static int[] convertArrayListToVecInt(ArrayList<Integer> arr) {
+		int[] vec = new int[arr.size()];
+		for (int i = 0; i < vec.length; i++){
+			vec[i] = arr.get(i);
+		}
+		return vec;
+	}
+
+	public static int[] findIndicies(int[] vec, int val) {
+		ArrayList<Integer> indicies = new ArrayList<Integer>();
+		for (int i = 0; i < vec.length; i++){			
+			if (vec[i] == val){				
+				indicies.add(i);
+			}
+		}
+		return convertArrayListToVecInt(indicies);
+	}
+
+	public static int[] convertIntegerListToPrimVec(Integer[] arr) {
+		int[] vec = new int[arr.length];
+		for (int i = 0; i < arr.length; i++){
+			vec[i] = arr[i];
+		}
+		return vec;
+	}	
 
 }
