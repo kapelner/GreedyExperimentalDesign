@@ -16,13 +16,5 @@ public class AbsSumObjective extends ObjectiveFunction {
 		}		
 		return abs_sum;
 	}
-	
-	public double[] calcXbarJDiff() {
-		double[] xbardiffjs = new double[XTbar.length];
-		for (int j = 0; j < XTbar.length; j++){
-			xbardiffjs[j] =  XTbar[j] - XCbar[j];
-		}		
-		return xbardiffjs;
-	}	
 
 }

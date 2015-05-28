@@ -54,3 +54,12 @@ for (r in 1 : length(rs)){
 	points(ns, log(greedy_obj_vals[[r]]) / log(10), type = "o", col = "blue")
 }
 
+options(java.parameters = "-Xmx3000m")
+library(GreedyExperimentalDesign)
+X = t(t(c(1, 3, 5, 7, 10, 20, 30, 35, 40, 45, 50, 55, 80, 100)))
+ked = initKarpExperimentalDesignObject(X, wait = TRUE)
+resultsKarpSearch(ked)
+oed = initOptimalExperimentalDesignObject(X, objective = "abs_sum_diff", wait = TRUE)
+resultsOptimalSearch(oed)
+ged = initGreedyExperimentalDesignObject(X, objective = "abs_sum_diff", max_designs = 10, wait = TRUE)
+resultsGreedySearch(ged)

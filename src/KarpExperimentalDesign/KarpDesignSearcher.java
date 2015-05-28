@@ -16,6 +16,7 @@ public abstract class KarpDesignSearcher {
 	protected static final int FIRST_ALLOCATION = 1;
 	
 	protected class ObsBundle {
+		public ObsBundle home;
 		public ObsBundle a;
 		public ObsBundle b;		
 		public Double x_val;
@@ -30,7 +31,9 @@ public abstract class KarpDesignSearcher {
 		//only used for merge!
 		public ObsBundle(ObsBundle a, ObsBundle b) {
 			this.a = a;
+			a.home = this;
 			this.b = b;
+			b.home = this;
 			//now we gotta set the values for the first one
 			if (a.simple() && a.allocationNotSet()){
 				a.allocate(FIRST_ALLOCATION);
@@ -42,9 +45,8 @@ public abstract class KarpDesignSearcher {
 			else {
 				b.flipAllocation();
 			}
-			
-			//indicT_index is null for compound bundles, but we still need an x_val
-			x_val = a.x_val - b.x_val;
+
+			x_val = updateXVal();
 		}
 		
 		private void allocate(int alloc) {
@@ -68,6 +70,11 @@ public abstract class KarpDesignSearcher {
 					allocate(1 - indicT[indicT_index]);
 				}
 			}
+			else {
+				ObsBundle temp = a;
+				a = b;
+				b = temp;
+			}
 			if (a != null){
 				a.flipAllocation();
 			}
@@ -76,6 +83,18 @@ public abstract class KarpDesignSearcher {
 			}
 		}
 		
+		private double updateXVal() {
+			if (!simple()){
+				if (a.simple() && b.simple()){			
+					x_val = indicT[a.indicT_index] == 1 ? (a.updateXVal() - b.updateXVal()) : (b.updateXVal() - a.updateXVal());
+				}
+				else {
+					x_val = a.updateXVal() + b.updateXVal();
+				}				
+			}
+			return x_val;
+		}
+
 		public int size(){
 			if (a == null && b == null){
 				return 1;
@@ -93,10 +112,13 @@ public abstract class KarpDesignSearcher {
 		
 		//debug only
 		public void print(String indent){
-			System.out.println(indent + "x_val = " + x_val);
-			if (indicT_index != null){
-//				System.out.println(indent + "indicT_index = " + indicT_index);
-				System.out.println(indent + "val = " + indicT[indicT_index]);
+			System.out.print(indent + "x_val = " + x_val);
+			if (indicT_index != null && indicT[indicT_index] != null){
+				System.out.print("  [" +  (indicT[indicT_index] == 1 ? "Treatment]" : "Control]") + "\n");
+				
+			}
+			else {
+				System.out.print("\n");
 			}
 			if (a != null){
 				a.print(indent + "  (a) ");
@@ -123,7 +145,7 @@ public abstract class KarpDesignSearcher {
 			//the first thing to do is order these things up
 			sortObsBundles();			
 			
-//			System.out.println("iter " + iter + " size of obs_bundles: " + obs_bundles.size() + "  ===========================================================================================================");
+//			System.out.println("\n\niter " + iter + " size of obs_bundles: " + obs_bundles.size() + "  ===========================================================================================================");
 //			for (int i = 0; i < obs_bundles.size(); i++){
 //				System.out.println("  BUNDLE #" + (i + 1));
 //				obs_bundles.get(i).print("    ");
@@ -139,7 +161,7 @@ public abstract class KarpDesignSearcher {
 			}
 //			iter++;
 		}
-//		System.out.println("iter FINAL size of obs_bundles: " + obs_bundles.size() + "  ===========================================================================================================");
+//		System.out.println("\n\niter FINAL size of obs_bundles: " + obs_bundles.size() + "  ===========================================================================================================");
 //		for (int i = 0; i < obs_bundles.size(); i++){
 //			System.out.println("  BUNDLE #" + (i + 1));
 //			obs_bundles.get(i).print("    ");
@@ -153,13 +175,13 @@ public abstract class KarpDesignSearcher {
 		ObsBundle a = obs_bundles.removeFirst();
 		ObsBundle b = obs_bundles.removeFirst();
 		//create a merged bundle
-		ObsBundle ab = new ObsBundle(a, b);
+		ObsBundle ab_or_ba = a.x_val >= b.x_val ? new ObsBundle(a, b) : new ObsBundle(b, a);
 		//put that in its place
-		obs_bundles.addFirst(ab);
+		obs_bundles.addFirst(ab_or_ba);
 	}
 
 	public double getObjVal() {		
-		int[] indicT = Tools.convertIntegerListToPrimVec(this.indicT);
+		int[] indicT = getIndicT();
 		int[] i_Ts = Tools.findIndicies(indicT, 1);
 //		System.out.println("i_Ts " + Tools.StringJoin(i_Ts));
 		int[] i_Cs = Tools.findIndicies(indicT, 0);

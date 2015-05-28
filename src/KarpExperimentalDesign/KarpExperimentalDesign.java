@@ -17,12 +17,14 @@ public class KarpExperimentalDesign extends AllExperimentalDesigns {
 			//set seed here for reproducibility during debugging
 			kd.r.setSeed(1984);
 	
-			int n = 82;
+			int n = 14;
 			kd.setNandP(n, 1);
+			double[] temp = {1, 3, 5, 7, 10, 20, 30, 35, 40, 45, 50, 55, 80, 100};
 			for (int i = 0; i < n; i++){
 				double[] x_i = new double[1];
 				x_i[0] = kd.r.nextDouble();
-//				x_i[0] = n - (i);
+				x_i[0] = n - (i);
+				x_i[0] = temp[i];
 				kd.setDataRow(i, x_i);
 			}
 	//		System.out.println("Xstd");
@@ -45,9 +47,9 @@ public class KarpExperimentalDesign extends AllExperimentalDesigns {
 			}
 		});
 		afterBeginSearch();	
-//		System.out.println("FINAL INDIC_T: " + Tools.StringJoin(getKarpIndicT()));
-//		System.out.println("Num T: " + Tools.sum_array(getKarpIndicT()) + " n: " + n);
-//		System.out.println("Final obj val: " + getKarpObjectiveVal());
+		System.out.println("FINAL INDIC_T: " + Tools.StringJoin(getKarpIndicT()));
+		System.out.println("Num T: " + Tools.sum_array(getKarpIndicT()) + " n: " + n);
+		System.out.println("Final obj val: " + getKarpObjectiveVal());
 	}
 	
 	public void setBalanced(){
