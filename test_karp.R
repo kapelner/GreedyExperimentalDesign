@@ -26,7 +26,7 @@ abline(mod)
 
 NUM_CORES = 3
 rs = c(1, 5, 10, 30) #, 1000, 10000
-karp_obj_vals = array(NA, length(ns))
+karp_obj_vals2 = array(NA, length(ns))
 greedy_obj_vals = list() 
 for (r in 1 : length(rs)){
 	greedy_obj_vals[[r]] = array(NA, length(ns))
@@ -36,7 +36,7 @@ for (r in 1 : length(rs)){
 for (i in 1 : length(ns)){
 	X = generate_stdzied_design_matrix(n = ns[i], p = 1)
 	ked = initKarpExperimentalDesignObject(X, wait = TRUE)
-	karp_obj_vals[i] = resultsKarpSearch(ked)$obj_val
+	karp_obj_vals2[i] = resultsKarpSearch(ked)$obj_val
 	
 	for (r in 1 : length(rs)){
 		ged = initGreedyExperimentalDesignObject(X, max_designs = rs[r], num_cores = NUM_CORES, wait = TRUE)
@@ -44,7 +44,7 @@ for (i in 1 : length(ns)){
 	}
 }
 
-log_karp_obj_vals = log(karp_obj_vals) / log(10)
+log_karp_obj_vals = log(karp_obj_vals2) / log(10)
 
 plot(ns, log(greedy_obj_vals[[1]]) / log(10), ylim = c(min(log_karp_obj_vals, log(greedy_obj_vals[[length(rs)]]) / log(10)), max(log_karp_obj_vals, log(greedy_obj_vals[[1]]) / log(10))),
 		type = "o", col = "blue", 

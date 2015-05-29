@@ -143,7 +143,7 @@ public abstract class KarpDesignSearcher {
 //		int iter = 1;
 		while (true){
 			//the first thing to do is order these things up
-			sortObsBundles();			
+			sortObsBundles();	
 			
 //			System.out.println("\n\niter " + iter + " size of obs_bundles: " + obs_bundles.size() + "  ===========================================================================================================");
 //			for (int i = 0; i < obs_bundles.size(); i++){
@@ -174,7 +174,7 @@ public abstract class KarpDesignSearcher {
 		//remove the first two
 		ObsBundle a = obs_bundles.removeFirst();
 		ObsBundle b = obs_bundles.removeFirst();
-		//create a merged bundle
+		//create a merged bundle in the proper order. The constructor handles the merging (kinda hacky, but whatever)
 		ObsBundle ab_or_ba = a.x_val >= b.x_val ? new ObsBundle(a, b) : new ObsBundle(b, a);
 		//put that in its place
 		obs_bundles.addFirst(ab_or_ba);

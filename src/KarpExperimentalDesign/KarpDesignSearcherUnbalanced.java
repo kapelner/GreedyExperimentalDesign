@@ -12,15 +12,7 @@ public class KarpDesignSearcherUnbalanced extends KarpDesignSearcher {
 	protected class ObsBundleCompareUnbalanced implements Comparator<ObsBundle> {
 		@Override
 		public int compare(ObsBundle o1, ObsBundle o2) {
-			if (o1.x_val < o2.x_val){
-				return 1;
-			}
-			else if (o1.x_val > o2.x_val){
-				return -1;
-			}
-			else {
-				return 0;
-			}
+			return Double.compare(o2.x_val, o1.x_val);
 		}		
 	}	
 	
