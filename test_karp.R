@@ -11,8 +11,9 @@ for (i in 1 : length(ns)){
 	for (j in 1 : num_reps){
 		X = generate_stdzied_design_matrix(n = ns[i], p = 1)	
 		ked = initKarpExperimentalDesignObject(X, wait = TRUE)
-		karp_obj_vals = rbind(karp_obj_vals, c(ns[i], resultsKarpSearch(ked)$obj_val))	
-		karp_obj_vals_tab[i, j] = resultsKarpSearch(ked)$obj_val
+		obj_val = compute_objective_val(X, resultsKarpSearch(ked)$indic_T)
+		karp_obj_vals = rbind(karp_obj_vals, c(ns[i], obj_val))	
+		karp_obj_vals_tab[i, j] = obj_val
 	}
 }
 
@@ -36,7 +37,7 @@ for (r in 1 : length(rs)){
 for (i in 1 : length(ns)){
 	X = generate_stdzied_design_matrix(n = ns[i], p = 1)
 	ked = initKarpExperimentalDesignObject(X, wait = TRUE)
-	karp_obj_vals2[i] = resultsKarpSearch(ked)$obj_val
+	karp_obj_vals2[i] = compute_objective_val(X, resultsKarpSearch(ked)$indic_T)
 	
 	for (r in 1 : length(rs)){
 		ged = initGreedyExperimentalDesignObject(X, max_designs = rs[r], num_cores = NUM_CORES, wait = TRUE)
@@ -53,6 +54,8 @@ points(ns, log_karp_obj_vals, type = "o", col = "green")
 for (r in 1 : length(rs)){
 	points(ns, log(greedy_obj_vals[[r]]) / log(10), type = "o", col = "blue")
 }
+
+
 
 options(java.parameters = "-Xmx3000m")
 library(GreedyExperimentalDesign)

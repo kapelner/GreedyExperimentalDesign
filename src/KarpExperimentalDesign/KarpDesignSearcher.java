@@ -143,7 +143,7 @@ public abstract class KarpDesignSearcher {
 		int iter = 1;
 		while (true){
 			//the first thing to do is order these things up
-			sortObsBundles();	
+			sortObsBundles();			
 			
 			System.out.println("\n\niter " + iter + " size of obs_bundles: " + obs_bundles.size() + "  ===========================================================================================================");
 			for (int i = 0; i < obs_bundles.size(); i++){
@@ -159,7 +159,7 @@ public abstract class KarpDesignSearcher {
 			if (obs_bundles.size() == 1){
 				break;
 			}
-//			iter++;
+			iter++;
 		}
 		System.out.println("\n\niter FINAL size of obs_bundles: " + obs_bundles.size() + "  ===========================================================================================================");
 		for (int i = 0; i < obs_bundles.size(); i++){

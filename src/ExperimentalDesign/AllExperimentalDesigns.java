@@ -1,27 +1,18 @@
 package ExperimentalDesign;
 
-import java.io.IOException;
-import java.io.PrintStream;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.FileHandler;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
-import java.util.logging.StreamHandler;
+import CustomLogging.FileLoggedClass;
 
-import CustomLogging.LoggingOutputStream;
-import CustomLogging.StdOutErrLevel;
-import CustomLogging.SuperSimpleFormatter;
-
-public abstract class AllExperimentalDesigns {
+public abstract class AllExperimentalDesigns extends FileLoggedClass {
 
 	//valid objective functions
 	public static final String MAHAL = "mahal_dist";
 	public static final String ABS = "abs_sum_diff";
 	
-	public Random r;
+	public Random rand_obj;
 	
 	//set by user
 	protected int n;
@@ -30,7 +21,7 @@ public abstract class AllExperimentalDesigns {
 	protected Integer num_cores;
 	
 	//data inputed from the user's data
-	protected double[][] Xstd;
+	protected double[][] X;
 	protected double[][] Sinv;	
 	protected boolean wait;
 	
@@ -41,9 +32,7 @@ public abstract class AllExperimentalDesigns {
 	protected Long tf;
 	
 	public AllExperimentalDesigns(){
-//		writeStdOutToLogFile();
-//		System.out.println("GreedyExperimentalDesign");
-		r = new Random();
+		rand_obj = new Random();
 	}	
 	
 	public void beginSearch(){
@@ -99,11 +88,10 @@ public abstract class AllExperimentalDesigns {
 	}	
 	
 	public void setObjective(String objective) throws Exception{
-//		System.out.println("setObjective " + objective);
-		this.objective = objective;
 		if (!MAHAL.equals(objective) && !ABS.equals(objective)){
 			throw new Exception("bad objective function");
 		}
+		this.objective = objective;
 	}
 	
 	public void setNumCores(int num_cores){
@@ -122,21 +110,21 @@ public abstract class AllExperimentalDesigns {
 	
 	public void setDataRow(int i0, double[] x_i){
 //		System.out.println("setDataRow " + i0 + "  " + x_i);
-		if (Xstd == null){
-			Xstd = new double[n][p];
+		if (X == null){
+			X = new double[n][p];
 		}
 		for (int j = 0; j < p; j++){
-			Xstd[i0][j] = x_i[j];
+			X[i0][j] = x_i[j];
 		}
 	}
 	
 	public void setDataRow(int i0, double x_i){
 //		System.out.println("setDataRow " + i0 + "  " + x_i);
-		if (Xstd == null){
-			Xstd = new double[n][p];
+		if (X == null){
+			X = new double[n][p];
 		}
 		double[] row = {x_i};
-		Xstd[i0] = row;
+		X[i0] = row;
 	}	
 	
 	public void setInvVarCovRow(int j0, double[] Sinv_i){
@@ -159,47 +147,10 @@ public abstract class AllExperimentalDesigns {
 	}
 	
 	public void setSeed(int seed){
-		r.setSeed(seed);
+		rand_obj.setSeed(seed);
 	}	
 	
 	public void setWait(){
 		wait = true;
 	}	
-	public static void writeStdOutToLogFile(){
-		try {
-		  Logger.getLogger("").addHandler(new StreamHandler()); //turn off std out
-		  suppressOrWriteToDebugLog();
-		}
-		catch (Error e){
-			System.out.println("Logger and or suppressOrWriteToDebugLog FAILING\n");
-		}    
- 	}
-	
-	public static void suppressOrWriteToDebugLog(){
-		//also handle the logging
-        LogManager logManager = LogManager.getLogManager();
-        logManager.reset();
-
-        // create log file, no limit on size
-        FileHandler fileHandler = null;
-		try {
-			fileHandler = new FileHandler("java_log" + ".log", Integer.MAX_VALUE, 1, false);
-		} catch (SecurityException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-        fileHandler.setFormatter(new SuperSimpleFormatter());
-        Logger.getLogger("").addHandler(fileHandler);
-        
-        
-        // now rebind stdout/stderr to logger
-        Logger logger = Logger.getLogger("stdout");         
-        LoggingOutputStream  los = new LoggingOutputStream(logger, StdOutErrLevel.STDOUT);
-        System.setOut(new PrintStream(los, true));
-        logger = Logger.getLogger("stderr");                                    
-        los = new LoggingOutputStream(logger, StdOutErrLevel.STDERR);            
-        System.setErr(new PrintStream(los, true)); 		
-	}
-	
 }

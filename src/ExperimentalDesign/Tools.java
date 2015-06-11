@@ -112,7 +112,7 @@ public class Tools {
 	    return arr;
 	}
 	
-	public static int[] newBlankDesign(int n){
+	public static int[] newBalancedBlankDesign(int n){
 		int[] design = new int[n];
 		for (int i = 0; i < n; i++){
 			design[i] = i < n / 2 ? 1 : 0;

@@ -15,7 +15,7 @@ public class KarpExperimentalDesign extends AllExperimentalDesigns {
 		for (int g = 0; g < 1; g++){
 			KarpExperimentalDesign kd = new KarpExperimentalDesign();
 			//set seed here for reproducibility during debugging
-			kd.r.setSeed(1984);
+			kd.rand_obj.setSeed(1984);
 	
 			
 			
@@ -25,7 +25,7 @@ public class KarpExperimentalDesign extends AllExperimentalDesigns {
 			kd.setNandP(n, 1);
 			for (int i = 0; i < n; i++){
 				double[] x_i = new double[1];
-				x_i[0] = kd.r.nextDouble();
+				x_i[0] = kd.rand_obj.nextDouble();
 				x_i[0] = n - (i);
 				x_i[0] = temp[i];
 				kd.setDataRow(i, x_i);
@@ -46,7 +46,7 @@ public class KarpExperimentalDesign extends AllExperimentalDesigns {
 		super.beginSearch();
     	search_thread_pool.execute(new Runnable(){
 			public void run() {
-				keds = balanced ? new KarpDesignSearcherBalanced(Xstd) : new KarpDesignSearcherUnbalanced(Xstd);
+				keds = balanced ? new KarpDesignSearcherBalanced(X) : new KarpDesignSearcherUnbalanced(X);
 			}
 		});
 		afterBeginSearch();	
