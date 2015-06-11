@@ -57,3 +57,27 @@ for (r in 1 : length(rs)){
 	points(log_ps, log(greedy_obj_vals[[r]]) / log(10), type = "o", col = "blue")
 }
 
+
+
+#look at jsut optimal
+rep = 4
+ns = seq(from = 6, to = 26, by = 2)
+#opt_obj_vals_b = matrix(NA, nrow = 0, ncol = 2)
+for (i in 1 : length(ns)){
+	for (r in 1 : rep){
+		X = generate_stdzied_design_matrix(n = ns[i], p = 1)
+		
+		oed = initOptimalExperimentalDesignObject(X, num_cores = NUM_CORES, objective = "abs_sum_diff", wait = TRUE)
+		opt_obj_vals_b = rbind(opt_obj_vals_b, c(ns[i], resultsOptimalSearch(oed)$obj_val))
+	}
+}
+
+plot(opt_obj_vals_b[, 1], log(opt_obj_vals_b[, 2]) / log(10),
+		ylab = "log10 obj function", xlab = "n", main = paste("greedy switch vs optimal for n =", n))
+
+colnames(opt_obj_vals_b) = c("n", "obj_val")
+y = log(opt_obj_vals_b[, 2]) / log(10)
+x = opt_obj_vals_b[, 1]
+mod = lm(y ~ x)
+abline(mod)
+summary(mod)

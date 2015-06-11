@@ -17,9 +17,12 @@ public class KarpExperimentalDesign extends AllExperimentalDesigns {
 			//set seed here for reproducibility during debugging
 			kd.r.setSeed(1984);
 	
-			int n = 14;
+			
+			
+			double[] temp = {7,8,5,10,15,16,9,3,21,1,37,25,28,19,42,65,13,43,58,49,89,30,40,50};//{1, 3, 5, 7, 10, 20, 30, 35, 40, 45, 50, 55, 80, 100};
+			int n = temp.length;
+//			int n = 14;
 			kd.setNandP(n, 1);
-			double[] temp = {1, 3, 5, 7, 10, 20, 30, 35, 40, 45, 50, 55, 80, 100};
 			for (int i = 0; i < n; i++){
 				double[] x_i = new double[1];
 				x_i[0] = kd.r.nextDouble();
