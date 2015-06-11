@@ -12,7 +12,7 @@ public class GreedySearch {
 	private int nT;
 
 	public GreedySearch(double[][] Xstd, 
-			double[][] sinvmat, 
+			double[][] Sinvmat, 
 			int[] indicT, 
 			int[] ending_indicT, 
 			ArrayList<int[]> switched_pairs,
@@ -28,22 +28,23 @@ public class GreedySearch {
 			Random r) 
 	{
 		this.Xstd = Xstd;
+		nT = Tools.count(indicT, 1);
+		int n = Xstd.length;
+		int p = Xstd[0].length;		
 		
 //		System.out.println("GreedySearch: ready to begin " + d0);
 		ObjectiveFunction obj_fun = null;
-		if (objective.equals(GreedyExperimentalDesign.MAHAL)){
-			obj_fun = new PropMahalObjective(sinvmat);
+		if (objective.equals(AllExperimentalDesigns.MAHAL)){
+			obj_fun = new MahalObjective(Sinvmat, n);
 		} 
-		else if (diagnostics && objective.equals(GreedyExperimentalDesign.ABS)){
+		else if (diagnostics && objective.equals(AllExperimentalDesigns.ABS)){
 			obj_fun = new AbsSumObjectiveWithDiagnostics();	
 		}
-		else if (objective.equals(GreedyExperimentalDesign.ABS)){
+		else if (objective.equals(AllExperimentalDesigns.ABS)){
 			obj_fun = new AbsSumObjective();	
 		}
-
-		int n = Xstd.length;
-		int p = Xstd[0].length;		
-		nT = Tools.count(indicT, 1);
+	
+		
 		createScaledXstd(); //assume nT = n / 2
 //		System.out.println("beginSearch: nT = " + nT + " and nC = " + (n - nT));
 		

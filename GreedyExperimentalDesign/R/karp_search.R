@@ -30,13 +30,6 @@ initKarpExperimentalDesignObject = function(X,
 		stop("Karp search only works for p = 1.")
 	}
 	
-	#standardize it
-	Xstd = apply(X, 2, function(xj){(xj - mean(xj)) / sd(xj)})
-	
-	if (p < n){
-		SinvXstd = solve(var(Xstd))
-	}
-	
 	#we are about to construct a KarpExperimentalDesign java object. First, let R garbage collect
 	#to clean up previous objects that are no longer in use. This is important
 	#because R's garbage collection system does not "see" the size of Java objects. Thus,
@@ -55,7 +48,7 @@ initKarpExperimentalDesignObject = function(X,
 	
 	#feed in the data
 	for (i in 1 : n){		
-		.jcall(java_obj, "V", "setDataRow", as.integer(i - 1), Xstd[i, , drop = FALSE]) #java indexes from 0...n-1
+		.jcall(java_obj, "V", "setDataRow", as.integer(i - 1), X[i, , drop = FALSE]) #java indexes from 0...n-1
 	}
 	
 	#now return information as an object (just a list)

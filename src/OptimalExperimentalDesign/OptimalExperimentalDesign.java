@@ -32,7 +32,7 @@ import java.util.HashMap;
 
 import ExperimentalDesign.AllExperimentalDesigns;
 import ExperimentalDesign.ObjectiveFunction;
-import ExperimentalDesign.PropMahalObjective;
+import ExperimentalDesign.MahalObjective;
 import ExperimentalDesign.Tools;
 import GreedyExperimentalDesign.GreedyExperimentalDesign;
 
@@ -45,10 +45,6 @@ import GreedyExperimentalDesign.GreedyExperimentalDesign;
 public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 
 	private static final double NOT_REACHED_YET = -999999;
-	
-	//valid objective functions
-	public static final String MAHAL = "mahal_dist";
-	public static final String ABS = "abs_sum_diff";
 
 	private static final int BATCH_SIZE = 100000;
 	
@@ -70,7 +66,7 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 		for (int g = 0; g < 1; g++){
 			OptimalExperimentalDesign od = new OptimalExperimentalDesign();
 			//set seed here for reproducibility during debugging
-			od.r.setSeed(1984);
+			od.rand_obj.setSeed(1984);
 	
 			int n = 26;
 			int p = g;
@@ -79,7 +75,7 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 	//			double[] x_i = {Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random()};
 				double[] x_i = new double[p];
 				for (int j = 0; j < p; j++){
-					x_i[j] = od.r.nextDouble();
+					x_i[j] = od.rand_obj.nextDouble();
 				}
 				od.setDataRow(i, x_i);
 			}
@@ -117,7 +113,7 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 						}
 						ObjectiveFunction obj_fun = null;
 						if (objective.equals(GreedyExperimentalDesign.MAHAL)){
-							obj_fun = new PropMahalObjective(Sinv);
+							obj_fun = new MahalObjective(Sinv, n);
 						}
 						else if (objective.equals(GreedyExperimentalDesign.ABS)){
 							obj_fun = new AbsSumObjective();	
@@ -133,8 +129,8 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 //						System.out.println("i_Ts " + Tools.StringJoin(i_Ts));
 						int[] i_Cs = Tools.findIndicies(indicT, n - n_over_two, 0);
 						//get the rows for each group
-						ArrayList<double[]> XT = Tools.subsetMatrix(Xstd, i_Ts); 
-						ArrayList<double[]> XC = Tools.subsetMatrix(Xstd, i_Cs); 
+						ArrayList<double[]> XT = Tools.subsetMatrix(X, i_Ts); 
+						ArrayList<double[]> XC = Tools.subsetMatrix(X, i_Cs); 
 						//compute the averages
 						double[] avg_Ts = Tools.colAvg(XT, p);
 						double[] avg_Cs = Tools.colAvg(XC, p);
@@ -142,7 +138,12 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 						obj_fun.setXCbar(avg_Cs);
 						
 						//calculate our objective function (according to the user's specification)
-						objective_vals[d00] = obj_fun.calc(false);						
+						objective_vals[d00] = obj_fun.calc(false);
+						
+						//break out if user desires
+						if (search_thread_pool.isShutdown()){
+							break;
+						}						
 					}
 				}
 			});

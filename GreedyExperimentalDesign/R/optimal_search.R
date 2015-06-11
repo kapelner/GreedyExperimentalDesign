@@ -26,11 +26,14 @@ initOptimalExperimentalDesignObject = function(X,
 	}
 	p = ncol(X)
 	
-	#standardize it
-	Xstd = apply(X, 2, function(xj){(xj - mean(xj)) / sd(xj)})
-	
-	if (p < n){
-		SinvXstd = solve(var(Xstd))
+	if (objective == "abs_sum_diff"){
+		#standardize it -- much faster here
+		Xstd = apply(X, 2, function(xj){(xj - mean(xj)) / sd(xj)})
+	}
+	if (objective == "mahal_dist"){
+		if (p < n){
+			SinvX = solve(var(X))
+		}
 	}
 	
 	#we are about to construct a OptimalExperimentalDesign java object. First, let R garbage collect
@@ -49,14 +52,20 @@ initOptimalExperimentalDesignObject = function(X,
 	}	
 	
 	#feed in the data
-	for (i in 1 : n){		
-		.jcall(java_obj, "V", "setDataRow", as.integer(i - 1), Xstd[i, , drop = FALSE]) #java indexes from 0...n-1
+	for (i in 1 : n){	
+		if (objective == "abs_sum_diff"){
+			.jcall(java_obj, "V", "setDataRow", as.integer(i - 1), Xstd[i, , drop = FALSE]) #java indexes from 0...n-1
+		} else {
+			.jcall(java_obj, "V", "setDataRow", as.integer(i - 1), X[i, , drop = FALSE]) #java indexes from 0...n-1
+		}
 	}
 	
 	#feed in the inverse var-cov matrix
-	if (p < n){
-		for (j in 1 : p){
-			.jcall(java_obj, "V", "setInvVarCovRow", as.integer(j - 1), SinvXstd[j, , drop = FALSE]) #java indexes from 0...n-1
+	if (objective == "mahal_dist"){
+		if (p < n){
+			for (j in 1 : p){
+				.jcall(java_obj, "V", "setInvVarCovRow", as.integer(j - 1), SinvX[j, , drop = FALSE]) #java indexes from 0...n-1
+			}
 		}
 	}
 		

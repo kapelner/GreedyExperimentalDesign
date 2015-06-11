@@ -140,16 +140,16 @@ public abstract class KarpDesignSearcher {
 		//initialize the integer vector --- all places are null first
 		indicT = new Integer[n];
 			
-//		int iter = 1;
+		int iter = 1;
 		while (true){
 			//the first thing to do is order these things up
-			sortObsBundles();	
+			sortObsBundles();			
 			
-//			System.out.println("\n\niter " + iter + " size of obs_bundles: " + obs_bundles.size() + "  ===========================================================================================================");
-//			for (int i = 0; i < obs_bundles.size(); i++){
-//				System.out.println("  BUNDLE #" + (i + 1));
-//				obs_bundles.get(i).print("    ");
-//			}			
+			System.out.println("\n\niter " + iter + " size of obs_bundles: " + obs_bundles.size() + "  ===========================================================================================================");
+			for (int i = 0; i < obs_bundles.size(); i++){
+				System.out.println("  BUNDLE #" + (i + 1));
+				obs_bundles.get(i).print("    ");
+			}			
 			
 			
 			//now that we've ordered them, we can merge the first two - they will become a pair
@@ -159,13 +159,13 @@ public abstract class KarpDesignSearcher {
 			if (obs_bundles.size() == 1){
 				break;
 			}
-//			iter++;
+			iter++;
 		}
-//		System.out.println("\n\niter FINAL size of obs_bundles: " + obs_bundles.size() + "  ===========================================================================================================");
-//		for (int i = 0; i < obs_bundles.size(); i++){
-//			System.out.println("  BUNDLE #" + (i + 1));
-//			obs_bundles.get(i).print("    ");
-//		}	
+		System.out.println("\n\niter FINAL size of obs_bundles: " + obs_bundles.size() + "  ===========================================================================================================");
+		for (int i = 0; i < obs_bundles.size(); i++){
+			System.out.println("  BUNDLE #" + (i + 1));
+			obs_bundles.get(i).print("    ");
+		}	
 	}
 	
 	protected abstract void sortObsBundles();

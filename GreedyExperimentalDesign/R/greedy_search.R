@@ -40,11 +40,14 @@ initGreedyExperimentalDesignObject = function(X,
 	}
 	p = ncol(X)
 	
-	#standardize it
-	Xstd = apply(X, 2, function(xj){(xj - mean(xj)) / sd(xj)})
-	
-	if (p < n){
-		SinvXstd = solve(var(Xstd))
+	if (objective == "abs_sum_diff"){
+		#standardize it -- much faster here
+		Xstd = apply(X, 2, function(xj){(xj - mean(xj)) / sd(xj)})
+	}
+	if (objective == "mahal_dist"){
+		if (p < n){
+			SinvX = solve(var(X))
+		}
 	}
 	
 	#we are about to construct a GreedyExperimentalDesign java object. First, let R garbage collect
@@ -69,14 +72,20 @@ initGreedyExperimentalDesignObject = function(X,
 	
 	
 	#feed in the data
-	for (i in 1 : n){		
-		.jcall(java_obj, "V", "setDataRow", as.integer(i - 1), Xstd[i, , drop = FALSE]) #java indexes from 0...n-1
+	for (i in 1 : n){	
+		if (objective == "abs_sum_diff"){
+			.jcall(java_obj, "V", "setDataRow", as.integer(i - 1), Xstd[i, , drop = FALSE]) #java indexes from 0...n-1
+		} else {
+			.jcall(java_obj, "V", "setDataRow", as.integer(i - 1), X[i, , drop = FALSE]) #java indexes from 0...n-1
+		}
 	}
 	
 	#feed in the inverse var-cov matrix
-	if (p < n){
-		for (j in 1 : p){
-			.jcall(java_obj, "V", "setInvVarCovRow", as.integer(j - 1), SinvXstd[j, , drop = FALSE]) #java indexes from 0...n-1
+	if (objective == "mahal_dist"){
+		if (p < n){
+			for (j in 1 : p){
+				.jcall(java_obj, "V", "setInvVarCovRow", as.integer(j - 1), SinvX[j, , drop = FALSE]) #java indexes from 0...n-1
+			}
 		}
 	}
 	
@@ -201,7 +210,7 @@ plot_obj_val_by_iter = function(res, runs = NULL){
 #' @export
 plot_obj_val_order_statistic = function(obj, order_stat = 1, skip_every = 5, type = "o", ...){
 	progress = greedySearchCurrentProgress(obj)
-	res = resultsGreedySearch(ged, max_vectors = 2)	
+	res = resultsGreedySearch(ged, max_vectors = 0)	#don't need any vectors => set it to 0 for speed concerns
 	vals = res$obj_vals_orig_order
 	val_order_stats = array(NA, progress)
 	for (d in order_stat : progress){
@@ -216,29 +225,6 @@ plot_obj_val_order_statistic = function(obj, order_stat = 1, skip_every = 5, typ
 	invisible(list(val_order_stats = val_order_stats))	
 }
 
-#' Starts the parallelized greedy design search. Once begun, this function cannot be run again.
-#' 
-#' @param obj 		The \code{greedy_experimental_design} object that will be running the search
-#' 
-#' @author Adam Kapelner
-#' @export
-startSearch = function(obj){
-	if (.jcall(obj$java_obj, "Z", "began")){
-		stop("Search Already begun.")
-	}
-	.jcall(obj$java_obj, "V", "beginSearch")
-}
-
-#' Stops the parallelized greedy design search. Once stopped, it cannot be restarted.
-#' 
-#' @param obj 		The \code{greedy_experimental_design} object that is currently running the search
-#' 
-#' @author Adam Kapelner
-#' @export
-stopSearch = function(obj){
-	.jcall(obj$java_obj, "V", "stopSearch")
-}
-
 # Returns the number of vectors found by the greedy design search
 # 
 # @param obj 		The \code{greedy_experimental_design} object that is currently running the search
@@ -248,14 +234,6 @@ greedySearchCurrentProgress = function(obj){
 	.jcall(obj$java_obj, "I", "progress")
 }
 
-# Returns the number of vectors found by the greedy design search
-# 
-# @param obj 		The \code{greedy_experimental_design} object that is currently running the search
-# 
-# @author Adam Kapelner
-searchTimeElapsed = function(obj){
-	.jcall(obj$java_obj, "I", "timeElapsedInSeconds")
-}
 
 #' Returns the results (thus far) of the greedy design search
 #' 
@@ -305,67 +283,14 @@ resultsGreedySearch = function(obj, max_vectors = 9){
 	greedy_experimental_design_search_results
 }
 
-#' Plots a summary of a \code{greedy_experimental_design_search_results} object
-#' 
-#' @param x			The \code{greedy_experimental_design_search_results} object to be summarized in the plot
-#' @param ...		Other parameters to pass to the default plot function
-#' 
-#' @author 			Adam Kapelner
-#' @method 			plot greedy_experimental_design_search
-#' @export
-plot.greedy_experimental_design_search_results = function(x, ...){
-	
-}
-
-# PRIVATE
-compute_objectives = function(X, indic_T, inv_cov_X = NULL){
-	#saves computation sometimes to pass it in
-	if (is.null(inv_cov_X)){
-		inv_cov_X = solve(var(X))
-	}
-	
-	X_T = X[indic_T == 1, , drop = FALSE] #coerce as matrix in order to matrix multiply later
-	X_C = X[indic_T == 0, , drop = FALSE] #coerce as matrix in order to matrix multiply later
-	X_T_bar = colMeans(X_T)
-	X_C_bar = colMeans(X_C)
-	X_T_bar_minus_X_C_bar = as.matrix(X_T_bar - X_C_bar)
-	
-	abs_obj = sum(abs(X_T_bar_minus_X_C_bar))
-	#do the main calculation (eq 6) and return it as a scalar
-	
-	mahal_obj = as.numeric(t(X_T_bar_minus_X_C_bar) %*% inv_cov_X %*% X_T_bar_minus_X_C_bar)	
-	
-	list(abs_obj = abs_obj, mahal_obj = mahal_obj)
-}
-
-
-#' Generates a design matrix with standardized predictors. Useful for debugging.
-#' 
-#' @param n					Number of rows in the design matrix 
-#' @param p 				Number of columns in the design matrix
-#' @param covariate_dist	The function to use to draw the covariate realizations (assumed to be iid).
-#' 							This defaults to \code{rnorm} for $N(0,1)$ draws.
-#' @param ...				Optional arguments to be passed to the \code{covariate_dist} function.
-#' @return 					THe design matrix
-#' 
-#' @author Adam Kapelner
-#' @export
-generate_stdzied_design_matrix = function(n = 50, p = 1, covariate_gen = rnorm, ...){
-	X = matrix(covariate_gen(n * p, ...), nrow = n, ncol = p)
-	#now standardize the matrix to make things easier later
-	apply(X, 2, function(xj){(xj - mean(xj)) / sd(xj)})	
-}
-
-# PRIVATE: Creates a random binary vector which codes an experimental design
-# 
-# @param n			How many subjects does the experiment have 
-# @param p_w 		What is the proportion of treatments?
-# @return 			An array of length $n$ with $n \times p_w$ number of 1's and the rest 0's in a random order
-# 
-# @author Adam Kapelner
-#create_random_dummy_vec = function(n, p_w = 0.5){
-#	indic_T_dummy_permutation_vector = c(rep(1, n * p_w), rep(0, n * p_w)) #there are n_T 1's followed by n_C 0's dictated by p_w
-#	sample(indic_T_dummy_permutation_vector)
+##' Plots a summary of a \code{greedy_experimental_design_search_results} object
+##' 
+##' @param x			The \code{greedy_experimental_design_search_results} object to be summarized in the plot
+##' @param ...		Other parameters to pass to the default plot function
+##' 
+##' @author 			Adam Kapelner
+##' @method 			plot greedy_experimental_design_search
+##' @export
+#plot.greedy_experimental_design_search_results = function(x, ...){
+#	
 #}
-
-

@@ -61,7 +61,7 @@ public class GreedyExperimentalDesign extends AllExperimentalDesigns {
 		
 		GreedyExperimentalDesign gd = new GreedyExperimentalDesign();
 		//set seed here for reproducibility during debugging
-		gd.r.setSeed(1984);
+		gd.rand_obj.setSeed(1984);
 
 		int n = 300;
 		int p = 5;
@@ -70,7 +70,7 @@ public class GreedyExperimentalDesign extends AllExperimentalDesigns {
 //			double[] x_i = {Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random()};
 			double[] x_i = new double[p];
 			for (int j = 0; j < p; j++){
-				x_i[j] = gd.r.nextDouble();
+				x_i[j] = gd.rand_obj.nextDouble();
 			}
 			gd.setDataRow(i, x_i);
 		}
@@ -109,18 +109,6 @@ public class GreedyExperimentalDesign extends AllExperimentalDesigns {
 		
 		initializeStartingIndicTs();
 		
-		//convert Sinv to a matrix for easier multiplication inside the search
-		final double[][] Sinvmat = new double[p][p];
-		if (Sinv != null){
-			for (int i = 0; i < p; i++){
-				for (int j = 0; j < p; j++){
-					Sinvmat[i][j] = Sinv[i][j];
-				}			
-			}
-//			System.out.println("Sinvmat initialized");
-		}
-		
-
 		for (int d = 0; d < max_designs; d++){
 			final int d0 = d;
 //			if (d % 100 == 0){
@@ -129,8 +117,8 @@ public class GreedyExperimentalDesign extends AllExperimentalDesigns {
 	    	search_thread_pool.execute(new Runnable(){
 				public void run() {
 					new GreedySearch(
-							Xstd, 
-							Sinvmat, 
+							X, 
+							Sinv, 
 							starting_indicTs[d0], 
 							ending_indicTs[d0], 
 							switched_pairs.get(d0),
@@ -143,7 +131,7 @@ public class GreedyExperimentalDesign extends AllExperimentalDesigns {
 							semigreedy, 
 							diagnostics, 
 							max_iters, 
-							r);
+							rand_obj);
 				}
 			});
 		}		
@@ -157,7 +145,7 @@ public class GreedyExperimentalDesign extends AllExperimentalDesigns {
 	private void initializeStartingIndicTs() {
 		starting_indicTs = new int[max_designs][n];
 		for (int d = 0; d < max_designs; d++){
-			starting_indicTs[d] = Tools.fisherYatesShuffle(Tools.newBlankDesign(n), r);
+			starting_indicTs[d] = Tools.fisherYatesShuffle(Tools.newBalancedBlankDesign(n), rand_obj);
 		}
 	}
 
