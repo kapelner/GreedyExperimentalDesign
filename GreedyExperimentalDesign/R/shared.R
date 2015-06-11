@@ -1,4 +1,3 @@
-
 #' Starts the parallelized greedy design search. Once begun, this function cannot be run again.
 #' 
 #' @param obj 		The \code{experimental_design} object that will be running the search

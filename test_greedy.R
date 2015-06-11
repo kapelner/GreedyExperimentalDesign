@@ -1,7 +1,3 @@
-setwd("C:\\Users\\kapelner\\workspace\\GreedyExperimentalDesign")
-library(roxygen2)
-roxygenise("GreedyExperimentalDesign", clean = TRUE)
-
 options(java.parameters = "-Xmx3000m")
 library(GreedyExperimentalDesign)
 
