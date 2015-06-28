@@ -19,6 +19,7 @@ public abstract class AllExperimentalDesigns extends FileLoggedClass {
 	protected int p;
 	protected String objective;
 	protected Integer num_cores;
+	protected boolean search_stopped;
 	
 	//data inputed from the user's data
 	protected double[][] X;
@@ -30,6 +31,7 @@ public abstract class AllExperimentalDesigns extends FileLoggedClass {
 	protected boolean began_search;
 	protected long t0;
 	protected Long tf;
+	
 	
 	public AllExperimentalDesigns(){
 		rand_obj = new Random();
@@ -84,7 +86,7 @@ public abstract class AllExperimentalDesigns extends FileLoggedClass {
 	}
 	
 	public void stopSearch(){
-		search_thread_pool.shutdownNow();
+		search_stopped = true;
 	}	
 	
 	public void setObjective(String objective) throws Exception{

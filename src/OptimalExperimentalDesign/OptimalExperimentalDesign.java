@@ -63,12 +63,12 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 	//running the Java as standalone is for debug purposes ONLY!!!
 	public static void main(String[] args) throws Exception{	
 
-		for (int g = 0; g < 1; g++){
+		for (int g = 1; g <= 1; g++){
 			OptimalExperimentalDesign od = new OptimalExperimentalDesign();
 			//set seed here for reproducibility during debugging
 			od.rand_obj.setSeed(1984);
 	
-			int n = 26;
+			int n = 6;
 			int p = g;
 			od.setNandP(n, p);
 			for (int i = 0; i < n; i++){
@@ -79,10 +79,10 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 				}
 				od.setDataRow(i, x_i);
 			}
-	//		System.out.println("Xstd");
-	//		for (int i = 0; i < n; i++){
-	//			System.out.println(Tools.StringJoin(od.Xstd[i]));
-	//		}
+//			System.out.println("Xstd");
+//			for (int i = 0; i < n; i++){
+//				System.out.println(Tools.StringJoin(od.X[i]));
+//			}
 			od.setObjective(ABS);
 			od.setNumCores(3);
 			od.setWait();
@@ -106,8 +106,10 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 
 	    	search_thread_pool.execute(new Runnable(){
 				public void run() {
+//					System.out.println("RUN");
 					int stop = Math.min(max_designs, d0 + BATCH_SIZE);
 					for (int d00 = d0; d00 < stop; d00++){
+//						System.out.println("d00 " + d00 + " stop " + stop);
 						if (d00 % 1000000 == 0){
 							System.out.println("million");
 						}
@@ -133,15 +135,17 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 						ArrayList<double[]> XC = Tools.subsetMatrix(X, i_Cs); 
 						//compute the averages
 						double[] avg_Ts = Tools.colAvg(XT, p);
+//						System.out.println("avg_Ts " + avg_Ts[0]);
 						double[] avg_Cs = Tools.colAvg(XC, p);
+//						System.out.println("avg_Cs " + Tools.StringJoin(avg_Cs));
 						obj_fun.setXTbar(avg_Ts);
 						obj_fun.setXCbar(avg_Cs);
 						
 						//calculate our objective function (according to the user's specification)
 						objective_vals[d00] = obj_fun.calc(false);
-						
+//						System.out.println("objval: " + objective_vals[d00]);
 						//break out if user desires
-						if (search_thread_pool.isShutdown()){
+						if (search_stopped){
 							break;
 						}						
 					}
@@ -168,12 +172,13 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 		}		
 		System.out.println("begin initializeStartingIndicTs");
 		max_designs = (int)n_choose_k(n, n / 2);
+		System.out.println("max_designs " + max_designs);
 
 		all_indicTs.put(n, new ArrayList<BitSet>(max_designs));
 
 		recursivelyFindAllBinaryVecs(new BitSet(), 0, 0, 0);
 //		for (int i = 0; i < max_designs; i++){
-//			System.out.println((i + 1) + ": " + Tools.StringJoin(all_indicTs.get(i), ""));
+//			System.out.println((i + 1) + ": " + Tools.StringJoin(all_indicTs.get(n).get(i), ""));
 //		}
 		System.out.println("end initializeStartingIndicTs");
 	}
@@ -185,6 +190,7 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 			if (all_indicTs.size() % 1000000 == 0){
 				System.out.println("million");
 			}
+//			System.out.println(Tools.StringJoin(bitSet, ""));
 			return;
 		}
 		
