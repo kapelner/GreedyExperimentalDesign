@@ -4,8 +4,8 @@ library(GreedyExperimentalDesign)
 
 NUM_CORES = 3
 MINN = 4
-MAXN = 28
-AVG_GREEDY = 1000
+MAXN = 26
+AVG_GREEDY = 100
 reps = 100
 ns = seq(from = MINN, to = MAXN, by = 2)
 ps = c(1) #c(1, 2, 5, 10, 20)
