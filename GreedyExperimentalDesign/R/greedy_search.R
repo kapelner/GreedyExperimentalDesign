@@ -248,7 +248,7 @@ resultsGreedySearch = function(obj, max_vectors = 9){
 	num_iters = .jcall(obj$java_obj, "[I", "getNumIters")
 	#these two are in order, so let's order the indicTs by the final objective values
 	ordered_indices = order(obj_vals)
-	last_index = ifelse(is.null(max_vectors), obj$max_designs, min(max_vectors, obj$max_designs))
+	last_index = ifelse(is.null(max_vectors), obj$max_designs, min(max_vectors + 1, obj$max_designs))
 	
 	ending_indicTs = NULL
 	starting_indicTs = NULL
