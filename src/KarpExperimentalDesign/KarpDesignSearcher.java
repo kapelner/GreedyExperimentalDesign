@@ -3,7 +3,7 @@ package KarpExperimentalDesign;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-import ExperimentalDesign.AbsSumObjective;
+import ObjectiveFunctions.*;
 import ExperimentalDesign.Tools;
 
 public abstract class KarpDesignSearcher {

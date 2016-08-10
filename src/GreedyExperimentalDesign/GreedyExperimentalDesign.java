@@ -26,8 +26,8 @@ package GreedyExperimentalDesign;
 
 import java.util.ArrayList;
 
-import ExperimentalDesign.AllExperimentalDesigns;
-import ExperimentalDesign.Tools;
+import ExperimentalDesign.*;
+import ObjectiveFunctions.*;
 
 /**
  * This class handles initializing many greedy searches for a treatment vector
@@ -35,24 +35,21 @@ import ExperimentalDesign.Tools;
  * 
  * @author Adam Kapelner
  */
-public class GreedyExperimentalDesign extends AllExperimentalDesigns {
+public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns {
 	
 	//set by user
-	private int max_designs;
 	private boolean diagnostics;
 	private boolean semigreedy;
 
-	//data inputed from the user's data
-	private int[][] starting_indicTs;
+	//data inputed from the user's datas
 	private Integer max_iters;
+	private int[][] starting_indicTs;
 	
 	//output
-	private int[][] ending_indicTs;	
 	private ArrayList<ArrayList<int[]>> switched_pairs;
 	private ArrayList<ArrayList<double[]>> xbardiffjs_by_iterations;
 	private ArrayList<ArrayList<Double>> min_obj_val_by_iterations;
-	private Double[] objective_vals;
-	private Integer[] num_iters;
+
 	
 
 	//running the Java as standalone is for debug purposes ONLY!!!
@@ -79,7 +76,7 @@ public class GreedyExperimentalDesign extends AllExperimentalDesigns {
 //			System.out.println(Tools.StringJoin(gd.Xstd[i]));
 //		}		
 		gd.setMaxDesigns(25);
-		gd.setObjective(ABS);
+		gd.setObjective(ObjectiveFunction.ABS);
 		gd.setDiagnostics();
 		gd.setWait();
 		gd.beginSearch();
@@ -90,9 +87,6 @@ public class GreedyExperimentalDesign extends AllExperimentalDesigns {
 		super.beginSearch();
 
 		//initialize all data
-		objective_vals = new Double[max_designs];
-		num_iters = new Integer[max_designs];
-		ending_indicTs = new int[max_designs][n];
 		switched_pairs = new ArrayList<ArrayList<int[]>>(max_designs);
 		for (int d = 0; d < max_designs; d++){
 			switched_pairs.add(new ArrayList<int[]>());
@@ -147,55 +141,6 @@ public class GreedyExperimentalDesign extends AllExperimentalDesigns {
 		for (int d = 0; d < max_designs; d++){
 			starting_indicTs[d] = Tools.fisherYatesShuffle(Tools.newBalancedBlankDesign(n), rand_obj);
 		}
-	}
-
-	public int progress(){
-//		System.out.println("max_designs " + max_designs);
-		int done = 0;
-		if (objective_vals != null){
-			for (int d = 0; d < max_designs; d++){
-//				System.out.println("progress loop d = " + d);
-				if (objective_vals[d] == null){
-					break;
-				}
-				done++;
-			}
-		}
-		return done;
-	}
-	
-	public int[] getNumIters(){		
-		int d_finished = progress();
-		int[] num_iters = new int[d_finished];
-		for (int i = 0; i < d_finished; i++){
-			num_iters[i] = this.num_iters[i];
-		}
-		return num_iters;
-	}
-	
-	public double[] getObjectiveVals(){		
-		int d_finished = progress();
-		double[] objective_vals = new double[d_finished];
-		for (int i = 0; i < d_finished; i++){
-			objective_vals[i] = this.objective_vals[i];
-		}
-		return objective_vals;
-	}
-	
-	public int[][] getStartingIndicTs(int[] indicies){
-		int[][] starting_indicTs = new int[indicies.length][n];
-		for (int i = 0; i < indicies.length; i++){
-			starting_indicTs[i] = this.starting_indicTs[indicies[i]];
-		}
-		return starting_indicTs;
-	}
-	
-	public int[][] getEndingIndicTs(int[] indicies){
-		int[][] ending_indicTs = new int[indicies.length][n];
-		for (int i = 0; i < indicies.length; i++){
-			ending_indicTs[i] = this.ending_indicTs[indicies[i]];
-		}
-		return ending_indicTs;
 	}	
 	
 	public int[][][] getSwitchedPairs(int[] indicies){		
@@ -240,12 +185,13 @@ public class GreedyExperimentalDesign extends AllExperimentalDesigns {
 		return min_obj_val_by_iterations_prim;
 	}	
 	
-		
-	public void setMaxDesigns(int max_designs){
-//		System.out.println("setMaxDesigns " + max_designs);
-		this.max_designs = max_designs;
+	public int[][] getStartingIndicTs(int[] indicies){
+		int[][] starting_indicTs = new int[indicies.length][n];
+		for (int i = 0; i < indicies.length; i++){
+			starting_indicTs[i] = this.starting_indicTs[indicies[i]];
+		}
+		return starting_indicTs;
 	}
-
 	
 	public void setDiagnostics(){
 		diagnostics = true;

@@ -49,7 +49,9 @@ searchTimeElapsed = function(obj){
 	.jcall(obj$java_obj, "I", "timeElapsedInSeconds")
 }
 
-#' Returns the objective value given a design vector as well an an objective function
+#' Returns the objective value given a design vector as well an an objective function.
+#' This is code duplication since this is implemented within Java. This is only to be
+#' run if...
 #' 
 #' @param X 		 	The n x p design matrix
 #' @param indic_T		The n-length binary allocation vector
@@ -78,3 +80,5 @@ compute_objective_val = function(X, indic_T, objective = "abs_sum_diff", inv_cov
 		as.numeric(t(X_T_bar_minus_X_C_bar) %*% inv_cov_X %*% X_T_bar_minus_X_C_bar)
 	}
 }
+
+

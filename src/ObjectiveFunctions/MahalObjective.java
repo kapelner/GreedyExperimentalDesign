@@ -1,4 +1,4 @@
-package ExperimentalDesign;
+package ObjectiveFunctions;
 
 public class MahalObjective extends ObjectiveFunction {
 

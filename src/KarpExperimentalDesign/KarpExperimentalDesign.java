@@ -2,6 +2,7 @@ package KarpExperimentalDesign;
 
 import ExperimentalDesign.AllExperimentalDesigns;
 import ExperimentalDesign.Tools;
+import ObjectiveFunctions.*;
 
 public class KarpExperimentalDesign extends AllExperimentalDesigns {
 	
@@ -34,7 +35,7 @@ public class KarpExperimentalDesign extends AllExperimentalDesigns {
 	//		for (int i = 0; i < n; i++){
 	//			System.out.println(Tools.StringJoin(od.Xstd[i]));
 	//		}
-			kd.setObjective(ABS);
+			kd.setObjective(ObjectiveFunction.ABS);
 			kd.setWait();
 			kd.setBalanced();
 			kd.beginSearch();

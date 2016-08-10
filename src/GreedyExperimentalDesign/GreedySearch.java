@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import ExperimentalDesign.*;
+import ObjectiveFunctions.*;
 
 public class GreedySearch {
 
@@ -34,13 +35,13 @@ public class GreedySearch {
 		
 //		System.out.println("GreedySearch: ready to begin " + d0);
 		ObjectiveFunction obj_fun = null;
-		if (objective.equals(AllExperimentalDesigns.MAHAL)){
+		if (objective.equals(ObjectiveFunction.MAHAL)){
 			obj_fun = new MahalObjective(Sinvmat, n);
 		} 
-		else if (diagnostics && objective.equals(AllExperimentalDesigns.ABS)){
+		else if (diagnostics && objective.equals(ObjectiveFunction.ABS)){
 			obj_fun = new AbsSumObjectiveWithDiagnostics();	
 		}
-		else if (objective.equals(AllExperimentalDesigns.ABS)){
+		else if (objective.equals(ObjectiveFunction.ABS)){
 			obj_fun = new AbsSumObjective();	
 		}
 	

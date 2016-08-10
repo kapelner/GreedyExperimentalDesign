@@ -4,13 +4,11 @@ import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
 import CustomLogging.FileLoggedClass;
+import ObjectiveFunctions.ObjectiveFunction;
 
 public abstract class AllExperimentalDesigns extends FileLoggedClass {
-
-	//valid objective functions
-	public static final String MAHAL = "mahal_dist";
-	public static final String ABS = "abs_sum_diff";
 	
 	public Random rand_obj;
 	
@@ -90,8 +88,8 @@ public abstract class AllExperimentalDesigns extends FileLoggedClass {
 	}	
 	
 	public void setObjective(String objective) throws Exception{
-		if (!MAHAL.equals(objective) && !ABS.equals(objective)){
-			throw new Exception("bad objective function");
+		if (!ObjectiveFunction.isValidObjFunction(objective)){
+			throw new Exception("objective function not recognized");
 		}
 		this.objective = objective;
 	}

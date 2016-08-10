@@ -24,17 +24,14 @@
 
 package OptimalExperimentalDesign;
 
-import ExperimentalDesign.AbsSumObjective;
+import ObjectiveFunctions.*;
 
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
 
 import ExperimentalDesign.AllExperimentalDesigns;
-import ExperimentalDesign.ObjectiveFunction;
-import ExperimentalDesign.MahalObjective;
 import ExperimentalDesign.Tools;
-import GreedyExperimentalDesign.GreedyExperimentalDesign;
 
 /**
  * This class handles initializing many optimal searches for a treatment vector
@@ -83,7 +80,7 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 //			for (int i = 0; i < n; i++){
 //				System.out.println(Tools.StringJoin(od.X[i]));
 //			}
-			od.setObjective(ABS);
+			od.setObjective(ObjectiveFunction.ABS);
 			od.setNumCores(3);
 			od.setWait();
 			od.beginSearch();
@@ -114,10 +111,10 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 							System.out.println("million");
 						}
 						ObjectiveFunction obj_fun = null;
-						if (objective.equals(GreedyExperimentalDesign.MAHAL)){
+						if (objective.equals(ObjectiveFunction.MAHAL)){
 							obj_fun = new MahalObjective(Sinv, n);
 						}
-						else if (objective.equals(GreedyExperimentalDesign.ABS)){
+						else if (objective.equals(ObjectiveFunction.ABS)){
 							obj_fun = new AbsSumObjective();	
 						}
 						

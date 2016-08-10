@@ -1,4 +1,6 @@
-package ExperimentalDesign;
+package ObjectiveFunctions;
+
+import ExperimentalDesign.Tools;
 
 public class AbsSumObjectiveWithDiagnostics extends ObjectiveFunction {
 
