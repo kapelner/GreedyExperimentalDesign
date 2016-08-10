@@ -2,7 +2,6 @@
 #' 
 #' @param designs	A matrix where each column is one design.
 #' 
-#' @returnType 
 #' @return 			A list of resulting data: the probability estimates for
 #' 					each pair in the design of randomness where estmates close
 #' 					to ~0.5 represent random assignment, then the entropy metric
@@ -18,7 +17,7 @@ compute_randomization_metrics = function(designs){
 	#now go ahead and create the Java object and set its information
 	java_obj = .jnew("ExperimentalDesign.RandomizationMetrics")
 	.jcall(java_obj, "V", "setNandR", as.integer(n), as.integer(r))
-	.jcall(java_obj, "V", "setNumCores", as.integer(num_cores))
+#	.jcall(java_obj, "V", "setNumCores", as.integer(num_cores))
 	
 	#feed in the data
 	for (j in 1 : r){
@@ -28,9 +27,9 @@ compute_randomization_metrics = function(designs){
 	.jcall(java_obj, "V", "compute")
 	
 	#harvest the data and return it as a list
-	p_hat_ijs = sapply(.jcall(obj$java_obj, "[[D", "getPHats"), .jevalArray)
-	rand_entropy_metric = .jcall(obj$java_obj, "D", "getRandEntropyMetric")
-	rand_norm_se_metric = .jcall(obj$java_obj, "D", "getRandStdErrMetric")
+	p_hat_ijs = sapply(.jcall(java_obj, "[[D", "getPHats"), .jevalArray)
+	rand_entropy_metric = .jcall(java_obj, "D", "getRandEntropyMetric")
+	rand_norm_se_metric = .jcall(java_obj, "D", "getRandStdErrMetric")
 	list(
 		p_hat_ijs = p_hat_ijs, 
 		rand_entropy_metric = rand_entropy_metric, 
