@@ -15,19 +15,19 @@ compute_randomization_metrics = function(designs){
 	
 	gc() #Delete at your own risk!
 	#now go ahead and create the Java object and set its information
-	java_obj = .jnew("ExperimentalDesign.RandomizationMetrics")
+	java_obj = .jnew("DesignMetrics.RandomizationMetrics")
 	.jcall(java_obj, "V", "setNandR", as.integer(n), as.integer(r))
 #	.jcall(java_obj, "V", "setNumCores", as.integer(num_cores))
 	
 	#feed in the data
 	for (j in 1 : r){
-		.jcall(java_obj, "V", "setDesign", as.integer(r - 1), designs[, j, drop = FALSE]) #java indexes from 0...n-1
+		.jcall(java_obj, "V", "setDesign", as.integer(j - 1), designs[, j]) #java indexes from 0...n-1
 	}
 	#get it going
 	.jcall(java_obj, "V", "compute")
 	
 	#harvest the data and return it as a list
-	p_hat_ijs = sapply(.jcall(java_obj, "[[D", "getPHats"), .jevalArray)
+	p_hat_ijs = sapply(.jcall(java_obj, "[[D", "getPhats"), .jevalArray)
 	rand_entropy_metric = .jcall(java_obj, "D", "getRandEntropyMetric")
 	rand_norm_se_metric = .jcall(java_obj, "D", "getRandStdErrMetric")
 	list(

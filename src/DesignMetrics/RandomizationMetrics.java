@@ -1,57 +1,91 @@
-package ExperimentalDesign;
-
-import org.apache.commons.math3.util.CombinatoricsUtils;
+package DesignMetrics;
 
 public class RandomizationMetrics {
 	//all the vectors
 	private int n;
-	private int num_vecs;
+	private int r;
 	private int[][] ending_indicTs;
-	private double[][] phats;
+	private double[][] p_hat_same_group;
 	private double entropy_metric;
 	private double se_metric;
+	
+	public static void main(String[] args){
+		RandomizationMetrics rm = new RandomizationMetrics();
+
+		int[] indicT0 = new int[]{1,0,1,0,1,0,0};
+		int[] indicT1 = new int[]{1,1,1,0,1,0,0};
+		int[] indicT2 = new int[]{1,0,1,0,1,0,0};
+		int[] indicT3 = new int[]{1,0,1,0,1,0,0};
+		int[] indicT4 = new int[]{1,0,1,0,1,0,0};
+
+		rm.setNandR(7, 5);
+		
+		rm.setDesign(0, indicT0);
+		rm.setDesign(1, indicT1);
+		rm.setDesign(2, indicT2);
+		rm.setDesign(3, indicT3);
+		rm.setDesign(4, indicT4);
+		
+//		for (int j = 0; j < rm.r; j++){
+//			for (int i = 0; i < rm.n; i++){
+//
+//				System.out.print(rm.ending_indicTs[j][i] + " ");
+//				
+//			}
+//			System.out.print("\n");
+//		}
+		
+		rm.compute();
+	}
 	
 	public RandomizationMetrics(){}
 	
 	public void setNandR(int n, int r){
 		this.n = n;
-		num_vecs = r;
-		ending_indicTs = new int[n][r];
+		this.r = r;
+		ending_indicTs = new int[r][n];
 	}
 	
 	public void setDesign(int j0, int[] indicT){
-//		System.out.println("setDesign " + i0 + "  " + indicT);
-
 		for (int i = 0; i < n; i++){
-			ending_indicTs[i][j0] = indicT[i];
-		}
+			ending_indicTs[j0][i] = indicT[i];
+		}			
 	}
 	
-	public void compute(){
-		phats = new double[n][n];
+	private void estimatePhats(){
+		p_hat_same_group = new double[n][n];
 		//for each pair we estimate the probability the randomization
 		//produces a different assignment		
 		for (int i1 = 0; i1 < n - 1; i1++){
 			for (int i2 = i1 + 1; i2 < n; i2++){
-				int num_diff = 0;
-				for (int r = 0; r < num_vecs; r++){
-					num_diff += ((ending_indicTs[i1] == ending_indicTs[i2]) ? 1 : 0);
+				int num_same_group = 0;
+				for (int j = 0; j < r; j++){
+//					System.out.println("j " + j + " i1 " + i1 + " i2 " + i2 + " val1  " + ending_indicTs[j][i1] + " val2 " + ending_indicTs[j][i2]);
+					num_same_group += ((ending_indicTs[j][i1] == ending_indicTs[j][i2]) ? 1 : 0);
 				}
-				phats[i1][i2] = num_diff / num_vecs;
+				p_hat_same_group[i1][i2] = num_same_group / (double)r;
+
+//				System.out.print("[" + (i1 + 1) + "," + (i2 + 1) + "] ");
+//				System.out.print(p_hat_same_group[i1][i2] + " ");
 			}
+			System.out.print("\n");
 		}
+	}
+	
+	public void compute(){
+		estimatePhats();
 		
 		//this is the probability that a random assignment is the same as another one
 		double s_n = (n - 2) / ((double)(2 * n - 2));
-		//number of pairs
-		long num_pairs = CombinatoricsUtils.binomialCoefficient(n, 2);
+		//number of pairs n choose 2 = ...
+		int num_pairs = n * (n-1) / 2;
 		
 		//calculate functions of each p_ij
 		double sum_entropies = 0;
 		double sum_sqd_dev = 0;
 		for (int i1 = 0; i1 < n - 1; i1++){
 			for (int i2 = i1 + 1; i2 < n; i2++){
-				double p_hat = phats[i1][i2];
+				double p_hat = p_hat_same_group[i1][i2];
 				sum_entropies += (probTimesLogProb(p_hat) + probTimesLogProb(1 - p_hat));
 				sum_sqd_dev += Math.pow(p_hat - s_n, 2);
 			}
@@ -82,6 +116,6 @@ public class RandomizationMetrics {
 	}
 
 	public double[][] getPhats() {
-		return phats;
+		return p_hat_same_group;
 	}
 }
