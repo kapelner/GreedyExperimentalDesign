@@ -131,7 +131,7 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 		}		
 		afterBeginSearch();
 		//System.out.println("min_obj_val_by_iterations: " + min_obj_val_by_iterations);
-		System.out.println("num_iters: " + num_iters);
+//		System.out.println("num_iters: " + num_iters);
 		
 	}
 

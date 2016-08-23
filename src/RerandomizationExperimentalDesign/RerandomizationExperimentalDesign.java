@@ -36,7 +36,7 @@ public class RerandomizationExperimentalDesign extends MultipleSearchExperimenta
 		}
 		
 		rd.setObjective(ObjectiveFunction.MAHAL);
-		rd.setMaxDesigns(10);
+		rd.setMaxDesigns(1000);
 		rd.setObjValCutoffToInclude(10000D);
 		rd.setNumCores(3);
 		rd.setWait();
@@ -71,7 +71,7 @@ public class RerandomizationExperimentalDesign extends MultipleSearchExperimenta
 			public void run() {
 				while (true){
 					int r = progress();
-					System.out.println("progress = " + r);
+//					System.out.println("progress = " + r);
 					//break up here too to avoid one more iteration (ugly, but a tad faster)
 					if (r == max_designs){
 						break;

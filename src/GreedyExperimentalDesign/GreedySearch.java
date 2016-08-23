@@ -174,7 +174,7 @@ public class GreedySearch {
 //		System.out.println("ending_indicT " + Tools.StringJoin(ending_indicT));
 		objective_vals[d0] = min_obj_val;
 		num_iters[d0] = iter - 1;
-		System.out.println("SEARCH DONE obj_val " + min_obj_val + " iters " + (iter - 1));
+//		System.out.println("SEARCH DONE obj_val " + min_obj_val + " iters " + (iter - 1));
 	}
 
 	private void createScaledXstd() {

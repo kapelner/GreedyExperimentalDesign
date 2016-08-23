@@ -46,6 +46,10 @@ public class RandomizationMetrics {
 		ending_indicTs = new int[r][n];
 	}
 	
+	public void setDesigns(int[][] ending_indicTs){
+		this.ending_indicTs = ending_indicTs;
+	}
+	
 	public void setDesign(int j0, int[] indicT){
 		for (int i = 0; i < n; i++){
 			ending_indicTs[j0][i] = indicT[i];
@@ -68,7 +72,7 @@ public class RandomizationMetrics {
 //				System.out.print("[" + (i1 + 1) + "," + (i2 + 1) + "] ");
 //				System.out.print(p_hat_same_group[i1][i2] + " ");
 			}
-			System.out.print("\n");
+//			System.out.print("\n");
 		}
 	}
 	

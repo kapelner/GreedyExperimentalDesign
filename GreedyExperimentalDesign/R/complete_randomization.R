@@ -8,7 +8,7 @@
 #' @export
 complete_randomization = function(n, r){
 	X = generate_stdzied_design_matrix(n = n, p = 1)
-	rd = initRerandomizationExperimentalDesignObject(X, r)
+	rd = initRerandomizationExperimentalDesignObject(X, max_designs = r)
 	res = resultsRerandomizationSearch(rd)
 	res$ending_indicTs
 }
