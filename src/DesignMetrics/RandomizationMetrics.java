@@ -96,7 +96,7 @@ public class RandomizationMetrics {
 		}
 		
 		//now calculate entropy
-		double entropy_norm_factor = s_n * Math.log(s_n) + (1 - s_n) * Math.log(s_n);
+		double entropy_norm_factor = s_n * Math.log(s_n) + (1 - s_n) * Math.log(1 - s_n);
 		entropy_metric = 1 / ((double) num_pairs) * sum_entropies / entropy_norm_factor;
 		
 		//now calculate se

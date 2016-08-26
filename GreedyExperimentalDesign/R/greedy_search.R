@@ -256,16 +256,14 @@ resultsGreedySearch = function(obj, max_vectors = 9){
 	xbarj_diffs = NULL
 	obj_val_by_iters = NULL
 	pct_vec_same = NULL
-	if (max_vectors > 0){
-		ending_indicTs = sapply(.jcall(obj$java_obj, "[[I", "getEndingIndicTs", as.integer(ordered_indices[1 : last_index] - 1)), .jevalArray)
-		if (obj$diagnostics){
-			starting_indicTs = sapply(.jcall(obj$java_obj, "[[I", "getStartingIndicTs", as.integer(ordered_indices[1 : last_index] - 1)), .jevalArray)
-			switches = lapply(.jcall(obj$java_obj, "[[[I", "getSwitchedPairs", as.integer(ordered_indices[1 : last_index] - 1)), sapply, .jevalArray)
-			#we should make switches into a list now
-			xbarj_diffs = lapply(.jcall(obj$java_obj, "[[[D", "getXbarjDiffs", as.integer(ordered_indices[1 : last_index] - 1)), sapply, .jevalArray)
-			obj_val_by_iters = sapply(.jcall(obj$java_obj, "[[D", "getObjValByIter", as.integer(ordered_indices[1 : last_index] - 1)), .jevalArray)
-			pct_vec_same = colSums(starting_indicTs == ending_indicTs) / length(starting_indicTs[,1]) * 100
-		}
+	ending_indicTs = sapply(.jcall(obj$java_obj, "[[I", "getEndingIndicTs", as.integer(ordered_indices[1 : last_index] - 1)), .jevalArray)
+	if (obj$diagnostics){
+		starting_indicTs = sapply(.jcall(obj$java_obj, "[[I", "getStartingIndicTs", as.integer(ordered_indices[1 : last_index] - 1)), .jevalArray)
+		switches = lapply(.jcall(obj$java_obj, "[[[I", "getSwitchedPairs", as.integer(ordered_indices[1 : last_index] - 1)), sapply, .jevalArray)
+		#we should make switches into a list now
+		xbarj_diffs = lapply(.jcall(obj$java_obj, "[[[D", "getXbarjDiffs", as.integer(ordered_indices[1 : last_index] - 1)), sapply, .jevalArray)
+		obj_val_by_iters = sapply(.jcall(obj$java_obj, "[[D", "getObjValByIter", as.integer(ordered_indices[1 : last_index] - 1)), .jevalArray)
+		pct_vec_same = colSums(starting_indicTs == ending_indicTs) / length(starting_indicTs[,1]) * 100
 	}
 	greedy_experimental_design_search_results = list(
 		obj_vals = obj_vals[ordered_indices], 

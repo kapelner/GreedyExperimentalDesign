@@ -21,7 +21,7 @@ compute_randomization_metrics = function(designs){
 	
 	#feed in the data
 	for (j in 1 : r){
-		.jcall(java_obj, "V", "setDesign", as.integer(j - 1), designs[, j]) #java indexes from 0...n-1
+		.jcall(java_obj, "V", "setDesign", as.integer(j - 1), as.integer(designs[, j])) #java indexes from 0...n-1
 	}
 	#get it going
 	.jcall(java_obj, "V", "compute")
