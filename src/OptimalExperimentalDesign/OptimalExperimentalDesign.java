@@ -206,8 +206,9 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 		}
 	}
 
+	//these two methods save me having to import the Apache math library
 	private long n_choose_k(int n, int k) {		
-		 long n_choose_k = (long)Math.exp(ln_factorial(n) - ln_factorial(k) - ln_factorial(n - k));
+		 long n_choose_k = (long)Math.ceil(Math.exp(ln_factorial(n) - ln_factorial(k) - ln_factorial(n - k)));
 //		 System.out.println(n + " choose " + k + " = " + n_choose_k);
 		 return n_choose_k;
 	}

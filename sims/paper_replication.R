@@ -62,7 +62,8 @@ p = 1
 r = 1000
 
 for (i in 1 : length(log_ns)){
-  n = 2 * round(10^(log_ns[i]) / 2)
+  n = 2 * round(10^(log_ns[i]) / 2) * 2 ## paper 2n = 100
+  cat("sim for n = ", n, "\n")
   X = generate_stdzied_design_matrix(n = n, p = p, covariate_gen = rnorm)
   rd = initGreedyExperimentalDesignObject(X, r, wait = TRUE)
   res = resultsGreedySearch(rd, max_vectors = NULL)
@@ -80,12 +81,13 @@ for (i in 1 : length(log_ns)){
 }
 
 plot(log_ns, sim_res[, 1], col = "blue", type = "l", 
-     xlab = "log10(n)",
+     xlab = "n",
      ylab = "log10(b)",
+     xaxt = "n",
      ylim = c(min(sim_res), max(sim_res)))
 points(log_ns, sim_res[, 2], col = "red", type = "l", lty = 2)
 points(log_ns, sim_res[, 3], col = "darkgreen", type = "l", lty = 3)
-
+axis(2, at = log_ns, labels = round(10^log_ns))
 
 #fig 2
 log_ns = seq(1, 2.5, by = 0.25)
