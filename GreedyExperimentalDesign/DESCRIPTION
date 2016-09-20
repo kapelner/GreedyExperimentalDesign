@@ -12,7 +12,6 @@ License: GPL-3
 Depends:
     R (>= 3.2.0),
     rJava (>= 0.9-6),
-    GreedyExperimentalDesignJARs (>= 1.0),
     lpSolve
 SystemRequirements: Java (>= 1.7.0)
 RoxygenNote: 5.0.1
