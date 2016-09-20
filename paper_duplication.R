@@ -210,3 +210,33 @@ axis(1, at = log_ns[c(1,3,5,7)], labels = round(10^log_ns)[c(1,3,5,7)])
 label_locs = norm_se_res[1, ] + 0.03 #needs to be adjusted each sim
 label_locs[1] = norm_se_res[1] - 0.06 #needs to be adjusted each sim
 text(x = log_ns[1], y = label_locs, labels = ps)
+
+#Fig 4
+options(java.parameters = "-Xmx20000m")
+library(GreedyExperimentalDesign)
+n = 100
+p = 1
+r = 5e6
+X = generate_stdzied_design_matrix(n = n, p = p, covariate_gen = rnorm)
+rd = initGreedyExperimentalDesignObject(X, r, wait = FALSE)
+
+plotted = FALSE
+
+while (TRUE){
+	res = resultsGreedySearch(rd)$obj_vals_unordered
+	l = length(res)
+	cat("num done: ", l, " i.e. ", l / r * 100, "%\n")
+	
+	xs = seq(1, l, r / 100)
+	ys = array(NA, length(xs))
+	for (i in 1 : length(xs)){
+		ys[i] = (min(res[1 : xs[i]]))
+	}
+	plot(log(xs), log(ys), type = "l")
+	
+	if (l == r){
+		break
+	}
+	Sys.sleep(5)
+}
+

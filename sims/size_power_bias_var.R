@@ -1,1 +1,0 @@
-#This simulation will test size and power of hypothesis tests as well as biases and variances

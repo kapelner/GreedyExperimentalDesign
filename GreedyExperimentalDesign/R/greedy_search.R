@@ -267,6 +267,7 @@ resultsGreedySearch = function(obj, max_vectors = 9){
 	}
 	greedy_experimental_design_search_results = list(
 		obj_vals = obj_vals[ordered_indices], 
+		obj_vals_unordered = obj_vals,
 		num_iters = num_iters[ordered_indices], 
 		orig_order = ordered_indices, 
 		ending_indicTs = ending_indicTs,
