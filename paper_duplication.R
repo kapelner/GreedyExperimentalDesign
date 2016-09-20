@@ -1,10 +1,10 @@
 
-options(java.parameters = "-Xmx3000m")
+options(java.parameters = "-Xmx6000m")
 library(GreedyExperimentalDesign)
 library(xtable)
 
-#tab 1
-n = 20
+#tab 1 results for 2n=100
+n = 100
 p = 1
 r = 20
 X = generate_stdzied_design_matrix(n = n, p = p, covariate_gen = rnorm)
@@ -18,42 +18,29 @@ for (j in 1 : r){
 }
 initial_obj_vals
 
-#tab 1a
-print(xtable(cbind(initial_obj_vals, res$num_iters, res$obj_vals), digits = c(0,2,0,5)), include.rownames = FALSE)
+print(xtable(cbind(initial_obj_vals, res$num_iters, res$obj_vals), digits = c(0,2,0,7)), include.rownames = FALSE)
 
-#tab 1b
-TOP_N_VECS = 4
-demo = matrix(NA, nrow = n, ncol = 0)
-demo = cbind(X, demo)
-for (tn in 1 : TOP_N_VECS){
-  t0 = res$starting_indicTs[, tn]
-  demo = cbind(demo, t0)
-  switches = res$switches[[tn]] + 1 #java indexes from 0...n-1
-  obj_vals_iter = res$obj_val_by_iters[[tn]]
-  for (s in 1 : ncol(switches)){
-    switch = switches[, s]
-    t_new = t0
-    t_new[switch[1]] = t0[switch[2]]
-    t_new[switch[2]] = t0[switch[1]]
-    demo = cbind(demo, t_new)
-    t1 = t_new
-  }
+#now demonstrate optimal at 2n=28
+n = 28
+p = 1
+r = 5
+X = generate_stdzied_design_matrix(n = n, p = p, covariate_gen = rnorm)
+rd = initGreedyExperimentalDesignObject(X, r, wait = TRUE, diagnostics = TRUE)
+res = resultsGreedySearch(rd, max_vectors = NULL)
+res$obj_vals
+
+initial_obj_vals = array(NA, r)
+for (j in 1 : r){
+  initial_obj_vals[j] = compute_objective_val(X, res$starting_indicTs[, j])
 }
 
-#get delta b's
-delta_bs = list()
-for (tn in 1 : TOP_N_VECS){
-  switches = res$switches[[tn]] + 1 #java indexes from 0...n-1
-  obj_vals_iter = res$obj_val_by_iters[[tn]]
-  delta_bs[[tn]] = -diff(c(initial_obj_vals[tn], obj_vals_iter))
-}
-delta_bs
+greedy_res = cbind(initial_obj_vals, res$num_iters, res$obj_vals)
 
-print(xtable(demo, digits = c(0,2,rep(0, 11))), include.rownames = FALSE)
+NUM_CORES = 3
+oed = initOptimalExperimentalDesignObject(X, num_cores = NUM_CORES, objective = "abs_sum_diff", wait = TRUE)
+opt_res = resultsOptimalSearch(oed)$obj_val
 
-#no relationship --- fig not in paper
-plot(initial_obj_vals, res$obj_vals)
-
+print(xtable(rbind(greedy_res, c(NA, NA, opt_res)), digits = c(0,2,0,9)), include.rownames = FALSE)
 
 #fig 1
 log_ns = seq(1, 2.5, by = 0.25)
@@ -84,20 +71,20 @@ plot(log_ns, sim_res[, 1], col = "blue", type = "l",
      xlab = "n",
      ylab = "log10(b)",
      xaxt = "n",
-     ylim = c(min(sim_res), max(sim_res)))
-points(log_ns, sim_res[, 2], col = "red", type = "l", lty = 2)
-points(log_ns, sim_res[, 3], col = "darkgreen", type = "l", lty = 3)
-axis(2, at = log_ns, labels = round(10^log_ns))
+     ylim = c(min(sim_res), max(sim_res)), lwd = 2)
+points(log_ns, sim_res[, 2], col = "red", type = "l", lty = 2, lwd = 3)
+points(log_ns, sim_res[, 3], col = "darkgreen", type = "l", lty = 3, lwd = 4)
+axis(1, at = log_ns[c(1,3,5,7)], labels = round(10^log_ns)[c(1,3,5,7)])
 
 #fig 2
 log_ns = seq(1, 2.5, by = 0.25)
 ps = c(1, 2, 5, 10, 40)
 sim_res = matrix(NA, nrow = length(log_ns), ncol = length(ps))
 switches_res = matrix(NA, nrow = length(log_ns), ncol = length(ps))
-r = 100
+r = 1000
 
 for (i in 1 : length(log_ns)){
-  n = 2 * round(10^(log_ns[i]) / 2)
+  n = 2 * round(10^(log_ns[i]) / 2) * 2 #2n in the paper
   for (j in 1 : length(ps)){
     p = ps[j]
     X = generate_stdzied_design_matrix(n = n, p = p, covariate_gen = rnorm)
@@ -111,26 +98,50 @@ for (i in 1 : length(log_ns)){
 #fig 2a
 par(mar = c(5,5,1,5))
 plot(log_ns, log_ns, type = "n", 
-     xlab = "log10(n)",
+     xlab = "n",
+     xaxt = "n",
      ylab = "log10(b)",
      ylim = c(min(sim_res), max(sim_res)))
 for (j in 1: length(ps)){
   points(log_ns, sim_res[, j], type = "l")
 }
 axis(side = 4, at = sim_res[length(log_ns), ], labels = ps)
+axis(1, at = log_ns[c(1,3,5,7)], labels = round(10^log_ns)[c(1,3,5,7)])
 mtext("p", side = 4, padj = 4)
 
 #fig 2b
 plot(log_ns, log_ns, type = "n", 
-     xlab = "log10(n)",
+     xlab = "n",
+     xaxt = "n",
      ylab = "average # of switches",
      ylim = c(min(switches_res), max(switches_res)))
 for (j in 1: length(ps)){
   points(log_ns, switches_res[, j], type = "l")
 }
 axis(side = 4, at = switches_res[length(log_ns), ], labels = ps)
+axis(1, at = log_ns[c(1,3,5,7)], labels = round(10^log_ns)[c(1,3,5,7)])
 mtext("p", side = 4, padj = 4)
 
+#table 3
+log_ns = seq(1, 2.5, by = 0.25)
+r = 100 # for speed
+Xregr = data.frame(matrix(NA, nrow = 0, ncol = 3))
+for (i in 1 : length(log_ns)){
+  n = 2 * round(10^(log_ns[i]) / 2) * 2 #2n is the parameterization in the paper but not the R package
+  for (j in 1 : length(ps)){
+    p = ps[j]
+    X = generate_stdzied_design_matrix(n = n, p = p, covariate_gen = rnorm)
+    rd = initGreedyExperimentalDesignObject(X, r, wait = TRUE, diagnostics = TRUE)
+    res = resultsGreedySearch(rd, max_vectors = NULL)
+    Xregr = rbind(Xregr, cbind(log(res$obj_vals), log(n / 2), p^-1)) #n/2 because 2n is how it is parameterized in the paper
+  }
+}
+
+colnames(Xregr) = c("logb", "logn", "invp")
+mod = lm(logb ~ logn * invp, Xregr)
+summary(mod)
+library(stargazer)
+stargazer(mod)
 
 #fig 3
 log_ns = seq(1, 2.5, by = 0.25)
@@ -154,8 +165,6 @@ for (i in 1 : length(log_ns)){
 }
 
 #need metrics for complete randomization
-
-
 cr_entropy = array(NA, length(log_ns))
 cr_norm_se = array(NA, length(log_ns))
 for (i in 1 : length(log_ns)){
@@ -174,26 +183,30 @@ par(mar = c(5,5,1,1))
 
 #fig 3a
 plot(log_ns, log_ns, type = "n", 
-     xlab = "log10(n)",
+     xlab = "n",
+     xaxt = "n",
      ylab = "E",
      ylim = c(0, 1))
 for (j in 1: length(ps)){
   points(log_ns, entropy_res[, j], type = "l")
 }
-entropy_res[, 1]
 points(log_ns, cr_entropy, type = "l", lty = 2, col = "gray")
-# axis(side = 2, at = entropy_res[1, ], labels = ps, padj = 8)
-# mtext("p", side = 2, padj = 8)
+axis(1, at = log_ns[c(1,3,5,7)], labels = round(10^log_ns)[c(1,3,5,7)])
+label_locs = entropy_res[1, ] - 0.03 #needs to be adjusted each sim
+label_locs[1] = label_locs[1] + 0.06 #needs to be adjusted each sim
+text(x = log_ns[1], y = label_locs, labels = ps)
 
-?axis
 #fig 3b
 plot(log_ns, log_ns, type = "n", 
-     xlab = "log10(n)",
+     xlab = "n",
      ylab = "D",
+     xaxt = "n",
      ylim = c(0, 1))
 for (j in 1: length(ps)){
   points(log_ns, norm_se_res[, j], type = "l")
 }
 points(log_ns, cr_norm_se, type = "l", lty = 2, col = "gray")
-# axis(side = 4, at = norm_se_res[length(log_ns), ], labels = ps)
-# mtext("p", side = 4, padj = 4)
+axis(1, at = log_ns[c(1,3,5,7)], labels = round(10^log_ns)[c(1,3,5,7)])
+label_locs = norm_se_res[1, ] + 0.03 #needs to be adjusted each sim
+label_locs[1] = norm_se_res[1] - 0.06 #needs to be adjusted each sim
+text(x = log_ns[1], y = label_locs, labels = ps)
