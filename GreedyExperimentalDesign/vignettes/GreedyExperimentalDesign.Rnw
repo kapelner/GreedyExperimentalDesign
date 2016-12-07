@@ -1,6 +1,6 @@
-% \VignetteIndexEntry{GreedyExperimentalDesign}
-% \VignetteKeywords{GreedyExperimentalDesign}
-% \VignettePackage{GreedyExperimentalDesign}
+%\VignetteIndexEntry{GreedyExperimentalDesign}
+%\VignetteKeywords{GreedyExperimentalDesign}
+%\VignettePackage{GreedyExperimentalDesign}
 
 \documentclass[article,nojss]{jss}
 
@@ -13,14 +13,18 @@
 \usepackage{algorithmicx}
 \usepackage{algpseudocode}
 \usepackage{placeins}
+\usepackage{natbib}
+\include{preamble}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% declarations for jss.cls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% almost as usual
-\author{Adam Kapelner et al. \\ Queens College, City University of New York \\
-Department of Mathematics} \title{\pkg{GreedyExperimentalDesign}: Finding
+\author{Adam Kapelner \\ Department of Mathematics \\ Queens College, CUNY \And David Azriel \\ Faculty of Industrial \\
+Engineering \& Management \\The Technion \And Abba M. Krieger \\ Department of Statistics \\
+The Wharton School of the \\
+University of Pennsylvania} \title{\pkg{GreedyExperimentalDesign}: Finding
 Experimental Designs using Greedy Search with Random Restarts}
 
 %% for pretty printing and a nice hypersummary also set:
@@ -31,22 +35,37 @@ Search with Random Restarts} %% without formatting
 
 %% an abstract and keywords
 \Abstract{
-This package greedily finds experimental designs with good balance based on a balance metric of your choice.
+This package greedily finds experimental designs with greatly improved balance while preserving randomness near complet randomization. You may use a balance metric of your choice. Theory and inference of this procedure is discussed in \citet{Krieger2016}.
 }
 \Keywords{experimental design, greedy search, optimization, \proglang{R}, \proglang{Java}}
-\Plainkeywords{experimental design, greedy search, optimization, R, Java}
+\Plainkeywords{experimental design, greedy search, optimization, Java}
 
 \Address{
-  Adam Kapelner\\
-  Department of Mathematics \\
-  Queens College,  City University of New York \\
-  64-19 Kissena Blvd Room 325 \\
-  Flushing, NY, 11367 \\
-  E-mail: \email{kapelner@qc.cuny.edu}\\
-  URL: \url{http://kapelner.com}
+Adam Kapelner\\
+Department of Mathematics \\
+Queens College,  City University of New York \\
+65-30 Kissena Blvd Room 604 \\
+Queens, NY, 11367 \\
+E-mail: \email{kapelner@qc.cuny.edu}\\
+URL: \url{http://kapelner.com} \\
+  
+David Azriel \\
+Faculty of Industrial Engineering and Management \\ 
+The Technion \\
+Bloomfield Building, Room 301 \\
+Technion City, Haifa 3200003, Israel \\
+E-mail: \email{davidazr@ie.technion.ac.il} \\
+
+Abba Krieger \\
+Department of Statistics \\
+The Wharton School of the University of Pennsylvania\\
+Huntsman Hall, 4th floor \\
+3730 Walnut St. \\
+Philadelphia, PA 19104 \\
+E-mail: \email{krieger@wharton.upenn.edu} 
 }
 
-\include{preamble}
+
 
 \begin{document}
 
@@ -60,7 +79,7 @@ There are also metrics which measure the similarity between the two joint densit
 }
 
 \begin{enumerate}
-\item (ABS) $\sum_{j=1}^p \abss{\Xbar_{T,j} - \Xbar_{C,j}}$ which is a measure of balance between the covariate distributions. Covariate distribution permitting, zero is the optimal value.
+\item (ABS) $\sum_{j=1}^p \abss{\Xbar_{T,j} - \Xbar_{C,j}} / s_j$ which is a measure of balance between the covariate distributions. Covariate distribution permitting, zero is the optimal value.
 \item (MAHAL) $\overn{n_T n_C}\parens{\XbarT - \XbarC}^\top \Sinv_{\X} \parens{\XbarT - \XbarC}$ is a Mahalanobis-like distance metric. Covariate distribution permitting, zero is the optimal value.
 \end{enumerate}
 
@@ -180,8 +199,7 @@ The stable version of \pkg{GreedyExperimentalDesign} will be soon on CRAN and th
 
 We thank Simon Urbanek for his very generous help with \pkg{rJava}.
 
-\bibliography{GreedyExperimentalDesign}
-
-\appendix
+%\bibliographystyle{apa}
+\bibliography{refs}
 
 \end{document}

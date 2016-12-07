@@ -11,10 +11,10 @@ generate_stdzied_design_matrix(n = 50, p = 1, covariate_gen = rnorm, ...)
 
 \item{p}{Number of columns in the design matrix}
 
-\item{...}{Optional arguments to be passed to the \code{covariate_dist} function.}
-
-\item{covariate_dist}{The function to use to draw the covariate realizations (assumed to be iid).
+\item{covariate_gen}{The function to use to draw the covariate realizations (assumed to be iid).
 This defaults to \code{rnorm} for $N(0,1)$ draws.}
+
+\item{...}{Optional arguments to be passed to the \code{covariate_dist} function.}
 }
 \value{
 THe design matrix

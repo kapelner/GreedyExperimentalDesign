@@ -25,7 +25,7 @@ stopSearch = function(obj){
 #' 
 #' @param n					Number of rows in the design matrix 
 #' @param p 				Number of columns in the design matrix
-#' @param covariate_dist	The function to use to draw the covariate realizations (assumed to be iid).
+#' @param covariate_gen		The function to use to draw the covariate realizations (assumed to be iid).
 #' 							This defaults to \code{rnorm} for $N(0,1)$ draws.
 #' @param ...				Optional arguments to be passed to the \code{covariate_dist} function.
 #' @return 					THe design matrix

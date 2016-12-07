@@ -156,7 +156,7 @@ summary.greedy_experimental_design_search = function(object, ...){
 #' 
 #' @param x			The \code{greedy_experimental_design_search} object to be summarized in the plot
 #' @param ...		Other parameters to pass to the default plot function
-#' @return			An array of order statistics from \link{\code{plot_obj_val_order_statistic}} as a list element
+#' @return			An array of order statistics from \link{plot_obj_val_order_statistic} as a list element
 #' 
 #' @author 			Adam Kapelner
 #' @method plot greedy_experimental_design_search
@@ -165,7 +165,7 @@ plot.greedy_experimental_design_search = function(x, ...){
 	par(mfrow = c(1, 2))
 	
 	progress = greedySearchCurrentProgress(x)
-	res = resultsGreedySearch(ged, max_vectors = 2)
+	res = resultsGreedySearch(x, max_vectors = 2)
 	hist(res$obj_vals_orig_order, br = progress / 10, xlab = "objective value", ylab = NULL, main = paste("After", progress, "searches"))
 #	hist(res$num_iters, br = progress / 10, xlab = "# of search iterations", ylab = NULL, main = "")
 	
@@ -210,7 +210,7 @@ plot_obj_val_by_iter = function(res, runs = NULL){
 #' @export
 plot_obj_val_order_statistic = function(obj, order_stat = 1, skip_every = 5, type = "o", ...){
 	progress = greedySearchCurrentProgress(obj)
-	res = resultsGreedySearch(ged, max_vectors = 0)	#don't need any vectors => set it to 0 for speed concerns
+	res = resultsGreedySearch(obj, max_vectors = 0)	#don't need any vectors => set it to 0 for speed concerns
 	vals = res$obj_vals_orig_order
 	val_order_stats = array(NA, progress)
 	for (d in order_stat : progress){

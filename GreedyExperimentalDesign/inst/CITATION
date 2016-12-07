@@ -2,10 +2,13 @@ citHeader("")
 
 citEntry(
      entry       = "Article",
-	 title       = "",
-	 author      = personList(as.person("Adam Kapelner")),
-	 journal     = "",
-	 year        = "2015", 
-	 textVersion = "Kapelner, A",
+	 title       = "Nearly Random Designs with Greatly Improved Balance",
+	 author      = personList(
+	 				as.person("Abba M Krieger"), 
+	 				as.person("David Azriel"), 
+	 				as.person("Adam Kapelner")),
+	 journal     = "Arxiv",
+	 year        = "2016", 
+	 textVersion = "Krieger, A M and Azriel, D and Kapelner, A",
 	 header      = "To cite GreedyExperimentalDesign in publications, please use:"
 )

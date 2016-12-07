@@ -13,6 +13,9 @@ initKarpExperimentalDesignObject(X, objective = "abs_sum_diff",
 (one for each measurement on the subject). This is the design matrix you wish 
 to search for a more karp design.}
 
+\item{objective}{The objective function to use when greedily searching design space. This is a string
+"\code{abs_sum_diff}" (default) or "\code{mahal_dist}."}
+
 \item{wait}{Should the \code{R} terminal hang until all \code{max_designs} vectors are found? The 
 deafult is \code{FALSE}.}
 

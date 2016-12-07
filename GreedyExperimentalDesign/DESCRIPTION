@@ -1,17 +1,17 @@
 Package: GreedyExperimentalDesign
 Type: Package
-Title: Greedy Experimental Design
+Title: Greedy Experimental Design Construction
 Version: 1.0
-Date: 2016-08-10
-Author: Adam Kapelner, David Azriel, Abba Krieger see COPYRIGHTS file for the
-    authors of the java libraries
+Date: 2016-12-7
+Author: Adam Kapelner, David Azriel and Abba Krieger
 Maintainer: Adam Kapelner <kapelner@qc.cuny.edu>
-Description: A suite which computes experimental designs for a
-    two-arm experiment with covariates for a whole variety of algorithms
+Description: This software computes experimental designs for a
+    two-arm experiment with covariates by greedily optimizing a
+    balance objective function.
 License: GPL-3
 Depends:
     R (>= 3.2.0),
-    rJava (>= 0.9-6),
-    lpSolve
+    rJava (>= 0.9-6)
 SystemRequirements: Java (>= 1.7.0)
+Imports: graphics, grDevices, stats
 RoxygenNote: 5.0.1
