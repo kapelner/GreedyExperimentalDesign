@@ -46,6 +46,20 @@ An object of type \code{greedy_experimental_design_search} which can be further 
 This method creates an object of type greedy_experimental_design and will immediately initiate
 a search through $1_{T}$ space.
 }
+\examples{
+ \dontrun{
+	library(MASS)
+	data(Boston)
+ #pretend the Boston data was an experiment setting 
+	#first pull out the covariates
+ X = Boston[, 1 : 13] 
+ #begin the greedy design search
+	ged = initGreedyExperimentalDesignObject(X, 
+		max_designs = 1000, num_cores = 3, objective = "abs_sum_diff")
+	#wait
+	ged
+	}
+}
 \author{
 Adam Kapelner
 }

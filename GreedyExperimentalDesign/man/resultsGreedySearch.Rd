@@ -15,6 +15,30 @@ This is not recommended as returning over 1,000 vectors is time-intensive. The d
 \description{
 Returns the results (thus far) of the greedy design search
 }
+\examples{
+ \dontrun{
+	library(MASS)
+	data(Boston)
+ #pretend the Boston data was an experiment setting 
+	#first pull out the covariates
+ X = Boston[, 1 : 13]
+ #begin the greedy design search
+	ged = initGreedyExperimentalDesignObject(X, 
+		max_designs = 1000, num_cores = 2, objective = "abs_sum_diff")
+	#wait
+	res = resultsGreedySearch(ged, max_vectors = 2)
+	design = res$ending_indicTs[, 1] #ordered already by best-->worst
+ design
+ #what is the balance on this vector?
+	res$obj_vals[1]
+	#compute balance explicitly in R to double check
+	compute_objective_val(X, design) #same as above
+	#how far have we come?
+	ged
+	#we can cut it here
+	stopSearch(ged)
+	}
+}
 \author{
 Adam Kapelner
 }
