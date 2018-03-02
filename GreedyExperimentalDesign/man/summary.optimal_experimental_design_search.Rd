@@ -17,4 +17,3 @@ Prints a summary of a \code{optimal_experimental_design_search} object
 \author{
 Adam Kapelner
 }
-

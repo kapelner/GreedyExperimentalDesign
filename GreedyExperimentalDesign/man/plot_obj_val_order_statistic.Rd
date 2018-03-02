@@ -27,4 +27,3 @@ Plots an order statistic of the object value as a function of number of searches
 \author{
 Adam Kapelner
 }
-

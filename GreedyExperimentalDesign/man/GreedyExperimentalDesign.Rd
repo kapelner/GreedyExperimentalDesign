@@ -8,14 +8,13 @@
 \description{
 A tool to find a priori experimental designs with good balance greedily
 }
-\author{
-Adam Kapelner \email{kapelner@qc.cuny.edu}
-}
 \references{
 Kapelner, A
+}
+\author{
+Adam Kapelner \email{kapelner@qc.cuny.edu}
 }
 \keyword{Design,}
 \keyword{Experimental}
 \keyword{Greedy}
 \keyword{search}
-

@@ -114,7 +114,7 @@ public class RerandomizationExperimentalDesign extends MultipleSearchExperimenta
 		afterBeginSearch();		
 	}
 	
-	public void setObjValCutoffToInclude(Double obj_val_cutoff_to_include){
+	public void setObjValCutoffToInclude(double obj_val_cutoff_to_include){
 		this.obj_val_cutoff_to_include = obj_val_cutoff_to_include;
 	}	
 }

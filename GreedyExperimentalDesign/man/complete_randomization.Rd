@@ -20,4 +20,3 @@ Implements complete balanced randomization
 \author{
 Adam Kapelner
 }
-

@@ -15,4 +15,3 @@ Returns the number of vectors found by the greedy design search
 \author{
 Adam Kapelner
 }
-

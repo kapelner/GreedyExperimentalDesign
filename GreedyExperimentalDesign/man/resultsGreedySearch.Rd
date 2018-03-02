@@ -42,4 +42,3 @@ Returns the results (thus far) of the greedy design search
 \author{
 Adam Kapelner
 }
-
