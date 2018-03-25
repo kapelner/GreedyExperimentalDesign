@@ -103,9 +103,11 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 
 	    	search_thread_pool.execute(new Runnable(){
 				public void run() {
-//					System.out.println("RUN");
-					int stop = Math.min(max_designs, d0 + BATCH_SIZE);
-					for (int d00 = d0; d00 < stop; d00++){
+//					System.out.println("RUN" + all_indicTs.get(n).size());
+					for (int d00 = d0; d00 < d0 + BATCH_SIZE; d00++){
+						if (d00 >= max_designs){
+							break;
+						}
 //						System.out.println("d00 " + d00 + " stop " + stop);
 						if (d00 % 1000000 == 0){
 							System.out.println("million");
@@ -139,7 +141,9 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 						obj_fun.setXCbar(avg_Cs);
 						
 						//calculate our objective function (according to the user's specification)
-						objective_vals[d00] = obj_fun.calc(false);
+						if (d00 < max_designs){
+							objective_vals[d00] = obj_fun.calc(false);
+						}
 //						System.out.println("objval: " + objective_vals[d00]);
 						//break out if user desires
 						if (search_stopped){
@@ -181,9 +185,11 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 	}
 
 	private void recursivelyFindAllBinaryVecs(BitSet bitSet, int pos, int on, int off) {
+		
 		//if we've made it to the end, we're done
 		if (pos == n){
 			all_indicTs.get(n).add(bitSet);
+//			System.out.println("bitSet: " + Tools.StringJoin(Tools.convert_bitvector_to_intvector(bitSet, n)));
 			if (all_indicTs.size() % 1000000 == 0){
 				System.out.println("million");
 			}
@@ -208,7 +214,7 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 
 	//these two methods save me having to import the Apache math library
 	private long n_choose_k(int n, int k) {		
-		 long n_choose_k = (long)Math.ceil(Math.exp(ln_factorial(n) - ln_factorial(k) - ln_factorial(n - k)));
+		 long n_choose_k = (long)Math.floor(Math.exp(ln_factorial(n) - ln_factorial(k) - ln_factorial(n - k)));
 //		 System.out.println(n + " choose " + k + " = " + n_choose_k);
 		 return n_choose_k;
 	}
@@ -242,16 +248,20 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 	}	
 	
 	public double[] getObjectiveVals(){		
-		int d_finished = num_vectors_checked();
-		double[] objective_vals = new double[d_finished];
-		for (int i = 0; i < d_finished; i++){
-			objective_vals[i] = this.objective_vals[i];
-		}
-		return objective_vals;
+//		int d_finished = num_vectors_checked();
+//		double[] objective_vals = new double[d_finished];
+//		for (int i = 0; i < d_finished; i++){
+//			objective_vals[i] = this.objective_vals[i];
+//		}
+		return this.objective_vals;
 	}
 	public double getOptObjectiveVal(){		
 		return objective_vals[d_opt];
 	}	
+	
+	public double[] getAllObjectiveVals(){		
+		return objective_vals;
+	}
 	
 	public int[] getOptIndicT() {
 		return Tools.convert_bitvector_to_intvector(all_indicTs.get(n).get(d_opt), n);

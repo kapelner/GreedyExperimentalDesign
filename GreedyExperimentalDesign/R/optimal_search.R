@@ -126,10 +126,12 @@ summary.optimal_experimental_design_search = function(object, ...){
 #' @author Adam Kapelner
 #' @export
 resultsOptimalSearch = function(obj){
-	obj_val = .jcall(obj$java_obj, "D", "getOptObjectiveVal")
+	opt_obj_val = .jcall(obj$java_obj, "D", "getOptObjectiveVal")
 	indicT = .jcall(obj$java_obj, "[I", "getOptIndicT", .jevalArray)
+	all_obj_vals = .jcall(obj$java_obj, "[D", "getAllObjectiveVals", .jevalArray)
 	list(
-		obj_val = obj_val,
-		indicT = indicT
+		opt_obj_val = opt_obj_val,
+		indicT = indicT,
+		all_obj_vals = all_obj_vals
 	)
 }
