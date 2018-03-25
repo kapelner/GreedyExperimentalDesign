@@ -17,4 +17,3 @@ Plots the objective value by iteration
 \author{
 Adam Kapelner
 }
-

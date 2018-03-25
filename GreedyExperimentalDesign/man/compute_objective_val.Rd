@@ -28,4 +28,3 @@ run if...
 \author{
 Adam Kapelner
 }
-

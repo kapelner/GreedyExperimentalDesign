@@ -20,4 +20,3 @@ Plots a summary of a \code{greedy_experimental_design_search} object
 \author{
 Adam Kapelner
 }
-

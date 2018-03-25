@@ -15,4 +15,3 @@ Starts the parallelized greedy design search. Once begun, this function cannot b
 \author{
 Adam Kapelner
 }
-

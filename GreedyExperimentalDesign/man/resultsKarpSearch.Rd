@@ -15,4 +15,3 @@ Returns the results (thus far) of the karp design search
 \author{
 Adam Kapelner
 }
-

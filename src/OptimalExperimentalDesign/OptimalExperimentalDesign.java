@@ -171,9 +171,9 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 			max_designs = all_indicTs.get(n).size();
 			return;
 		}		
-		System.out.println("begin initializeStartingIndicTs");
+//		System.out.println("begin initializeStartingIndicTs");
 		max_designs = (int)n_choose_k(n, n / 2);
-		System.out.println("max_designs " + max_designs);
+//		System.out.println("max_designs " + max_designs);
 
 		all_indicTs.put(n, new ArrayList<BitSet>(max_designs));
 
@@ -181,7 +181,7 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 //		for (int i = 0; i < max_designs; i++){
 //			System.out.println((i + 1) + ": " + Tools.StringJoin(all_indicTs.get(n).get(i), ""));
 //		}
-		System.out.println("end initializeStartingIndicTs");
+//		System.out.println("end initializeStartingIndicTs");
 	}
 
 	private void recursivelyFindAllBinaryVecs(BitSet bitSet, int pos, int on, int off) {

@@ -54,7 +54,7 @@ initRerandomizationExperimentalDesignObject = function(X,
 	java_obj = .jnew("RerandomizationExperimentalDesign.RerandomizationExperimentalDesign")
 	.jcall(java_obj, "V", "setMaxDesigns", as.integer(max_designs))
 	if (!is.null(obj_val_cutoff_to_include)){
-		.jcall(java_obj, "V", "setObjValCutoffToInclude", obj_val_cutoff_to_include)
+		.jcall(java_obj, "V", "setObjValCutoffToInclude", as.numeric(obj_val_cutoff_to_include))
 	}
 	.jcall(java_obj, "V", "setNumCores", as.integer(num_cores))
 	.jcall(java_obj, "V", "setNandP", as.integer(n), as.integer(p))
@@ -145,16 +145,18 @@ rerandomizationSearchCurrentProgress = function(obj){
 
 #' Returns the results (thus far) of the rerandomization design search
 #' 
-#' @param obj 			The \code{rerandomization_experimental_design} object that is currently running the search
+#' @param obj 					The \code{rerandomization_experimental_design} object that is currently running the search
+#' @param include_assignments	Do we include the assignments (takes time) and default is \code{FALSE}.
 #' 
 #' @author Adam Kapelner
 #' @export
-resultsRerandomizationSearch = function(obj){
-	obj_vals = NULL
-	if (!is.null(obj$obj_val_cutoff_to_include)){
-		obj_vals = .jcall(obj$java_obj, "[D", "getObjectiveVals")
+resultsRerandomizationSearch = function(obj, include_assignments = FALSE){
+	obj_vals = .jcall(obj$java_obj, "[D", "getObjectiveVals")
+	
+	ending_indicTs = NULL
+	if (include_assignments){
+		ending_indicTs = sapply(.jcall(obj$java_obj, "[[I", "getEndingIndicTs"), .jevalArray)
 	}	
-	ending_indicTs = sapply(.jcall(obj$java_obj, "[[I", "getEndingIndicTs"), .jevalArray)
 	
 	rerandomization_experimental_design_search_results = list(
 		obj_vals = obj_vals, 

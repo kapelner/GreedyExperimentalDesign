@@ -15,4 +15,3 @@ Stops the parallelized greedy design search. Once stopped, it cannot be restarte
 \author{
 Adam Kapelner
 }
-

@@ -4,10 +4,12 @@
 \alias{resultsRerandomizationSearch}
 \title{Returns the results (thus far) of the rerandomization design search}
 \usage{
-resultsRerandomizationSearch(obj)
+resultsRerandomizationSearch(obj, include_assignments = FALSE)
 }
 \arguments{
 \item{obj}{The \code{rerandomization_experimental_design} object that is currently running the search}
+
+\item{include_assignments}{Do we include the assignments (takes time) and default is \code{FALSE}.}
 }
 \description{
 Returns the results (thus far) of the rerandomization design search
@@ -15,4 +17,3 @@ Returns the results (thus far) of the rerandomization design search
 \author{
 Adam Kapelner
 }
-

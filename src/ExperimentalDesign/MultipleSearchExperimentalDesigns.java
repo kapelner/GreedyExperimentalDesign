@@ -18,7 +18,7 @@ public abstract class MultipleSearchExperimentalDesigns extends AllExperimentalD
 	
 	public void setMaxDesigns(int max_designs){
 		this.max_designs = max_designs;
-		System.out.println("max_designs " + this.max_designs);
+//		System.out.println("max_designs " + this.max_designs);
 	}
 
 	public int progress(){
@@ -51,6 +51,11 @@ public abstract class MultipleSearchExperimentalDesigns extends AllExperimentalD
 			objective_vals[i] = (this.objective_vals[i] == null) ? 0 : this.objective_vals[i];
 		}
 		return objective_vals;
+	}
+	
+	public int[][] getEndingIndicTs(int index){ //stupid R
+		int[] indicies = {index};
+		return getEndingIndicTs(indicies);
 	}
 	
 	public int[][] getEndingIndicTs(int[] indicies){

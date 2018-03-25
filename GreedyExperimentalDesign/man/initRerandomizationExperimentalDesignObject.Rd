@@ -41,4 +41,3 @@ a search through $1_{T}$ space.
 \author{
 Adam Kapelner
 }
-

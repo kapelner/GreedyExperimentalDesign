@@ -21,4 +21,3 @@ Computes Randomization Metrics (explained in paper) about a design algorithm
 \author{
 Adam Kapelner
 }
-

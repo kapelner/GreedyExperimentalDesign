@@ -25,4 +25,3 @@ Generates a design matrix with standardized predictors. Useful for debugging.
 \author{
 Adam Kapelner
 }
-
