@@ -240,3 +240,27 @@ while (TRUE){
 	Sys.sleep(5)
 }
 
+
+
+
+
+
+
+####Gurobi testing stuff
+options(java.parameters = "-Xmx20000m")
+library(GreedyExperimentalDesign)
+n = 100
+p = 2
+
+X = generate_stdzied_design_matrix(n = n, p = p, covariate_gen = rnorm)
+
+.jaddClassPath("/gurobi752/win64/lib/gurobi.jar")
+gnoed = initGurobiNumericalOptimizationExperimentalDesignObject(X)
+
+
+
+
+
+
+
+

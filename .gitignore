@@ -5,6 +5,8 @@ reports/*.aux
 reports/*.pdf
 adranp.f
 java_log.*
+gurobi_numerical_optimization_via_R_package_Gree.log
+.Rhistory
 /bin/
 /bin/
 /bin/

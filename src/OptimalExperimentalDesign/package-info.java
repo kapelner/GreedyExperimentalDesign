@@ -1,5 +1,5 @@
 /**
- * The code for the implementation of the finding the optimal experimental design vector 
+ * The code for the implementation of Gurobi Numerical Optimization to find experimental allocations
  * 
  * @since 1.0
  * @author Adam Kapelner
