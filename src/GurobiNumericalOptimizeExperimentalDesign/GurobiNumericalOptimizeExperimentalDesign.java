@@ -94,7 +94,7 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 	    	GRBQuadExpr obj = new GRBQuadExpr();
 	    	for (int i = 0; i < n; i++) {
 	    		for (int j = 0; j < n; j++) {
-	    			obj.addTerm(XSinvXt.get(i ,j), indicator_T_gur[i], indicator_T_gur[j]);	    			
+	    			obj.addTerm(1000000 * XSinvXt.get(i, j), indicator_T_gur[i], indicator_T_gur[j]);	    			
 	    		}
 	    	}
 	    	try {

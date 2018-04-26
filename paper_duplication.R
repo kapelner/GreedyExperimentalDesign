@@ -259,8 +259,8 @@ gnoed = initGurobiNumericalOptimizationExperimentalDesignObject(X, num_cores = 4
 
 resultsGurobiNumericalOptimizeExperimentalDesign(gnoed)
 
-
-
-
+rd = initGreedyExperimentalDesignObject(X, 10, wait = TRUE)
+res = resultsGreedySearch(rd, max_vectors = NULL)
+res$obj_vals
 
 
