@@ -4,9 +4,8 @@
     </description>	
 	
 	<path id="master-classpath">
-	  <fileset dir=".">
+	  <fileset dir="./GreedyExperimentalDesignJARs/inst/java/">
 	    <include name="*.jar" />
-	  	<exclude name="GreedyExperimentalDesign.jar" />
 	  </fileset>
 	  <!-- To compile, change the directory to where your gurobi.jar is located -->
 	  <fileset dir="/gurobi752/win64/lib">

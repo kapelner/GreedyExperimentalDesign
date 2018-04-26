@@ -4,18 +4,13 @@
 #' @param X					The design matrix with $n$ rows (one for each subject) and $p$ columns 
 #' 							(one for each measurement on the subject). This is the design matrix you wish 
 #' 							to search for a more optimal design.
-#' @param wait				Should the \code{R} terminal hang until all \code{max_designs} vectors are found? The 
-#' 							deafult is \code{FALSE}.
-#' @param start				Should we start searching immediately (default is \code{TRUE}).
 #' @param num_cores 		The number of CPU cores you wish to use during the search. The default is \code{1}.
+#' @param time_limit_min	The maximum amount of time the optimizer can run for in minutes. The default is \code{5}.
 #' @return					An object of type \code{optimal_experimental_design_search} which can be further operated upon
 #' 
 #' @author Adam Kapelner and Bracha Blau
 #' @export
-initGurobiNumericalOptimizationExperimentalDesignObject = function(X,
-		wait = FALSE, 
-		start = TRUE,
-		num_cores = 1){
+initGurobiNumericalOptimizationExperimentalDesignObject = function(X, num_cores = 1, time_limit_min = 5){
 	
 	#we need to check if the user has Gurobi
 	gurobi_exists = FALSE
@@ -26,7 +21,7 @@ initGurobiNumericalOptimizationExperimentalDesignObject = function(X,
 	}
 	
 	if (!gurobi_exists){
-		stop("You can only use this feature if you have a license for Gurobi\nand the optimizer installed. If so, you should link gurobi.jar via:\n\n .jaddClassPath(\"/<my path>/lib/gurobi.jar\")\n")
+		stop("You can only use this feature if you have a license for Gurobi\nand the optimizer installed. If so, you should link gurobi.jar via:\n\n .jaddClassPath(\"/<my path>/lib/gurobi.jar\")\n\n and then check to ensure it is properly listed in:\n\n.jclassPath().\n")
 	}
 	
 	#get dimensions immediately
@@ -49,9 +44,8 @@ initGurobiNumericalOptimizationExperimentalDesignObject = function(X,
 	java_obj = .jnew("GurobiNumericalOptimizeExperimentalDesign.GurobiNumericalOptimizeExperimentalDesign")
 	.jcall(java_obj, "V", "setNumCores", as.integer(num_cores))
 	.jcall(java_obj, "V", "setNandP", as.integer(n), as.integer(p))
-	if (wait){
-		.jcall(java_obj, "V", "setWait")
-	}	
+	cat("time limit min: ", as.numeric(time_limit_min), "\n")
+	.jcall(java_obj, "V", "setTimeLimitMin", as.numeric(time_limit_min))
 	
 	#feed in the data
 	for (i in 1 : n){	
@@ -62,20 +56,20 @@ initGurobiNumericalOptimizationExperimentalDesignObject = function(X,
 	for (j in 1 : p){
 		.jcall(java_obj, "V", "setInvVarCovRow", as.integer(j - 1), SinvX[j, , drop = FALSE]) #java indexes from 0...n-1
 	}
+	
 		
 	#now return information as an object (just a list)
 	gurobi_numerical_optimization_experimental_design_search = list()
-	gurobi_numerical_optimization_experimental_design_search$start = start
-	gurobi_numerical_optimization_experimental_design_search$wait = wait
 	gurobi_numerical_optimization_experimental_design_search$X = X
 	gurobi_numerical_optimization_experimental_design_search$n = n
 	gurobi_numerical_optimization_experimental_design_search$p = p
+	gurobi_numerical_optimization_experimental_design_search$time_limit_min = time_limit_min
 	gurobi_numerical_optimization_experimental_design_search$java_obj = java_obj
 	class(gurobi_numerical_optimization_experimental_design_search) = "gurobi_numerical_optimization_experimental_design_search"
-	#if the user wants to run it immediately...
-	if (start){
-		startSearch(gurobi_numerical_optimization_experimental_design_search)
-	}
+	
+	#now start search
+	startSearch(gurobi_numerical_optimization_experimental_design_search)
+	
 	#return the final object
 	gurobi_numerical_optimization_experimental_design_search
 }
@@ -88,5 +82,6 @@ initGurobiNumericalOptimizationExperimentalDesignObject = function(X,
 #' @author Adam Kapelner
 #' @export
 resultsGurobiNumericalOptimizeExperimentalDesign = function(obj){
-	#TO-DO
+	indicT = .jcall(obj$java_obj, "[I", "getBestIndicT", .jevalArray)
+	list(indicT = indicT)
 }

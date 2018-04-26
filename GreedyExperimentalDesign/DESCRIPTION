@@ -14,7 +14,8 @@ Description: Computes experimental designs for a
 License: GPL-3
 Depends:
     R (>= 3.2.0),
-    rJava (>= 0.9-6)
+    rJava (>= 0.9-6),
+    GreedyExperimentalDesignJARs (>= 1.0)
 SystemRequirements: Java (>= 7.0)
 Imports: graphics, grDevices, stats
 RoxygenNote: 6.0.1
