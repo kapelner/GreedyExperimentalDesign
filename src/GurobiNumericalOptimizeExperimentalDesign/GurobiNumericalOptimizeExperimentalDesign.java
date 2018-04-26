@@ -1,6 +1,7 @@
 package GurobiNumericalOptimizeExperimentalDesign;
 
 import ExperimentalDesign.AllExperimentalDesigns;
+import org.ejml.simple.SimpleMatrix;
 import gurobi.*;
 
 public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDesigns {
@@ -32,46 +33,70 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 		
 		//bracha: the data "X" is the data matrix and "Sinv" is the inverse sample var-cov matrix"
 				
-	    try {
+	    try {    	
+	    	
 	        GRBEnv    env   = new GRBEnv("gurobi_numerical_optimization_via_R_package_Gree.log");
 	        GRBModel  model = new GRBModel(env);
+	        
+	        int n = X.length;
+	    	int p = X[1].length;
+	    	
+	    	SimpleMatrix Xsm = new SimpleMatrix(X);
+	    	SimpleMatrix Sinvsm = new SimpleMatrix(p, p);
+	    	// Means:
+	        SimpleMatrix x = new SimpleMatrix(p, 1);
+	        for(int r=0; r<p; r++ ){
+	            x.set(r, 0, Xsm.transpose().extractVector(true, r).elementSum() / n);
+	        }
+	        // Covariance matrix:
+	        for(int r=0; r<p; r++){
+	            for(int c=0; c<p; c++){
+	                if(r > c){
+	                    Sinvsm.set(r, c, Sinvsm.get(c, r));
+	                } else {
+	                    double cov = Xsm.transpose().extractVector(true, r).minus( x.get((r), 0) ).dot(Xsm.transpose().extractVector(true, c).minus( x.get((c), 0) ).transpose());
+	                    Sinvsm.set(r, c, (cov / n));
+	                }
+	            }
+	        }
+	    	SimpleMatrix XSinvXt = Xsm.mult(Sinvsm).mult(Xsm.transpose());
+	    	
+	    	System.out.println("sinv: " + Sinvsm.get(0,0) + " n: "+n+" p : "+p);
+	    	
 
 	        // Create variables
+	    	GRBVar[] vars = new GRBVar[n];
+	    	for(int i = 0; i<n; i++) {
+	    		vars[i] = model.addVar(0.0, 2.0, 0.0, GRB.BINARY, Integer.toString(i));
+	    	}
+	    	
+	    	//Setting objective matrix
+	    	GRBQuadExpr obj = new GRBQuadExpr();
+	    	for(int i = 0; i<n; i++) {
+	    		for(int j = 0; j<n; j++) {
+	    			obj.addTerm(XSinvXt.get(i ,j), vars[i], vars[j]);	    			
+	    		}
+	    	}
+	    	model.setObjective(obj);
 
-	        GRBVar x = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, "x");
-	        GRBVar y = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, "y");
-	        GRBVar z = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, "z");
 
-	        // Set objective: maximize x + y + 2 z
-
-	        GRBLinExpr expr = new GRBLinExpr();
-	        expr.addTerm(1.0, x); expr.addTerm(1.0, y); expr.addTerm(2.0, z);
-	        model.setObjective(expr, GRB.MAXIMIZE);
-
-	        // Add constraint: x + 2 y + 3 z <= 4
-
-	        expr = new GRBLinExpr();
-	        expr.addTerm(1.0, x); expr.addTerm(2.0, y); expr.addTerm(3.0, z);
-	        model.addConstr(expr, GRB.LESS_EQUAL, 4.0, "c0");
-
-	        // Add constraint: x + y >= 1
-
-	        expr = new GRBLinExpr();
-	        expr.addTerm(1.0, x); expr.addTerm(1.0, y);
-	        model.addConstr(expr, GRB.GREATER_EQUAL, 1.0, "c1");
+	        // Add constraint: sum of vars equal to n/2 (equal num 1's and 0's)
+	    	GRBLinExpr expr = new GRBLinExpr();
+	    	for(int i = 0; i < n; i++) {
+	    		 expr.addTerm(1.0, vars[i]);
+	    	}
+	        model.addConstr(expr, GRB.EQUAL, (n/2), "c0");
 
 	        // Optimize model
-
 	        model.optimize();
-
-	        System.out.println(x.get(GRB.StringAttr.VarName)
-	                           + " " +x.get(GRB.DoubleAttr.X));
-	        System.out.println(y.get(GRB.StringAttr.VarName)
-	                           + " " +y.get(GRB.DoubleAttr.X));
-	        System.out.println(z.get(GRB.StringAttr.VarName)
-	                           + " " +z.get(GRB.DoubleAttr.X));
+	        
+	        for(int i = 0; i < n; i++) {
+	        	System.out.println(vars[i].get(GRB.StringAttr.VarName)
+                        + " " +vars[i].get(GRB.DoubleAttr.X));
+	    	}
 
 	        System.out.println("Obj: " + model.get(GRB.DoubleAttr.ObjVal));
+	        
 
 	        // Dispose of model and environment
 
@@ -81,6 +106,7 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 	      } catch (GRBException e) {
 	        System.out.println("Error code: " + e.getErrorCode() + ". " +
 	                           e.getMessage());
+	        
 	      }
 	}
 }
