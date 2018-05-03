@@ -19,8 +19,8 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 		//set seed here for reproducibility during debugging
 		gnuoed.rand_obj.setSeed(1984);
 
-		int n = 6;
-		int p = 3;
+		int n = 100;
+		int p = 10;
 		gnuoed.setNandP(n, p);
 		for (int i = 0; i < n; i++){
 			double[] x_i = new double[p];
@@ -64,15 +64,36 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 				System.err.println("Gurobi error when creating the model. Error code: " + e.getErrorCode());
 				e.printStackTrace();
 			}
-	        try {
-				model.set(GRB.DoubleParam.TimeLimit, time_limit_min * 60);
-			} catch (GRBException e) {
-				System.err.println("Gurobi error when setting the time limit. Error code: " + e.getErrorCode());
-				e.printStackTrace();
-			}
+//	        try {
+//				model.set(GRB.DoubleParam.TimeLimit, time_limit_min * 60);
+//			} catch (GRBException e) {
+//				System.err.println("Gurobi error when setting the time limit. Error code: " + e.getErrorCode());
+//				e.printStackTrace();
+//			}
 	            	
 	    	SimpleMatrix Xsm = new SimpleMatrix(X);
-	    	SimpleMatrix XSinvXt = Xsm.mult(new SimpleMatrix(Sinv)).mult(Xsm.transpose());
+	    	SimpleMatrix Ssm = new SimpleMatrix(p, p);
+	    	// Means:
+	        SimpleMatrix x = new SimpleMatrix(p, 1);
+	        for(int r=0; r<p; r++ ){
+	            x.set(r, 0, Xsm.transpose().extractVector(true, r).elementSum() / n);
+	        }
+	        // System.out.println(x);
+
+	        // Covariance matrix:
+	        for(int r=0; r<p; r++){
+	            for(int c=0; c<p; c++){
+	                if(r > c){
+	                    Ssm.set(r, c, Ssm.get(c, r));
+	                } else {
+	                    double cov = Xsm.transpose().extractVector(true, r).minus( x.get((r), 0) ).dot(Xsm.transpose().extractVector(true, c).minus( x.get((c), 0) ).transpose());
+	                    Ssm.set(r, c, (cov / n));
+	                }
+	            }
+	        }
+	        SimpleMatrix Sinvsm = Ssm.invert();
+	    	SimpleMatrix XSinvXt = Xsm.mult(Sinvsm).mult(Xsm.transpose());
+	    	System.out.println("s: "+Sinvsm.get(0,0));
 	    	Xsm = null;
 	    	
 //	    	System.out.println("sinv: " + Sinvsm.get(0,0) + " n: "+n+" p : "+p);
@@ -134,15 +155,7 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 //	        System.out.println("Obj: " + model.get(GRB.DoubleAttr.ObjVal));
 	        
 
-	        // Dispose of model and environment
-
-	        model.dispose();
-	        try {
-				env.dispose();
-			} catch (GRBException e) {
-				System.err.println("Gurobi error when disposing of the environment. Error code: " + e.getErrorCode());
-				e.printStackTrace();
-			}
+	        
 	        
 	        //convert Gurobi indicator to a int vector
 	    	indicator_T = new int[n];
@@ -152,12 +165,23 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 	    	for (int i = 0; i < n; i++) {
 	    		try {
 					indicator_T[i] = (int)indicator_T_gur[i].get(GRB.DoubleAttr.X);
+	    			System.out.println(indicator_T_gur[i].get(GRB.StringAttr.VarName)
+	                         + " " +indicator_T_gur[i].get(GRB.DoubleAttr.X));
 				} catch (GRBException e) {
 					System.err.println("Gurobi error when extracting the solution for vector element #" + i + " Error code: " + e.getErrorCode());
 					e.printStackTrace();
 				}
 	    	}
 
+	    	// Dispose of model and environment
+	        model.dispose();
+	        try {
+				env.dispose();
+			} catch (GRBException e) {
+				System.err.println("Gurobi error when disposing of the environment. Error code: " + e.getErrorCode());
+				e.printStackTrace();
+			}
+	        
 //	      } catch (GRBException e) {
 //	        System.out.println("Error code: " + e.getErrorCode() + ". " +
 //	                           e.getMessage());
