@@ -248,19 +248,46 @@ while (TRUE){
 
 ####Gurobi testing stuff
 options(java.parameters = "-Xmx20000m")
+NUM_CORES = 3
 library(GreedyExperimentalDesign)
-n = 100
-p = 2
+.jaddClassPath("/gurobi752/win64/lib/gurobi.jar")
 
+
+#sample a covariate matrix
+n = 24
+p = 20
 X = generate_stdzied_design_matrix(n = n, p = p, covariate_gen = rnorm)
 
-.jaddClassPath("/gurobi752/win64/lib/gurobi.jar")
-gnoed = initGurobiNumericalOptimizationExperimentalDesignObject(X, num_cores = 4, time_limit_min = 1)
 
-resultsGurobiNumericalOptimizeExperimentalDesign(gnoed)
+#numerical optimization
+gnoed = initGurobiNumericalOptimizationExperimentalDesignObject(X, time_limit_min = 0.5, num_cores = NUM_CORES)
+num_indicT = resultsGurobiNumericalOptimizeExperimentalDesign(gnoed)$indicT
+XT_bar = colMeans(X[num_indicT == 1, , drop = FALSE])
+XC_bar = colMeans(X[num_indicT == 0, , drop = FALSE])
+XT_bar_min_XC_bar = XT_bar - XC_bar
+XT_bar_min_XC_bar %*% gnoed$SinvX %*% XT_bar_min_XC_bar
 
-rd = initGreedyExperimentalDesignObject(X, 10, wait = TRUE)
+#greedy pair switching
+rd = initGreedyExperimentalDesignObject(X, 10, wait = TRUE, objective = "mahal_dist")
 res = resultsGreedySearch(rd, max_vectors = NULL)
 res$obj_vals
+
+#optimal solutions
+oed = initOptimalExperimentalDesignObject(X, num_cores = NUM_CORES, objective = "mahal_dist", wait = TRUE)
+opt_res = resultsOptimalSearch(oed)$obj_val
+opt_indicT = resultsOptimalSearch(oed)$indicT
+#calc Mahal
+XT_bar = colMeans(X[opt_indicT == 1, , drop = FALSE])
+XC_bar = colMeans(X[opt_indicT == 0, , drop = FALSE])
+XT_bar_min_XC_bar = XT_bar - XC_bar
+XT_bar_min_XC_bar %*% gnoed$SinvX %*% XT_bar_min_XC_bar
+
+
+
+
+
+
+
+
 
 

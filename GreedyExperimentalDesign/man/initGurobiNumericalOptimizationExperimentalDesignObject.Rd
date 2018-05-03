@@ -6,7 +6,7 @@
 a search through $1_{T}$ space.}
 \usage{
 initGurobiNumericalOptimizationExperimentalDesignObject(X, num_cores = 1,
-  time_limit_min = 5)
+  time_limit_min = 5, node_limt = NULL)
 }
 \arguments{
 \item{X}{The design matrix with $n$ rows (one for each subject) and $p$ columns 
@@ -16,6 +16,8 @@ to search for a more optimal design.}
 \item{num_cores}{The number of CPU cores you wish to use during the search. The default is \code{1}.}
 
 \item{time_limit_min}{The maximum amount of time the optimizer can run for in minutes. The default is \code{5}.}
+
+\item{node_limt}{The maximum number of nodes Gurobi should explore. Default is \code{NULL} for no limit.}
 }
 \value{
 An object of type \code{optimal_experimental_design_search} which can be further operated upon

@@ -1,6 +1,7 @@
 package GurobiNumericalOptimizeExperimentalDesign;
 
 import ExperimentalDesign.AllExperimentalDesigns;
+import ObjectiveFunctions.ObjectiveFunction;
 
 import org.ejml.simple.SimpleMatrix;
 import gurobi.*;
@@ -10,10 +11,12 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 	/** the value to be returned after optimization */	
 	private int[] indicator_T;
 	/** how long can the optimizer take? */	
-	private double time_limit_min;
+	private Double time_limit_min;
+	/** how many nodes can the optimizer explore? */	
+	private Integer node_limit;
 	
 	//running the Java as standalone is for debug purposes ONLY!!!
-	public static void main(String[] args) throws Exception{	
+	public static void main(String[] args) {	
 
 		GurobiNumericalOptimizeExperimentalDesign gnuoed = new GurobiNumericalOptimizeExperimentalDesign();
 		//set seed here for reproducibility during debugging
@@ -21,7 +24,12 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 
 		int n = 100;
 		int p = 10;
-		gnuoed.setNandP(n, p);
+		try {
+			gnuoed.setNandP(n, p);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		for (int i = 0; i < n; i++){
 			double[] x_i = new double[p];
 			for (int j = 0; j < p; j++){
@@ -36,14 +44,14 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 
 
 	
-	public void beginSearch(){
+	public void beginSearch() {
 		super.beginSearch();
 		
 		//bracha: the data "X" is the data matrix and "Sinv" is the inverse sample var-cov matrix"
 				
-//	    try {    	
+	    GRBEnv env = null;    	
 	    	
-	        GRBEnv env = null;
+	        
 			try {
 				env = new GRBEnv("gurobi_numerical_optimization_via_R_package_Gree.log");
 			} catch (GRBException e) {
@@ -64,37 +72,30 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 				System.err.println("Gurobi error when creating the model. Error code: " + e.getErrorCode());
 				e.printStackTrace();
 			}
-//	        try {
-//				model.set(GRB.DoubleParam.TimeLimit, time_limit_min * 60);
-//			} catch (GRBException e) {
-//				System.err.println("Gurobi error when setting the time limit. Error code: " + e.getErrorCode());
-//				e.printStackTrace();
-//			}
+			if (time_limit_min != null){
+				 try {
+					model.set(GRB.DoubleParam.TimeLimit, time_limit_min * 60);
+				} catch (GRBException e) {
+					System.err.println("Gurobi error when setting the time limit. Error code: " + e.getErrorCode());
+					e.printStackTrace();
+				}
+			}
+			if (node_limit != null){
+				 try {
+					model.set(GRB.DoubleParam.NodeLimit, node_limit);
+				} catch (GRBException e) {
+					System.err.println("Gurobi error when setting the time limit. Error code: " + e.getErrorCode());
+					e.printStackTrace();
+				}
+			}
+	       
+	       
 	            	
 	    	SimpleMatrix Xsm = new SimpleMatrix(X);
-	    	SimpleMatrix Ssm = new SimpleMatrix(p, p);
-	    	// Means:
-	        SimpleMatrix x = new SimpleMatrix(p, 1);
-	        for(int r=0; r<p; r++ ){
-	            x.set(r, 0, Xsm.transpose().extractVector(true, r).elementSum() / n);
-	        }
-	        // System.out.println(x);
-
-	        // Covariance matrix:
-	        for(int r=0; r<p; r++){
-	            for(int c=0; c<p; c++){
-	                if(r > c){
-	                    Ssm.set(r, c, Ssm.get(c, r));
-	                } else {
-	                    double cov = Xsm.transpose().extractVector(true, r).minus( x.get((r), 0) ).dot(Xsm.transpose().extractVector(true, c).minus( x.get((c), 0) ).transpose());
-	                    Ssm.set(r, c, (cov / n));
-	                }
-	            }
-	        }
-	        SimpleMatrix Sinvsm = Ssm.invert();
+	        SimpleMatrix Sinvsm = new SimpleMatrix(Sinv);
 	    	SimpleMatrix XSinvXt = Xsm.mult(Sinvsm).mult(Xsm.transpose());
-	    	System.out.println("s: "+Sinvsm.get(0,0));
-	    	Xsm = null;
+//	    	System.out.println("s: "+ Sinvsm.get(0,0));
+//	    	Xsm = null;
 	    	
 //	    	System.out.println("sinv: " + Sinvsm.get(0,0) + " n: "+n+" p : "+p);
 	    	
@@ -193,7 +194,18 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 		this.time_limit_min = time_limit_min;
 	}
 	
+	public void setTimeLimitMin(int node_limit) {
+		this.node_limit = node_limit;
+	}
+	
 	public int[] getBestIndicT() {
 		return indicator_T;
+	}
+	
+	public void setObjective(String objective) throws Exception{
+		if (objective.equals(ObjectiveFunction.MAHAL)){
+			throw new Exception("For Numerical Optimization, Mahalanobis is the only implemented objective function.");
+		}
+		this.objective = objective;
 	}
 }

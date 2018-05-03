@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import CustomLogging.FileLoggedClass;
 import ObjectiveFunctions.ObjectiveFunction;
+import gurobi.GRBException;
 
 public abstract class AllExperimentalDesigns extends FileLoggedClass {
 	
@@ -32,10 +33,11 @@ public abstract class AllExperimentalDesigns extends FileLoggedClass {
 	
 	
 	public AllExperimentalDesigns(){
+		num_cores = 1;
 		rand_obj = new Random();
 	}	
 	
-	public void beginSearch(){
+	public void beginSearch() {
 //		System.out.println("beginSearch");
 		began_search = true;
 		

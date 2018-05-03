@@ -6,11 +6,12 @@
 #' 							to search for a more optimal design.
 #' @param num_cores 		The number of CPU cores you wish to use during the search. The default is \code{1}.
 #' @param time_limit_min	The maximum amount of time the optimizer can run for in minutes. The default is \code{5}.
+#' @param node_limt			The maximum number of nodes Gurobi should explore. Default is \code{NULL} for no limit.
 #' @return					An object of type \code{optimal_experimental_design_search} which can be further operated upon
 #' 
 #' @author Adam Kapelner and Bracha Blau
 #' @export
-initGurobiNumericalOptimizationExperimentalDesignObject = function(X, num_cores = 1, time_limit_min = 5){
+initGurobiNumericalOptimizationExperimentalDesignObject = function(X, num_cores = 1, time_limit_min = 5, node_limt = NULL){
 	
 	#we need to check if the user has Gurobi
 	gurobi_exists = FALSE
@@ -44,8 +45,14 @@ initGurobiNumericalOptimizationExperimentalDesignObject = function(X, num_cores 
 	java_obj = .jnew("GurobiNumericalOptimizeExperimentalDesign.GurobiNumericalOptimizeExperimentalDesign")
 	.jcall(java_obj, "V", "setNumCores", as.integer(num_cores))
 	.jcall(java_obj, "V", "setNandP", as.integer(n), as.integer(p))
-	cat("time limit min: ", as.numeric(time_limit_min), "\n")
+#	cat("time limit min: ", as.numeric(time_limit_min), "\n")
 	.jcall(java_obj, "V", "setTimeLimitMin", as.numeric(time_limit_min))
+	if (!is.null(node_limt)){
+		if (node_limit <= 1){
+			stop("Node limit must exceed one.")
+		}
+		.jcall(java_obj, "V", "setNodeLimit", as.numeric(round(node_limit)))
+	}
 	
 	#feed in the data
 	for (i in 1 : n){	
@@ -61,6 +68,7 @@ initGurobiNumericalOptimizationExperimentalDesignObject = function(X, num_cores 
 	#now return information as an object (just a list)
 	gurobi_numerical_optimization_experimental_design_search = list()
 	gurobi_numerical_optimization_experimental_design_search$X = X
+	gurobi_numerical_optimization_experimental_design_search$SinvX = SinvX
 	gurobi_numerical_optimization_experimental_design_search$n = n
 	gurobi_numerical_optimization_experimental_design_search$p = p
 	gurobi_numerical_optimization_experimental_design_search$time_limit_min = time_limit_min
