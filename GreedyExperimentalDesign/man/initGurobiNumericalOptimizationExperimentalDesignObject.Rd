@@ -6,7 +6,8 @@
 a search through $1_{T}$ space.}
 \usage{
 initGurobiNumericalOptimizationExperimentalDesignObject(X, num_cores = 1,
-  time_limit_min = 5, node_limt = NULL)
+  time_limit_min = 5, node_limt = NULL, max_solutions = 10,
+  verbose = TRUE, log_file = "")
 }
 \arguments{
 \item{X}{The design matrix with $n$ rows (one for each subject) and $p$ columns 
@@ -18,6 +19,13 @@ to search for a more optimal design.}
 \item{time_limit_min}{The maximum amount of time the optimizer can run for in minutes. The default is \code{5}.}
 
 \item{node_limt}{The maximum number of nodes Gurobi should explore. Default is \code{NULL} for no limit.}
+
+\item{max_solutions}{The maximum number of solutions Gurobi should retain (if possible given the time limit and constraint of the 
+node limit). The default is \code{NULL} for Gurobi's default of 10.}
+
+\item{verbose}{Should Gurobi print its log to screen? Default is \code{TRUE}.}
+
+\item{log_file}{Log filename for Gurobi e.g. \code{my_log.txt}. Default is \code{""} for no file log.}
 }
 \value{
 An object of type \code{optimal_experimental_design_search} which can be further operated upon

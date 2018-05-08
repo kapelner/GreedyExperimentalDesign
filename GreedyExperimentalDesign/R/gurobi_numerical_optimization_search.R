@@ -6,12 +6,23 @@
 #' 							to search for a more optimal design.
 #' @param num_cores 		The number of CPU cores you wish to use during the search. The default is \code{1}.
 #' @param time_limit_min	The maximum amount of time the optimizer can run for in minutes. The default is \code{5}.
+#' @param max_solutions		The maximum number of solutions Gurobi should retain (if possible given the time limit and constraint of the 
+#' 							node limit). The default is \code{NULL} for Gurobi's default of 10.
 #' @param node_limt			The maximum number of nodes Gurobi should explore. Default is \code{NULL} for no limit.
+#' @param verbose			Should Gurobi print its log to screen? Default is \code{TRUE}.
+#' @param log_file			Log filename for Gurobi e.g. \code{my_log.txt}. Default is \code{""} for no file log. 
 #' @return					An object of type \code{optimal_experimental_design_search} which can be further operated upon
 #' 
 #' @author Adam Kapelner and Bracha Blau
 #' @export
-initGurobiNumericalOptimizationExperimentalDesignObject = function(X, num_cores = 1, time_limit_min = 5, node_limt = NULL){
+initGurobiNumericalOptimizationExperimentalDesignObject = function(
+		X, 
+		num_cores = 1, 
+		time_limit_min = 5, 
+		node_limt = NULL, 
+		max_solutions = 10,
+		verbose = TRUE,
+		log_file = ""){
 	
 	#we need to check if the user has Gurobi
 	gurobi_exists = FALSE
@@ -49,10 +60,22 @@ initGurobiNumericalOptimizationExperimentalDesignObject = function(X, num_cores 
 	.jcall(java_obj, "V", "setTimeLimitMin", as.numeric(time_limit_min))
 	if (!is.null(node_limt)){
 		if (node_limit <= 1){
-			stop("Node limit must exceed one.")
+			stop("Node limit must be one or more.")
 		}
 		.jcall(java_obj, "V", "setNodeLimit", as.numeric(round(node_limit)))
+	}	
+	if (!is.null(max_solutions)){
+		if (max_solutions <= 1){
+			stop("Max solutions must be one or more.")
+		}
+		.jcall(java_obj, "V", "setMaxSolutions", as.integer(round(max_solutions)))
+	}	
+	
+	if (!verbose){
+		.jcall(java_obj, "V", "turnGurobiLogOff")
 	}
+	.jcall(java_obj, "V", "setLogFilename", log_file)
+	
 	
 	#feed in the data
 	for (i in 1 : n){	
@@ -83,6 +106,41 @@ initGurobiNumericalOptimizationExperimentalDesignObject = function(X, num_cores 
 }
 
 
+
+
+#' Find multiple designs
+#' 
+#' This method searches through $1_{T}$ space using Gurobi's optimization many times.
+#' It finds many different solutions by permuting the rows of the design matrix and 
+#' rerunning the optimization.
+#' 
+#' @param X 		The design matrix with $n$ rows (one for each subject) and $p$ columns 
+#' 					(one for each measurement on the subject). This is the design matrix you wish 
+#' 					to search for a more optimal design.
+#' @param r 		The number of vectors that should be returned
+#' @param ... 		Additional arguments to be passed to \code{initGurobiNumericalOptimizationExperimentalDesignObject}.
+#' @return			A matrix of allocation vectors of dimension \code{r x n}.	 
+#' 
+#' @author Kapelner
+#' @export
+gurobi_multiple_designs = function(X, r, ...){
+	n = nrow(X)
+	indicTs = matrix(NA, nrow = r, ncol = n)
+	
+	for (nsim in 1 : r){		
+		random_indices = sample(1 : n)
+		X_randomized = X[random_indices, , drop = FALSE]
+		gnoed = initGurobiNumericalOptimizationExperimentalDesignObject(X_randomized, ...)
+		indicT = resultsGurobiNumericalOptimizeExperimentalDesign(gnoed)$indicT
+		indicTs[nsim, ] = indicT
+	}	
+	indicTs
+}
+
+
+
+
+
 #' Returns the results (thus far) of the Gurobi numerical optimization design search
 #' 
 #' @param obj 				The \code{gurobi_numerical_optimization_experimental_design_search} object that is currently running the search
@@ -93,3 +151,7 @@ resultsGurobiNumericalOptimizeExperimentalDesign = function(obj){
 	indicT = .jcall(obj$java_obj, "[I", "getBestIndicT", .jevalArray)
 	list(indicT = indicT)
 }
+
+
+
+
