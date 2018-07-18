@@ -148,7 +148,8 @@ log_ns = seq(1, 2.5, by = 0.25)
 ps = c(1, 2, 5, 10, 40)
 entropy_res = matrix(NA, nrow = length(log_ns), ncol = length(ps))
 norm_se_res = matrix(NA, nrow = length(log_ns), ncol = length(ps))
-r = 1000
+max_eigenval_min_one_over_n = matrix(NA, nrow = length(log_ns), ncol = length(ps))
+r = 5000
 
 for (i in 1 : length(log_ns)){
   n = 2 * round(10^(log_ns[i]) / 2)
@@ -161,21 +162,23 @@ for (i in 1 : length(log_ns)){
     metr = compute_randomization_metrics(designs)
     entropy_res[i, j] = metr$rand_entropy_metric
     norm_se_res[i, j] = metr$rand_norm_se_metric
+    max_eigenval_min_one_over_n[i, j] = (metr$max_eigenval - 1) / n
   }
 }
 
 #need metrics for complete randomization
 cr_entropy = array(NA, length(log_ns))
 cr_norm_se = array(NA, length(log_ns))
+cr_max_eigenval_minus_one_over_n = array(NA, length(log_ns))
 for (i in 1 : length(log_ns)){
   n = 2 * round(10^(log_ns[i]) / 2)
   X = generate_stdzied_design_matrix(n = n, p = 1)
   rd = initRerandomizationExperimentalDesignObject(X, r, wait = TRUE)
   designs = sapply(.jcall(rd$java_obj, "[[I", "getEndingIndicTs"), .jevalArray)
-  designs = res$ending_indicTs
   metr = compute_randomization_metrics(designs)
   cr_entropy[i] = metr$rand_entropy_metric
   cr_norm_se[i] = metr$rand_norm_se_metric
+  cr_max_eigenval_minus_one_over_n[i] = (metr$max_eigenval - 1) / n
 }
 
 
@@ -186,7 +189,7 @@ plot(log_ns, log_ns, type = "n",
      xlab = "n",
      xaxt = "n",
      ylab = "E",
-     ylim = c(0, 1))
+     ylim = c(-0.02, 1))
 for (j in 1: length(ps)){
   points(log_ns, entropy_res[, j], type = "l")
 }
@@ -201,15 +204,32 @@ plot(log_ns, log_ns, type = "n",
      xlab = "n",
      ylab = "D",
      xaxt = "n",
-     ylim = c(0, 1))
+     ylim = c(0, 1.02))
 for (j in 1: length(ps)){
   points(log_ns, norm_se_res[, j], type = "l")
 }
 points(log_ns, cr_norm_se, type = "l", lty = 2, col = "gray")
 axis(1, at = log_ns[c(1,3,5,7)], labels = round(10^log_ns)[c(1,3,5,7)])
 label_locs = norm_se_res[1, ] + 0.03 #needs to be adjusted each sim
-label_locs[1] = norm_se_res[1] - 0.06 #needs to be adjusted each sim
+label_locs[1] = norm_se_res[1] - 0.03 #needs to be adjusted each sim
 text(x = log_ns[1], y = label_locs, labels = ps)
+
+
+#fig 3c
+plot(log_ns, log_ns, type = "n", 
+     xlab = "n",
+     ylab = "(maximum eigenvalue - 1) / n",
+     xaxt = "n",
+     ylim = c(0, max(max_eigenval_min_one_over_n) + 0.02))
+for (j in 1: length(ps)){
+  points(log_ns, max_eigenval_min_one_over_n[, j], type = "l")
+}
+points(log_ns, cr_max_eigenval_minus_one_over_n, type = "l", lty = 2, col = "gray")
+axis(1, at = log_ns[c(1,3,5,7)], labels = round(10^log_ns)[c(1,3,5,7)])
+label_locs = max_eigenval_min_one_over_n[1, ] + 0.025 #needs to be adjusted each sim
+label_locs[1] = max_eigenval_min_one_over_n[1] - 0.03 #needs to be adjusted each sim
+text(x = log_ns[1], y = label_locs, labels = ps)
+
 
 #Fig 4
 options(java.parameters = "-Xmx20000m")

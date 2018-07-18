@@ -8,7 +8,7 @@
 #' @param time_limit_min	The maximum amount of time the optimizer can run for in minutes. The default is \code{5}.
 #' @param max_solutions		The maximum number of solutions Gurobi should retain (if possible given the time limit and constraint of the 
 #' 							node limit). The default is \code{NULL} for Gurobi's default of 10.
-#' @param node_limt			The maximum number of nodes Gurobi should explore. Default is \code{NULL} for no limit.
+#' @param node_limit			The maximum number of nodes Gurobi should explore. Default is \code{NULL} for no limit.
 #' @param verbose			Should Gurobi print its log to screen? Default is \code{TRUE}.
 #' @param log_file			Log filename for Gurobi e.g. \code{my_log.txt}. Default is \code{""} for no file log. 
 #' @return					An object of type \code{optimal_experimental_design_search} which can be further operated upon
@@ -19,7 +19,7 @@ initGurobiNumericalOptimizationExperimentalDesignObject = function(
 		X, 
 		num_cores = 1, 
 		time_limit_min = 5, 
-		node_limt = NULL, 
+		node_limit = NULL, 
 		max_solutions = 10,
 		verbose = TRUE,
 		log_file = ""){
@@ -58,7 +58,7 @@ initGurobiNumericalOptimizationExperimentalDesignObject = function(
 	.jcall(java_obj, "V", "setNandP", as.integer(n), as.integer(p))
 #	cat("time limit min: ", as.numeric(time_limit_min), "\n")
 	.jcall(java_obj, "V", "setTimeLimitMin", as.numeric(time_limit_min))
-	if (!is.null(node_limt)){
+	if (!is.null(node_limit)){
 		if (node_limit <= 1){
 			stop("Node limit must be one or more.")
 		}
