@@ -1,5 +1,5 @@
 
-options(java.parameters = "-Xmx6000m")
+options(java.parameters = "-Xmx4000m")
 library(GreedyExperimentalDesign)
 library(xtable)
 
@@ -8,7 +8,7 @@ n = 100
 p = 1
 r = 20
 X = generate_stdzied_design_matrix(n = n, p = p, covariate_gen = rnorm)
-rd = initGreedyExperimentalDesignObject(X, r, wait = TRUE, diagnostics = TRUE)
+rd = initGreedyExperimentalDesignObject(X, r, wait = TRUE, objective = "abs_sum_diff", diagnostics = TRUE)
 res = resultsGreedySearch(rd, max_vectors = NULL)
 res$obj_vals
 
@@ -25,7 +25,7 @@ n = 28
 p = 1
 r = 5
 X = generate_stdzied_design_matrix(n = n, p = p, covariate_gen = rnorm)
-rd = initGreedyExperimentalDesignObject(X, r, wait = TRUE, diagnostics = TRUE)
+rd = initGreedyExperimentalDesignObject(X, r, wait = TRUE, objective = "abs_sum_diff", diagnostics = TRUE)
 res = resultsGreedySearch(rd, max_vectors = NULL)
 res$obj_vals
 
@@ -88,7 +88,8 @@ for (i in 1 : length(log_ns)){
   for (j in 1 : length(ps)){
     p = ps[j]
     X = generate_stdzied_design_matrix(n = n, p = p, covariate_gen = rnorm)
-    rd = initGreedyExperimentalDesignObject(X, r, wait = TRUE, diagnostics = TRUE)
+    rd = initGreedyExperimentalDesignObject(X, r, wait = TRUE, objective = "abs_sum_diff"
+, diagnostics = TRUE)
     res = resultsGreedySearch(rd, max_vectors = NULL)
     sim_res[i, j] = log(mean(res$obj_vals)) / log(10)
     switches_res[i, j] = mean(res$num_iters)
@@ -131,7 +132,7 @@ for (i in 1 : length(log_ns)){
   for (j in 1 : length(ps)){
     p = ps[j]
     X = generate_stdzied_design_matrix(n = n, p = p, covariate_gen = rnorm)
-    rd = initGreedyExperimentalDesignObject(X, r, wait = TRUE, diagnostics = TRUE)
+    rd = initGreedyExperimentalDesignObject(X, r, wait = TRUE, objective = "abs_sum_diff", diagnostics = TRUE)
     res = resultsGreedySearch(rd, max_vectors = NULL)
     Xregr = rbind(Xregr, cbind(log(res$obj_vals), log(n / 2), p^-1)) #n/2 because 2n is how it is parameterized in the paper
   }
@@ -156,7 +157,7 @@ for (i in 1 : length(log_ns)){
   for (j in 1 : length(ps)){
     p = ps[j]
     X = generate_stdzied_design_matrix(n = n, p = p, covariate_gen = rnorm)
-    rd = initGreedyExperimentalDesignObject(X, r, wait = TRUE)
+    rd = initGreedyExperimentalDesignObject(X, r, objective = "abs_sum_diff", wait = TRUE)
     res = resultsGreedySearch(rd, max_vectors = NULL)
     designs = res$ending_indicTs
     metr = compute_randomization_metrics(designs)
@@ -173,7 +174,7 @@ cr_max_eigenval_minus_one_over_n = array(NA, length(log_ns))
 for (i in 1 : length(log_ns)){
   n = 2 * round(10^(log_ns[i]) / 2)
   X = generate_stdzied_design_matrix(n = n, p = 1)
-  rd = initRerandomizationExperimentalDesignObject(X, r, wait = TRUE)
+  rd = initRerandomizationExperimentalDesignObject(X, r, objective = "abs_sum_diff", wait = TRUE)
   designs = sapply(.jcall(rd$java_obj, "[[I", "getEndingIndicTs"), .jevalArray)
   metr = compute_randomization_metrics(designs)
   cr_entropy[i] = metr$rand_entropy_metric
@@ -262,98 +263,5 @@ while (TRUE){
 
 
 
-
-
-
-
-####Gurobi testing stuff
-options(java.parameters = "-Xmx4000m")
-NUM_CORES = 3
-library(GreedyExperimentalDesign)
-.jaddClassPath("/gurobi752/win64/lib/gurobi.jar")
-
-
-#sample a covariate matrix
-n = 50
-p = 1
-X = generate_stdzied_design_matrix(n = n, p = p, covariate_gen = rnorm)
-r = 100
-
-#numerical optimization
-gnoed = initGurobiNumericalOptimizationExperimentalDesignObject(X, time_limit_min = 0.5, num_cores = NUM_CORES)
-indicT = resultsGurobiNumericalOptimizeExperimentalDesign(gnoed)$indicT
-compute_objective_val(X, indicT, objective = "mahal_dist")
-
-random_indices = sample(1 : n)
-X_randomized = X[random_indices, , drop = FALSE]
-gnoed = initGurobiNumericalOptimizationExperimentalDesignObject(X_randomized, time_limit_min = 0.5, num_cores = NUM_CORES)
-indicT = resultsGurobiNumericalOptimizeExperimentalDesign(gnoed)$indicT
-compute_objective_val(X_randomized, indicT, objective = "mahal_dist")
-# compute_objective_val(X, indicT[order(random_indices)], objective = "mahal_dist")
-
-indicTs = gurobi_multiple_designs(X, r, time_limit_min = 0.5, num_cores = NUM_CORES)
-for (i in 1 : nrow(indicTs)){
-  indicTs[i, ] = 2 * (indicTs[i, ] - 0.5)
-}
-var_cov_matrix_est = var(indicTs)
-abs(var_cov_matrix_est[1:10, 1:10])
-eigen(var_cov_matrix_est)$values[1]
-
-
-
-
-
-#greedy pair switching
-rd = initGreedyExperimentalDesignObject(X, r, wait = TRUE, objective = "mahal_dist", num_cores = 4)
-res = resultsGreedySearch(rd, max_vectors = r)
-indicTs = t(res$ending_indicTs)
-for (i in 1 : nrow(indicTs)){
-  indicTs[i, ] = 2 * (indicTs[i, ] - 0.5)
-}
-var_cov_matrix_est = var(indicTs)
-abs(var_cov_matrix_est[1:10, 1:10])
-eigen(var_cov_matrix_est)$values[1]
-# res$obj_vals
-
-
-indicTs = complete_randomization_with_balanced_ns(n, r)
-var_cov_matrix_est = var(indicTs)
-abs(var_cov_matrix_est[1:10, 1:10])
-eigen(var_cov_matrix_est)$values[1]
-
-
-indicTs = complete_randomization(n, r)
-var_cov_matrix_est = var(indicTs)
-abs(var_cov_matrix_est[1:10, 1:10])
-eigen(var_cov_matrix_est)$values[1]
-#optimal solutions
-# oed = initOptimalExperimentalDesignObject(X, num_cores = NUM_CORES, objective = "mahal_dist", wait = TRUE)
-# opt_res = resultsOptimalSearch(oed)$obj_val
-# opt_indicT = resultsOptimalSearch(oed)$indicT
-# #calc Mahal
-# XT_bar = colMeans(X[opt_indicT == 1, , drop = FALSE])
-# XC_bar = colMeans(X[opt_indicT == 0, , drop = FALSE])
-# XT_bar_min_XC_bar = XT_bar - XC_bar
-# XT_bar_min_XC_bar %*% gnoed$SinvX %*% XT_bar_min_XC_bar
-
-
-
-complete_randomization = function(n, r){
-  indicTs = matrix(NA, nrow = r, ncol = n)
-  
-  for (nsim in 1 : r){
-    indicTs[nsim, ] = 2 * (rbinom(n, 1, 0.5) - 0.5)
-  }
-  indicTs
-}
-
-complete_randomization_with_balanced_ns = function(n, r){
-  indicTs = matrix(NA, nrow = r, ncol = n)
-  
-  for (nsim in 1 : r){
-    indicTs[nsim, ] = sample(c(rep(1, n / 2), rep(-1, n / 2)))
-  }
-  indicTs
-}
 
 

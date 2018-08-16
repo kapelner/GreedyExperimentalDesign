@@ -1,11 +1,10 @@
 #' This method creates an object of type karp_experimental_design and will immediately initiate
-#' a search through $1_{T}$ space.
+#' a search through $1_{T}$ space. Note that the Karp search only works 
+#' for one covariate (i.e. $p=1$) and the objective "abs_sum_diff".
 #' 
 #' @param X					The design matrix with $n$ rows (one for each subject) and $p$ columns 
 #' 							(one for each measurement on the subject). This is the design matrix you wish 
 #' 							to search for a more karp design.
-#' @param objective			The objective function to use when greedily searching design space. This is a string
-#' 							"\code{abs_sum_diff}" (default) or "\code{mahal_dist}."
 #' @param balanced			Should the final vector be balanced? Default and recommended is \code{TRUE}.
 #' @param wait				Should the \code{R} terminal hang until all \code{max_designs} vectors are found? The 
 #' 							deafult is \code{FALSE}.
@@ -15,13 +14,9 @@
 #' @author Adam Kapelner
 #' @export
 initKarpExperimentalDesignObject = function(X,
-		objective = "abs_sum_diff", 
 		wait = FALSE, 
 		balanced = TRUE,
 		start = TRUE){
-	if (objective != "abs_sum_diff"){
-		stop("Karp search only works for the \"abs_sum_diff\" objective function.")
-	}
 	n = nrow(X)
 	if (n %% 2 != 0 && balanced){
 		stop("Design matrix must have even rows to have equal treatments and controls if you are requiring balance.")
@@ -40,7 +35,8 @@ initKarpExperimentalDesignObject = function(X,
 	
 	#now go ahead and create the Java object and set its information
 	java_obj = .jnew("KarpExperimentalDesign.KarpExperimentalDesign")
-	.jcall(java_obj, "V", "setNandP", as.integer(n), as.integer(p))
+	.jcall(java_obj, "V", "setN", as.integer(n))
+	.jcall(java_obj, "V", "setP", as.integer(p))
 	if (wait){
 		.jcall(java_obj, "V", "setWait")
 	}

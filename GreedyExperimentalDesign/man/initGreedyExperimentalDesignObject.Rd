@@ -3,24 +3,29 @@
 \name{initGreedyExperimentalDesignObject}
 \alias{initGreedyExperimentalDesignObject}
 \title{This method creates an object of type greedy_experimental_design and will immediately initiate
-a search through $1_{T}$ space.}
+a search through $1_{T}$ space for forced balance designs.}
 \usage{
-initGreedyExperimentalDesignObject(X, max_designs = 10000,
-  objective = "abs_sum_diff", wait = FALSE, start = TRUE,
+initGreedyExperimentalDesignObject(X = NULL, max_designs = 10000,
+  objective = "mahal_dist", Kgram = NULL, wait = FALSE, start = TRUE,
   max_iters = Inf, semigreedy = FALSE, diagnostics = FALSE,
   num_cores = 1)
 }
 \arguments{
 \item{X}{The design matrix with $n$ rows (one for each subject) and $p$ columns 
 (one for each measurement on the subject). This is the design matrix you wish 
-to search for a more optimal design.}
+to search for a more optimal design. This parameter must be specified unless you
+choose objective type \code{"kernel"} in which case, the \code{Kgram} parameter must
+be specified.}
 
 \item{max_designs}{The maximum number of designs to be returned. Default is 10,000. Make this large 
 so you can search however long you wish as the search can be stopped at any time by
 using the \code{\link{stopSearch}} method}
 
-\item{objective}{The objective function to use when greedily searching design space. This is a string
-"\code{abs_sum_diff}" (default) or "\code{mahal_dist}."}
+\item{objective}{The objective function to use when searching design space. This is a string
+with valid values "\code{mahal_dist}" (the default), "\code{abs_sum_diff}" or "\code{kernel}".}
+
+\item{Kgram}{If the \code{objective = kernel}, this argument is required to be an \code{n x n} matrix whose
+entries are the evaluation of the kernel function between subject i and subject j. Default is \code{NULL}.}
 
 \item{wait}{Should the \code{R} terminal hang until all \code{max_designs} vectors are found? The 
 deafult is \code{FALSE}.}
@@ -44,7 +49,7 @@ An object of type \code{greedy_experimental_design_search} which can be further 
 }
 \description{
 This method creates an object of type greedy_experimental_design and will immediately initiate
-a search through $1_{T}$ space.
+a search through $1_{T}$ space for forced balance designs.
 }
 \examples{
  \dontrun{

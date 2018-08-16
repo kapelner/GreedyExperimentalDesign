@@ -3,18 +3,16 @@
 \name{initKarpExperimentalDesignObject}
 \alias{initKarpExperimentalDesignObject}
 \title{This method creates an object of type karp_experimental_design and will immediately initiate
-a search through $1_{T}$ space.}
+a search through $1_{T}$ space. Note that the Karp search only works 
+for one covariate (i.e. $p=1$) and the objective "abs_sum_diff".}
 \usage{
-initKarpExperimentalDesignObject(X, objective = "abs_sum_diff",
-  wait = FALSE, balanced = TRUE, start = TRUE)
+initKarpExperimentalDesignObject(X, wait = FALSE, balanced = TRUE,
+  start = TRUE)
 }
 \arguments{
 \item{X}{The design matrix with $n$ rows (one for each subject) and $p$ columns 
 (one for each measurement on the subject). This is the design matrix you wish 
 to search for a more karp design.}
-
-\item{objective}{The objective function to use when greedily searching design space. This is a string
-"\code{abs_sum_diff}" (default) or "\code{mahal_dist}."}
 
 \item{wait}{Should the \code{R} terminal hang until all \code{max_designs} vectors are found? The 
 deafult is \code{FALSE}.}
@@ -28,7 +26,8 @@ An object of type \code{karp_experimental_design_search} which can be further op
 }
 \description{
 This method creates an object of type karp_experimental_design and will immediately initiate
-a search through $1_{T}$ space.
+a search through $1_{T}$ space. Note that the Karp search only works 
+for one covariate (i.e. $p=1$) and the objective "abs_sum_diff".
 }
 \author{
 Adam Kapelner

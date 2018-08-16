@@ -50,8 +50,9 @@ searchTimeElapsed = function(obj){
 }
 
 #' Returns the objective value given a design vector as well an an objective function.
-#' This is code duplication since this is implemented within Java. This is only to be
-#' run if...
+#' This is sometimes duplicated in Java. However, within Java, tricks are played to make
+#' optimization go faster so Java's objective values may not always be the same as the true
+#' objective function (e.g. logs or constants dropped).
 #' 
 #' @param X 		 	The n x p design matrix
 #' @param indic_T		The n-length binary allocation vector
@@ -81,4 +82,41 @@ compute_objective_val = function(X, indic_T, objective = "abs_sum_diff", inv_cov
 	}
 }
 
+#' Standardizes the columns of a data matrix.
+#' 
+#' @param X 		 	The n x p design matrix
+#' @return				The n x p design matrix with columns standardized
+#' 
+#' @author Adam Kapelner
+#' @export
+standardize_data_matrix = function(X){
+	apply(X, 2, function(xj){(xj - mean(xj)) / sd(xj)})
+}
 
+#private
+verify_objective_function = function(objective, Kgram, n){
+	if (objective != "mahal_dist" && objective != "abs_sum_diff" && objective != "kernel"){
+		stop("Objective function must be one of the following:\n  mahal_dist\n  abs_sum_diff\n  kernel\n\n")
+	}
+	if (objective == "kernel"){
+		if (is.null(Kgram)){
+			stop("You must specify a gram matrix.\n")
+		}
+		if (class(Kgram) != "kernelMatrix" && class(Kgram) != "matrix"){
+			stop("The gram matrix must be type kernelMatrix or type matrix.\n")
+		}
+		if (!all.equal(dim(Kgram), c(n, n))){
+			stop("The gram matrix must have dimension n x n.\n")
+		}
+	}
+	if (!is.null(Kgram) && objective != "kernel"){
+		stop("If you specify a gram matrix, you must specify the \"kernel\" objective.\n")
+	}
+}
+
+#private
+setGramMatrix = function(java_obj, Kgram){
+	for (i in 1 : nrow(Kgram)){	
+		.jcall(java_obj, "V", "setKgramRow", as.integer(i - 1), Kgram[i, , drop = FALSE]) #java indexes from 0...n-1
+	}
+}

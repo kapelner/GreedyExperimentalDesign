@@ -4,10 +4,10 @@ import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import CustomLogging.FileLoggedClass;
 import ObjectiveFunctions.ObjectiveFunction;
-import gurobi.GRBException;
 
 public abstract class AllExperimentalDesigns extends FileLoggedClass {
 	
@@ -18,11 +18,12 @@ public abstract class AllExperimentalDesigns extends FileLoggedClass {
 	protected int p;
 	protected String objective;
 	protected Integer num_cores;
-	protected boolean search_stopped;
+	protected AtomicBoolean search_stopped;
 	
 	//data inputed from the user's data
 	protected double[][] X;
 	protected double[][] Sinv;	
+	protected double[][] Kgram;
 	protected boolean wait;
 	
 	//temporary objects needed for search
@@ -35,6 +36,7 @@ public abstract class AllExperimentalDesigns extends FileLoggedClass {
 	public AllExperimentalDesigns(){
 		num_cores = 1;
 		rand_obj = new Random();
+		search_stopped = new AtomicBoolean();
 	}	
 	
 	public void beginSearch() {
@@ -86,7 +88,7 @@ public abstract class AllExperimentalDesigns extends FileLoggedClass {
 	}
 	
 	public void stopSearch(){
-		search_stopped = true;
+		search_stopped.set(true);
 	}	
 	
 	public void setObjective(String objective) throws Exception{
@@ -101,14 +103,26 @@ public abstract class AllExperimentalDesigns extends FileLoggedClass {
 		this.num_cores = num_cores;
 	}	
 	
-	public void setNandP(int n, int p) throws Exception{
+	public void setN(int n) throws Exception{
 		if (n % 2 != 0){
 			throw new Exception("n must be even");
 		}
-//		System.out.println("setNandP n = " + n + " p = " + p);
 		this.n = n;
+	}	
+	
+	
+	public void setP(int p){
 		this.p = p;
 	}	
+	
+	public void setKgramRow(int i0, double[] kgram_i){
+		if (Kgram == null){
+			Kgram = new double[n][n];
+		}
+		for (int j = 0; j < n; j++){
+			Kgram[i0][j] = kgram_i[j];
+		}
+	}
 	
 	public void setDataRow(int i0, double[] x_i){
 //		System.out.println("setDataRow " + i0 + "  " + x_i);

@@ -2,7 +2,7 @@
 % Please edit documentation in R/complete_randomization.R
 \name{complete_randomization}
 \alias{complete_randomization}
-\title{Implements complete randomization}
+\title{Implements complete randomization (without forced balance)}
 \usage{
 complete_randomization(n, r)
 }
@@ -15,7 +15,7 @@ complete_randomization(n, r)
 a matrix where each column is one of the \code{r} designs
 }
 \description{
-Implements complete randomization
+Implements complete randomization (without forced balance)
 }
 \author{
 Adam Kapelner

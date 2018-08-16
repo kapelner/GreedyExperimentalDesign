@@ -7,8 +7,8 @@
 	  <fileset dir="./GreedyExperimentalDesignJARs/inst/java/">
 	    <include name="*.jar" />
 	  </fileset>
-	  <!-- To compile, change the directory to where your gurobi.jar is located -->
-	  <fileset dir="/gurobi752/win64/lib">
+	  <!-- To compile, change the directory to where your gurobi.jar and associated libs are located -->
+	  <fileset dir="/gurobi801/win64/lib">
 	    <include name="gurobi.jar" />
 	  </fileset>		
 	</path>	

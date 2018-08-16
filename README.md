@@ -13,4 +13,6 @@ To load the package, make sure `rJava' is installed and properly configured! The
 	
 And if you want to use the optimization feature via `Gurobi', install Gurobi first and then run something like:
 
-	.jaddClassPath("/gurobi752/win64/lib/gurobi.jar")
+	.jaddClassPath("/gurobi801/win64/lib/gurobi.jar")
+	
+Note that you have to register your machine and run `grbgetkey` with the proper license number and ensure the `.lic` file is installed. Expect `ClassNotFoundException`s if this is not setup properly!

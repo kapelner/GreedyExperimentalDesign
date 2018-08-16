@@ -1,14 +1,18 @@
 #' This method creates an object of type greedy_experimental_design and will immediately initiate
-#' a search through $1_{T}$ space.
+#' a search through $1_{T}$ space for forced balance designs.
 #' 
 #' @param X					The design matrix with $n$ rows (one for each subject) and $p$ columns 
 #' 							(one for each measurement on the subject). This is the design matrix you wish 
-#' 							to search for a more optimal design.
+#' 							to search for a more optimal design. This parameter must be specified unless you
+#' 							choose objective type \code{"kernel"} in which case, the \code{Kgram} parameter must
+#' 							be specified.
 #' @param max_designs 		The maximum number of designs to be returned. Default is 10,000. Make this large 
 #' 							so you can search however long you wish as the search can be stopped at any time by
 #' 							using the \code{\link{stopSearch}} method 
-#' @param objective			The objective function to use when greedily searching design space. This is a string
-#' 							"\code{abs_sum_diff}" (default) or "\code{mahal_dist}."
+#' @param objective			The objective function to use when searching design space. This is a string
+#' 							with valid values "\code{mahal_dist}" (the default), "\code{abs_sum_diff}" or "\code{kernel}".
+#' @param Kgram				If the \code{objective = kernel}, this argument is required to be an \code{n x n} matrix whose
+#' 							entries are the evaluation of the kernel function between subject i and subject j. Default is \code{NULL}.
 #' @param wait				Should the \code{R} terminal hang until all \code{max_designs} vectors are found? The 
 #' 							deafult is \code{FALSE}.
 #' @param start				Should we start searching immediately (default is \code{TRUE}).
@@ -37,25 +41,38 @@
 #' 	ged
 #' 	}
 #' @export
-initGreedyExperimentalDesignObject = function(X, 
+initGreedyExperimentalDesignObject = function(
+		X = NULL, 
 		max_designs = 10000, 
-		objective = "abs_sum_diff", 
+		objective = "mahal_dist", 
+		Kgram = NULL,
 		wait = FALSE, 
 		start = TRUE,
 		max_iters = Inf,
 		semigreedy = FALSE, 
 		diagnostics = FALSE,
 		num_cores = 1){
-	#get dimensions immediately
-	n = nrow(X)
+	
+	verify_objective_function(objective, Kgram, n)
+	
+	if (diagnostics && objective != "abs_sum_diff"){
+		stop("Diagnostic output only available with objective type \"abs_sum_diff\".")
+	}
+	
+	if (!is.null(Kgram)){
+		n = nrow(Kgram)
+		p = NA
+	} else {
+		n = nrow(X)
+	}
 	if (n %% 2 != 0){
 		stop("Design matrix must have even rows to have equal treatments and controls")
 	}
-	p = ncol(X)
+	
 	
 	if (objective == "abs_sum_diff"){
 		#standardize it -- much faster here
-		Xstd = apply(X, 2, function(xj){(xj - mean(xj)) / sd(xj)})
+		Xstd = standardize_data_matrix(X)
 	}
 	if (objective == "mahal_dist"){
 		if (p < n){
@@ -73,7 +90,12 @@ initGreedyExperimentalDesignObject = function(X,
 	java_obj = .jnew("GreedyExperimentalDesign.GreedyExperimentalDesign")
 	.jcall(java_obj, "V", "setMaxDesigns", as.integer(max_designs))
 	.jcall(java_obj, "V", "setNumCores", as.integer(num_cores))
-	.jcall(java_obj, "V", "setNandP", as.integer(n), as.integer(p))
+	.jcall(java_obj, "V", "setN", as.integer(n))
+	if (objective != "kernel"){
+		p = ncol(X)
+		.jcall(java_obj, "V", "setP", as.integer(p))
+	}
+	.jcall(java_obj, "V", "setN", as.integer(n))
 	.jcall(java_obj, "V", "setObjective", objective)
 	if (wait){
 		.jcall(java_obj, "V", "setWait")
@@ -83,21 +105,25 @@ initGreedyExperimentalDesignObject = function(X,
 		.jcall(java_obj, "V", "setMaxIters", as.integer(max_iters))
 	}
 	
-	
-	#feed in the data
-	for (i in 1 : n){	
-		if (objective == "abs_sum_diff"){
-			.jcall(java_obj, "V", "setDataRow", as.integer(i - 1), Xstd[i, , drop = FALSE]) #java indexes from 0...n-1
-		} else {
-			.jcall(java_obj, "V", "setDataRow", as.integer(i - 1), X[i, , drop = FALSE]) #java indexes from 0...n-1
+	#feed in the gram matrix if applicable
+	if (!is.null(Kgram)){
+		setGramMatrix(java_obj, Kgram)
+	} else {
+		#feed in the raw data
+		for (i in 1 : n){	
+			if (objective == "abs_sum_diff"){
+				.jcall(java_obj, "V", "setDataRow", as.integer(i - 1), Xstd[i, , drop = FALSE]) #java indexes from 0...n-1
+			} else {
+				.jcall(java_obj, "V", "setDataRow", as.integer(i - 1), X[i, , drop = FALSE]) #java indexes from 0...n-1
+			}
 		}
-	}
-	
-	#feed in the inverse var-cov matrix
-	if (objective == "mahal_dist"){
-		if (p < n){
-			for (j in 1 : p){
-				.jcall(java_obj, "V", "setInvVarCovRow", as.integer(j - 1), SinvX[j, , drop = FALSE]) #java indexes from 0...n-1
+		
+		#feed in the inverse var-cov matrix
+		if (objective == "mahal_dist"){
+			if (p < n){
+				for (j in 1 : p){
+					.jcall(java_obj, "V", "setInvVarCovRow", as.integer(j - 1), SinvX[j, , drop = FALSE]) #java indexes from 0...n-1
+				}
 			}
 		}
 	}

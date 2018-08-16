@@ -67,7 +67,8 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 	
 			int n = 6;
 			int p = g;
-			od.setNandP(n, p);
+			od.setN(n);
+			od.setP(p);
 			for (int i = 0; i < n; i++){
 	//			double[] x_i = {Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random()};
 				double[] x_i = new double[p];
@@ -119,26 +120,34 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 						else if (objective.equals(ObjectiveFunction.ABS)){
 							obj_fun = new AbsSumObjective();	
 						}
+						else if (objective.equals(ObjectiveFunction.KER)){
+							obj_fun = new KernelObjective(Kgram);	
+						}
 						
 						//get the vector for this run
 						BitSet indicTbit = all_indicTs.get(n).get(d00);
 //						System.out.println((d0 + 1) + " bitvector: " + Tools.StringJoin(indicTbit, ""));
 						int[] indicT = Tools.convert_bitvector_to_intvector(indicTbit, n);
 //						System.out.println((d0 + 1) + "intvector: " + Tools.StringJoin(indicT, ""));
-						//get the indicies
-						int[] i_Ts = Tools.findIndicies(indicT, n_over_two, 1);
-//						System.out.println("i_Ts " + Tools.StringJoin(i_Ts));
-						int[] i_Cs = Tools.findIndicies(indicT, n - n_over_two, 0);
-						//get the rows for each group
-						ArrayList<double[]> XT = Tools.subsetMatrix(X, i_Ts); 
-						ArrayList<double[]> XC = Tools.subsetMatrix(X, i_Cs); 
-						//compute the averages
-						double[] avg_Ts = Tools.colAvg(XT, p);
-//						System.out.println("avg_Ts " + avg_Ts[0]);
-						double[] avg_Cs = Tools.colAvg(XC, p);
-//						System.out.println("avg_Cs " + Tools.StringJoin(avg_Cs));
-						obj_fun.setXTbar(avg_Ts);
-						obj_fun.setXCbar(avg_Cs);
+						
+						if (objective.equals(ObjectiveFunction.KER)){
+							((KernelObjective)obj_fun).setIndicT(indicT);							
+						} else {
+							//get the indicies
+							int[] i_Ts = Tools.findIndicies(indicT, n_over_two, 1);
+//							System.out.println("i_Ts " + Tools.StringJoin(i_Ts));
+							int[] i_Cs = Tools.findIndicies(indicT, n - n_over_two, 0);
+							//get the rows for each group
+							ArrayList<double[]> XT = Tools.subsetMatrix(X, i_Ts); 
+							ArrayList<double[]> XC = Tools.subsetMatrix(X, i_Cs); 
+							//compute the averages
+							double[] avg_Ts = Tools.colAvg(XT, p);
+//							System.out.println("avg_Ts " + avg_Ts[0]);
+							double[] avg_Cs = Tools.colAvg(XC, p);
+//							System.out.println("avg_Cs " + Tools.StringJoin(avg_Cs));
+							obj_fun.setXTbar(avg_Ts);
+							obj_fun.setXCbar(avg_Cs);
+						}
 						
 						//calculate our objective function (according to the user's specification)
 						if (d00 < max_designs){
@@ -146,7 +155,7 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 						}
 //						System.out.println("objval: " + objective_vals[d00]);
 						//break out if user desires
-						if (search_stopped){
+						if (search_stopped.get()){
 							break;
 						}						
 					}
@@ -267,8 +276,8 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 		return Tools.convert_bitvector_to_intvector(all_indicTs.get(n).get(d_opt), n);
 	}
 	
-	public void setNandP(int n, int p) throws Exception {
-		super.setNandP(n, p);
+	public void setN(int n) throws Exception {
+		super.setN(n);
 		n_over_two = n / 2;
 	}
 

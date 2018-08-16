@@ -5,16 +5,19 @@
 \title{This method creates an object of type optimal_experimental_design and will immediately initiate
 a search through $1_{T}$ space.}
 \usage{
-initOptimalExperimentalDesignObject(X, objective = "abs_sum_diff",
-  wait = FALSE, start = TRUE, num_cores = 1)
+initOptimalExperimentalDesignObject(X, objective = "mahal_dist",
+  Kgram = NULL, wait = FALSE, start = TRUE, num_cores = 1)
 }
 \arguments{
 \item{X}{The design matrix with $n$ rows (one for each subject) and $p$ columns 
 (one for each measurement on the subject). This is the design matrix you wish 
 to search for a more optimal design.}
 
-\item{objective}{The objective function to use when greedily searching design space. This is a string
-"\code{abs_sum_diff}" (default) or "\code{mahal_dist}."}
+\item{objective}{The objective function to use when searching design space. This is a string
+with valid values "\code{mahal_dist}" (the default), "\code{abs_sum_diff}" or "\code{kernel}".}
+
+\item{Kgram}{If the \code{objective = kernel}, this argument is required to be an \code{n x n} matrix whose
+entries are the evaluation of the kernel function between subject i and subject j. Default is \code{NULL}.}
 
 \item{wait}{Should the \code{R} terminal hang until all \code{max_designs} vectors are found? The 
 deafult is \code{FALSE}.}

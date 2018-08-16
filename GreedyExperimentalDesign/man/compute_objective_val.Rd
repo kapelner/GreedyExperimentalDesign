@@ -3,8 +3,7 @@
 \name{compute_objective_val}
 \alias{compute_objective_val}
 \title{Returns the objective value given a design vector as well an an objective function.
-This is code duplication since this is implemented within Java. This is only to be
-run if...}
+This is code duplication since this is implemented within Java but is sometimes needed here.}
 \usage{
 compute_objective_val(X, indic_T, objective = "abs_sum_diff",
   inv_cov_X = NULL)
@@ -22,8 +21,7 @@ in will cache this data.}
 }
 \description{
 Returns the objective value given a design vector as well an an objective function.
-This is code duplication since this is implemented within Java. This is only to be
-run if...
+This is code duplication since this is implemented within Java but is sometimes needed here.
 }
 \author{
 Adam Kapelner

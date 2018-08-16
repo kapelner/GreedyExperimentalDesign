@@ -3,11 +3,11 @@
 \name{initRerandomizationExperimentalDesignObject}
 \alias{initRerandomizationExperimentalDesignObject}
 \title{This method creates an object of type rerandomization_experimental_design and will immediately initiate
-a search through $1_{T}$ space.}
+a search through $1_{T}$ space for forced-balance designs.}
 \usage{
 initRerandomizationExperimentalDesignObject(X, max_designs = 1000,
   obj_val_cutoff_to_include = NULL, objective = "mahal_dist",
-  wait = FALSE, start = TRUE, num_cores = 1)
+  Kgram = NULL, wait = FALSE, start = TRUE, num_cores = 1)
 }
 \arguments{
 \item{X}{The design matrix with $n$ rows (one for each subject) and $p$ columns 
@@ -21,8 +21,11 @@ using the \code{\link{stopSearch}} method}
 \item{obj_val_cutoff_to_include}{Only allocation vectors with objective values lower than this threshold will be returned.
 The default is \code{NULL} which means all vectors are returned.}
 
-\item{objective}{The objective function to use when searching the design space. This is a string
-"\code{abs_sum_diff}" (default) or "\code{mahal_dist}."}
+\item{objective}{The objective function to use when searching design space. This is a string
+with valid values "\code{mahal_dist}" (the default), "\code{abs_sum_diff}" or "\code{kernel}".}
+
+\item{Kgram}{If the \code{objective = kernel}, this argument is required to be an \code{n x n} matrix whose
+entries are the evaluation of the kernel function between subject i and subject j. Default is \code{NULL}.}
 
 \item{wait}{Should the \code{R} terminal hang until all \code{max_designs} vectors are found? The 
 default is \code{FALSE}.}
@@ -36,7 +39,7 @@ An object of type \code{rerandomization_experimental_design_search} which can be
 }
 \description{
 This method creates an object of type rerandomization_experimental_design and will immediately initiate
-a search through $1_{T}$ space.
+a search through $1_{T}$ space for forced-balance designs.
 }
 \author{
 Adam Kapelner

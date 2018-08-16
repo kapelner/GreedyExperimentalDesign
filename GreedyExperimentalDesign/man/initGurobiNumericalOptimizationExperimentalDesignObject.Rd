@@ -3,9 +3,10 @@
 \name{initGurobiNumericalOptimizationExperimentalDesignObject}
 \alias{initGurobiNumericalOptimizationExperimentalDesignObject}
 \title{This method creates an object of type optimal_experimental_design and will immediately initiate
-a search through $1_{T}$ space.}
+a search through $1_{T}$ space for forced balance designs.}
 \usage{
-initGurobiNumericalOptimizationExperimentalDesignObject(X, num_cores = 1,
+initGurobiNumericalOptimizationExperimentalDesignObject(X,
+  objective = "mahal_dist", Kgram = NULL, num_cores = 1,
   time_limit_min = 5, node_limit = NULL, max_solutions = 10,
   verbose = TRUE, log_file = "")
 }
@@ -13,6 +14,12 @@ initGurobiNumericalOptimizationExperimentalDesignObject(X, num_cores = 1,
 \item{X}{The design matrix with $n$ rows (one for each subject) and $p$ columns 
 (one for each measurement on the subject). This is the design matrix you wish 
 to search for a more optimal design.}
+
+\item{objective}{The objective function to use when searching design space. This is a string
+with valid values "\code{mahal_dist}" (the default) or "\code{kernel}".}
+
+\item{Kgram}{If the \code{objective = kernel}, this argument is required to be an \code{n x n} matrix whose
+entries are the evaluation of the kernel function between subject i and subject j. Default is \code{NULL}.}
 
 \item{num_cores}{The number of CPU cores you wish to use during the search. The default is \code{1}.}
 
@@ -32,7 +39,7 @@ An object of type \code{optimal_experimental_design_search} which can be further
 }
 \description{
 This method creates an object of type optimal_experimental_design and will immediately initiate
-a search through $1_{T}$ space.
+a search through $1_{T}$ space for forced balance designs.
 }
 \author{
 Adam Kapelner and Bracha Blau
