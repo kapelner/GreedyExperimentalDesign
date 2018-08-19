@@ -111,10 +111,38 @@ options(java.parameters = "-Xmx4000m")
 NUM_CORES = 3
 library(GreedyExperimentalDesign)
 .jaddClassPath("/gurobi801/win64/lib/gurobi.jar")
+
+n = 40
+p = 3
+X = generate_stdzied_design_matrix(n = n, p = p, covariate_gen = rnorm)
+Kgram = compute_gram_matrix(X, "rbf", 1)
+
+
 rd = initGurobiNumericalOptimizationExperimentalDesignObject(Kgram = Kgram, objective = "kernel", 
                                                              time_limit_min = 3, 
                                                              num_cores = NUM_CORES)
-###still not done yet
+indicT_kernel_rbf = resultsGurobiNumericalOptimizeExperimentalDesign(rd)$indicTs[, 1]
+
+Kgram = compute_gram_matrix(X, "poly", c(1, 1, 1)) #linear
+
+rd = initGurobiNumericalOptimizationExperimentalDesignObject(Kgram = Kgram, objective = "kernel", 
+                                                             time_limit_min = 3, 
+                                                             num_cores = NUM_CORES)
+indicT_kernel_linear = resultsGurobiNumericalOptimizeExperimentalDesign(rd)$indicTs[, 1]
+
+
+rd = initGurobiNumericalOptimizationExperimentalDesignObject(X, objective = "mahal_dist", 
+                                                             time_limit_min = 3, 
+                                                             num_cores = NUM_CORES)
+indicT_mahal = resultsGurobiNumericalOptimizeExperimentalDesign(rd)$indicTs[, 1]
+
+indicT_kernel_rbf
+indicT_kernel_linear
+indicT_mahal
+compute_objective_val(X, indicT_kernel_rbf, objective = "mahal_dist")
+compute_objective_val(X, indicT_kernel_linear, objective = "mahal_dist")
+compute_objective_val(X, indicT_mahal, objective = "mahal_dist")
+
 
 
 

@@ -246,13 +246,12 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 		//Setting objective matrix		
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < n; j++) {
-				// w^T K w = (2b - 1)^T K (2b - 1) = 
-				// b^T K b - 4 1^T K b + 1^T K 1 \propto 
-				// b^T K b - 4 1^T K b = 
-				// sum_i sum_j K_ij b_i b_j - 4 sum_i sum_j K_ij b_j = 
-				// sum_i sum_j K_ij b_i b_j - 4 K_ij b_j
+				// 4 / n^2 * w^T K w = (2b - 1)^T K (2b - 1) = 
+				// 4 / n^2 * (4 b^T K b - 4 1^T K b + 1^T K 1) \propto 
+				// b^T K b - 1^T K b
+				// sum_i sum_j K_ij b_i b_j - sum_i sum_j K_ij b_j
 				obj.addTerm(Kgram[i][j], indicator_T_gur[i], indicator_T_gur[j]);	
-				obj.addTerm(-4 * Kgram[i][j], indicator_T_gur[j]);    			
+				obj.addTerm(-Kgram[i][j], indicator_T_gur[j]);
 			}
 		}
 	}
