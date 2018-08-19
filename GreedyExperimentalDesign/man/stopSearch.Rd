@@ -2,7 +2,7 @@
 % Please edit documentation in R/shared.R
 \name{stopSearch}
 \alias{stopSearch}
-\title{Stops the parallelized greedy design search. Once stopped, it cannot be restarted.}
+\title{Stops the parallelized greedy design search.}
 \usage{
 stopSearch(obj)
 }
@@ -10,7 +10,7 @@ stopSearch(obj)
 \item{obj}{The \code{experimental_design} object that is currently running the search}
 }
 \description{
-Stops the parallelized greedy design search. Once stopped, it cannot be restarted.
+Once stopped, it cannot be restarted.
 }
 \author{
 Adam Kapelner

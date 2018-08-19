@@ -5,7 +5,9 @@
 #' @return 			A list of resulting data: the probability estimates for
 #' 					each pair in the design of randomness where estmates close
 #' 					to ~0.5 represent random assignment, then the entropy metric
-#' 					and the distance metric.
+#' 					the distance metric, the maximum eigenvalue of the allocation
+#' 					var-cov matrix (operator norm) and the squared Frobenius norm 
+#' 					(the sum of the squared eigenvalues)
 #' 
 #' @author Adam Kapelner
 #' @export
@@ -40,6 +42,7 @@ compute_randomization_metrics = function(designs){
 		p_hat_ijs = p_hat_ijs, 
 		rand_entropy_metric = rand_entropy_metric, 
 		rand_norm_se_metric = rand_norm_se_metric,
-		max_eigenval = max(e_d$values)
+		max_eigenval = max(e_d$values),
+		frob_norm_sqd = sum(e_d$values^2)
 	)
 }

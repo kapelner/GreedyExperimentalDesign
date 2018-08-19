@@ -3,16 +3,18 @@ VALID_KERNEL_TYPES = c("vanilla", "rbf", "poly", "tanh", "bessel", "laplace", "a
 
 
 
-#' Computes the Gram Matrix for a given kernel. This function automatically standardizes
-#' the columns of the data entered.
+#' Gram Matrix Computation
+#' 
+#' Computes the Gram Matrix for a user-specified kernel using the library \code{kernlab}. Note that 
+#' this function automatically standardizes the columns of the data entered.
 #' 
 #' @param X					The design matrix with $n$ rows (one for each subject) and $p$ columns 
 #' 							(one for each measurement on the subject). This is the design matrix you wish 
 #' 							to search for a more optimal design.
 #' @param kernel_type 		One of the following: "vanilla", "rbf", "poly", "tanh", "bessel", "laplace", 
-#' 							"anova" or "spline"
+#' 							"anova" or "spline".
 #' @param params			A vector of numeric parameters. Each \code{kernel_type} has different numbers of
-#' 							parameters required. 
+#' 							parameters required. For more information see documentation for the \code{kernlab} library.
 #' @return					The \code{n x n} gram matrix for the given kernel on the given data. 
 #' 
 #' @author Adam Kapelner
@@ -68,4 +70,12 @@ compute_gram_matrix = function(X, kernel_type, params = c()){
 	
 	#compute the Gram matrix as type matrix
 	kernelMatrix(kernel, standardize_data_matrix(X))
+}
+
+
+#private
+setGramMatrix = function(java_obj, Kgram){
+	for (i in 1 : nrow(Kgram)){	
+		.jcall(java_obj, "V", "setKgramRow", as.integer(i - 1), Kgram[i, , drop = FALSE]) #java indexes from 0...n-1
+	}
 }

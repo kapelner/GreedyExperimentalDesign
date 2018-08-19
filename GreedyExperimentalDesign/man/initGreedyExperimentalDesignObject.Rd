@@ -2,8 +2,7 @@
 % Please edit documentation in R/greedy_search.R
 \name{initGreedyExperimentalDesignObject}
 \alias{initGreedyExperimentalDesignObject}
-\title{This method creates an object of type greedy_experimental_design and will immediately initiate
-a search through $1_{T}$ space for forced balance designs.}
+\title{Begin A Greedy Pair Switching Search}
 \usage{
 initGreedyExperimentalDesignObject(X = NULL, max_designs = 10000,
   objective = "mahal_dist", Kgram = NULL, wait = FALSE, start = TRUE,

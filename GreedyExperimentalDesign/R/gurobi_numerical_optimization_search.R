@@ -1,5 +1,12 @@
+#' Begin Gurobi Optimized Search
+#' 
 #' This method creates an object of type optimal_experimental_design and will immediately initiate
-#' a search through $1_{T}$ space for forced balance designs.
+#' a search through $1_{T}$ space for forced balance designs. Make sure you setup Gurobi properly first. This means
+#' applying for a license, downloading, installing, registering it on your computer using the \code{grbgetkey} command
+#' with the license file in the default directory. Then, in R, add it to the path within R using something like 
+#' \code{.jaddClassPath("/gurobi801/win64/lib/gurobi.jar")}. If this is not setup properly - you are in for a world of 
+#' pain with cryptic errors! Currently, this method does not return multiple vectors. This will be improved in a later 
+#' version. If you want this functionality now, use the hacked-up method \code{gurobi_multiple_designs}.
 #' 
 #' @param X					The design matrix with $n$ rows (one for each subject) and $p$ columns 
 #' 							(one for each measurement on the subject). This is the design matrix you wish 
@@ -143,7 +150,7 @@ initGurobiNumericalOptimizationExperimentalDesignObject = function(
 
 
 
-#' Find multiple designs
+#' Find multiple designs using Gurobi
 #' 
 #' This method searches through $1_{T}$ space using Gurobi's optimization many times.
 #' It finds many different solutions by permuting the rows of the design matrix and 
@@ -176,6 +183,8 @@ gurobi_multiple_designs = function(X, r, ...){
 
 
 
+#' Query the Gurobi Results
+#' 
 #' Returns the results (thus far) of the Gurobi numerical optimization design search
 #' 
 #' @param obj 				The \code{gurobi_numerical_optimization_experimental_design_search} object that is currently running the search

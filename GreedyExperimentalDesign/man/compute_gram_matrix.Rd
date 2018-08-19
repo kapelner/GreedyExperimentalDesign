@@ -2,8 +2,7 @@
 % Please edit documentation in R/kernel_functions.R
 \name{compute_gram_matrix}
 \alias{compute_gram_matrix}
-\title{Computes the Gram Matrix for a given kernel. This function automatically standardizes
-the columns of the data entered.}
+\title{Gram Matrix Computation}
 \usage{
 compute_gram_matrix(X, kernel_type, params = c())
 }
@@ -13,17 +12,17 @@ compute_gram_matrix(X, kernel_type, params = c())
 to search for a more optimal design.}
 
 \item{kernel_type}{One of the following: "vanilla", "rbf", "poly", "tanh", "bessel", "laplace", 
-"anova" or "spline"}
+"anova" or "spline".}
 
 \item{params}{A vector of numeric parameters. Each \code{kernel_type} has different numbers of
-parameters required.}
+parameters required. For more information see documentation for the \code{kernlab} library.}
 }
 \value{
 The \code{n x n} gram matrix for the given kernel on the given data.
 }
 \description{
-Computes the Gram Matrix for a given kernel. This function automatically standardizes
-the columns of the data entered.
+Computes the Gram Matrix for a user-specified kernel using the library \code{kernlab}. Note that 
+this function automatically standardizes the columns of the data entered.
 }
 \author{
 Adam Kapelner

@@ -2,13 +2,12 @@
 % Please edit documentation in R/gurobi_numerical_optimization_search.R
 \name{initGurobiNumericalOptimizationExperimentalDesignObject}
 \alias{initGurobiNumericalOptimizationExperimentalDesignObject}
-\title{This method creates an object of type optimal_experimental_design and will immediately initiate
-a search through $1_{T}$ space for forced balance designs.}
+\title{Begin Gurobi Optimized Search}
 \usage{
-initGurobiNumericalOptimizationExperimentalDesignObject(X,
+initGurobiNumericalOptimizationExperimentalDesignObject(X = NULL,
   objective = "mahal_dist", Kgram = NULL, num_cores = 1,
   time_limit_min = 5, node_limit = NULL, max_solutions = 10,
-  verbose = TRUE, log_file = "")
+  all_optimal_range = FALSE, verbose = TRUE, log_file = "")
 }
 \arguments{
 \item{X}{The design matrix with $n$ rows (one for each subject) and $p$ columns 
@@ -27,8 +26,11 @@ entries are the evaluation of the kernel function between subject i and subject 
 
 \item{node_limit}{The maximum number of nodes Gurobi should explore. Default is \code{NULL} for no limit.}
 
-\item{max_solutions}{The maximum number of solutions Gurobi should retain (if possible given the time limit and constraint of the 
-node limit). The default is \code{NULL} for Gurobi's default of 10.}
+\item{max_solutions}{The maximum number of solutions Gurobi should retain incidentally while looking for one optimal 
+(if possible given the time limit and constraint of the node limit). The default is 
+\code{NULL} for Gurobi's default of 10.}
+
+\item{all_optimal_range}{If \code{TRUE}, each of the \code{max_solutions} should be close to the optimal. Default is \code{FALSE}.}
 
 \item{verbose}{Should Gurobi print its log to screen? Default is \code{TRUE}.}
 
@@ -39,7 +41,12 @@ An object of type \code{optimal_experimental_design_search} which can be further
 }
 \description{
 This method creates an object of type optimal_experimental_design and will immediately initiate
-a search through $1_{T}$ space for forced balance designs.
+a search through $1_{T}$ space for forced balance designs. Make sure you setup Gurobi properly first. This means
+applying for a license, downloading, installing, registering it on your computer using the \code{grbgetkey} command
+with the license file in the default directory. Then, in R, add it to the path within R using something like 
+\code{.jaddClassPath("/gurobi801/win64/lib/gurobi.jar")}. If this is not setup properly - you are in for a world of 
+pain with cryptic errors! Currently, this method does not return multiple vectors. This will be improved in a later 
+version. If you want this functionality now, use the hacked-up method \code{gurobi_multiple_designs}.
 }
 \author{
 Adam Kapelner and Bracha Blau

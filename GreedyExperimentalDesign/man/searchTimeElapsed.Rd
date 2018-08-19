@@ -2,7 +2,7 @@
 % Please edit documentation in R/shared.R
 \name{searchTimeElapsed}
 \alias{searchTimeElapsed}
-\title{Returns the number of vectors found by the greedy design search}
+\title{Returns the amount of time elapsed}
 \usage{
 searchTimeElapsed(obj)
 }
@@ -10,7 +10,7 @@ searchTimeElapsed(obj)
 \item{obj}{The \code{experimental_design} object that is currently running the search}
 }
 \description{
-Returns the number of vectors found by the greedy design search
+Returns the amount of time elapsed
 }
 \author{
 Adam Kapelner

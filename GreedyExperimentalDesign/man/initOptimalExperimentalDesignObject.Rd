@@ -2,10 +2,9 @@
 % Please edit documentation in R/optimal_search.R
 \name{initOptimalExperimentalDesignObject}
 \alias{initOptimalExperimentalDesignObject}
-\title{This method creates an object of type optimal_experimental_design and will immediately initiate
-a search through $1_{T}$ space.}
+\title{Begin a Search for the Optimal Solution}
 \usage{
-initOptimalExperimentalDesignObject(X, objective = "mahal_dist",
+initOptimalExperimentalDesignObject(X = NULL, objective = "mahal_dist",
   Kgram = NULL, wait = FALSE, start = TRUE, num_cores = 1)
 }
 \arguments{
@@ -31,7 +30,8 @@ An object of type \code{optimal_experimental_design_search} which can be further
 }
 \description{
 This method creates an object of type optimal_experimental_design and will immediately initiate
-a search through $1_{T}$ space.
+a search through $1_{T}$ space. Since this search takes exponential time, for most machines, 
+this method is futile beyond 28 samples. You've been warned!
 }
 \author{
 Adam Kapelner

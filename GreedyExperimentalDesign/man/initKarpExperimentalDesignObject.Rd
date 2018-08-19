@@ -2,9 +2,7 @@
 % Please edit documentation in R/karp_search.R
 \name{initKarpExperimentalDesignObject}
 \alias{initKarpExperimentalDesignObject}
-\title{This method creates an object of type karp_experimental_design and will immediately initiate
-a search through $1_{T}$ space. Note that the Karp search only works 
-for one covariate (i.e. $p=1$) and the objective "abs_sum_diff".}
+\title{Begin Karp Search}
 \usage{
 initKarpExperimentalDesignObject(X, wait = FALSE, balanced = TRUE,
   start = TRUE)

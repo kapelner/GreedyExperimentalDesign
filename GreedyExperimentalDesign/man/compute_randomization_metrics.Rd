@@ -13,7 +13,9 @@ compute_randomization_metrics(designs)
 A list of resulting data: the probability estimates for
 					each pair in the design of randomness where estmates close
 					to ~0.5 represent random assignment, then the entropy metric
-					and the distance metric.
+					the distance metric, the maximum eigenvalue of the allocation
+					var-cov matrix (operator norm) and the squared Frobenius norm 
+					(the sum of the squared eigenvalues)
 }
 \description{
 Computes Randomization Metrics (explained in paper) about a design algorithm

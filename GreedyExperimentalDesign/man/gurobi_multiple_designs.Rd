@@ -2,7 +2,7 @@
 % Please edit documentation in R/gurobi_numerical_optimization_search.R
 \name{gurobi_multiple_designs}
 \alias{gurobi_multiple_designs}
-\title{Find multiple designs}
+\title{Find multiple designs using Gurobi}
 \usage{
 gurobi_multiple_designs(X, r, ...)
 }

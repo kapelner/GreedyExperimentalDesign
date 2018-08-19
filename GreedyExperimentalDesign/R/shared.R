@@ -1,4 +1,6 @@
-#' Starts the parallelized greedy design search. Once begun, this function cannot be run again.
+#' Starts the parallelized greedy design search. 
+#' 
+#' Once begun, this function cannot be run again.
 #' 
 #' @param obj 		The \code{experimental_design} object that will be running the search
 #' 
@@ -11,7 +13,9 @@ startSearch = function(obj){
 	.jcall(obj$java_obj, "V", "beginSearch")
 }
 
-#' Stops the parallelized greedy design search. Once stopped, it cannot be restarted.
+#' Stops the parallelized greedy design search. 
+#' 
+#' Once stopped, it cannot be restarted.
 #' 
 #' @param obj 		The \code{experimental_design} object that is currently running the search
 #' 
@@ -21,7 +25,9 @@ stopSearch = function(obj){
 	.jcall(obj$java_obj, "V", "stopSearch")
 }
 
-#' Generates a design matrix with standardized predictors. Useful for debugging.
+#' Generates a design matrix with standardized predictors. 
+#' 
+#' This function is useful for debugging.
 #' 
 #' @param n					Number of rows in the design matrix 
 #' @param p 				Number of columns in the design matrix
@@ -39,7 +45,7 @@ generate_stdzied_design_matrix = function(n = 50, p = 1, covariate_gen = rnorm, 
 }
 
 
-#' Returns the number of vectors found by the greedy design search
+#' Returns the amount of time elapsed
 #' 
 #' @param obj 		The \code{experimental_design} object that is currently running the search
 #' 
@@ -49,6 +55,8 @@ searchTimeElapsed = function(obj){
 	.jcall(obj$java_obj, "I", "timeElapsedInSeconds")
 }
 
+#' Computes Objective Value From Allocation Vector
+#' 
 #' Returns the objective value given a design vector as well an an objective function.
 #' This is sometimes duplicated in Java. However, within Java, tricks are played to make
 #' optimization go faster so Java's objective values may not always be the same as the true
@@ -111,12 +119,5 @@ verify_objective_function = function(objective, Kgram, n){
 	}
 	if (!is.null(Kgram) && objective != "kernel"){
 		stop("If you specify a gram matrix, you must specify the \"kernel\" objective.\n")
-	}
-}
-
-#private
-setGramMatrix = function(java_obj, Kgram){
-	for (i in 1 : nrow(Kgram)){	
-		.jcall(java_obj, "V", "setKgramRow", as.integer(i - 1), Kgram[i, , drop = FALSE]) #java indexes from 0...n-1
 	}
 }

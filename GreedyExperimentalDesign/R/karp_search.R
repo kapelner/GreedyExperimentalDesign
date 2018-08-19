@@ -1,3 +1,5 @@
+#' Begin Karp Search
+#' 
 #' This method creates an object of type karp_experimental_design and will immediately initiate
 #' a search through $1_{T}$ space. Note that the Karp search only works 
 #' for one covariate (i.e. $p=1$) and the objective "abs_sum_diff".

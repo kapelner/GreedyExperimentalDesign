@@ -2,10 +2,9 @@
 % Please edit documentation in R/rerandomization_search.R
 \name{initRerandomizationExperimentalDesignObject}
 \alias{initRerandomizationExperimentalDesignObject}
-\title{This method creates an object of type rerandomization_experimental_design and will immediately initiate
-a search through $1_{T}$ space for forced-balance designs.}
+\title{Begin a Rerandomization Search}
 \usage{
-initRerandomizationExperimentalDesignObject(X, max_designs = 1000,
+initRerandomizationExperimentalDesignObject(X = NULL, max_designs = 1000,
   obj_val_cutoff_to_include = NULL, objective = "mahal_dist",
   Kgram = NULL, wait = FALSE, start = TRUE, num_cores = 1)
 }
