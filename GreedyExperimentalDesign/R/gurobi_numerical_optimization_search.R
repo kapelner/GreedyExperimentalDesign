@@ -100,7 +100,7 @@ initGurobiNumericalOptimizationExperimentalDesignObject = function(
 		.jcall(java_obj, "V", "setNodeLimit", as.numeric(round(node_limit)))
 	}	
 	if (!is.null(max_solutions)){
-		if (max_solutions <= 1){
+		if (max_solutions < 1){
 			stop("Max solutions must be one or more.")
 		}
 		.jcall(java_obj, "V", "setMaxSolutions", as.integer(round(max_solutions)))
@@ -174,9 +174,39 @@ gurobi_multiple_designs = function(X, r, ...){
 		X_randomized = X[random_indices, , drop = FALSE]
 		gnoed = initGurobiNumericalOptimizationExperimentalDesignObject(X_randomized, ...)
 		indicT = resultsGurobiNumericalOptimizeExperimentalDesign(gnoed)$indicT
-		indicTs[nsim, ] = indicT
+		indicTs[nsim, ] = indicT[order(random_indices)]
 	}	
 	indicTs
+}
+
+#' Find multiple designs using Gurobi and returns the minimum
+#' 
+#' This method searches through $1_{T}$ space using Gurobi's optimization many times.
+#' It finds many different solutions by permuting the rows of the design matrix and 
+#' rerunning the optimization.
+#' 
+#' @param X 		The design matrix with $n$ rows (one for each subject) and $p$ columns 
+#' 					(one for each measurement on the subject). This is the design matrix you wish 
+#' 					to search for a more optimal design.
+#' @param r 		The number of vectors that should be returned
+#' @param objective The objective function to calculate. Default is \code{"mahal_dist"} for Mahalanobis distance
+#' @param ... 		Additional arguments to be passed to \code{initGurobiNumericalOptimizationExperimentalDesignObject}.
+#' @return			A list with the minimum objective value and its vector	 
+#' 
+#' @author Kapelner
+#' @export
+gurobi_min_of_multiple_designs = function(X, r, objective = "mahal_dist", ...){
+	indicTs = gurobi_multiple_designs(X, r, ...)
+	obj_min = .Machine$double.xmax
+	i_min = NA
+	for (i in 1 : r){
+		obj_i = compute_objective_val(X, indicTs[i, ], objective = "mahal_dist")
+		if (obj_i < obj_min){
+			obj_min = obj_i
+			i_min = i
+		}
+	}
+	list(indicT = indicTs[i_min, ], obj = obj_min)
 }
 
 

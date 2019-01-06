@@ -8,9 +8,10 @@ library(GreedyExperimentalDesign)
 
 
 #sample a covariate matrix
-n = 30
-p = 1
+n = 60
+p = 10
 X = generate_stdzied_design_matrix(n = n, p = p, covariate_gen = rnorm)
+
 r = 100
 
 #numerical optimization
