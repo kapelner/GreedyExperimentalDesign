@@ -271,7 +271,7 @@ indicT = resultsGurobiNumericalOptimizeExperimentalDesign(gnoed)$indicT
 compute_objective_val(X_randomized, indicT, objective = "mahal_dist")
 # compute_objective_val(X, indicT[order(random_indices)], objective = "mahal_dist")
 
-indicTs = gurobi_multiple_designs(X, r, time_limit_min = 0.5, num_cores = NUM_CORES)
+indicTs = gurobi_multiple_designs(X, 2, time_limit_min = 0.5, num_cores = NUM_CORES)
 for (i in 1 : nrow(indicTs)){
   indicTs[i, ] = 2 * (indicTs[i, ] - 0.5)
 }
