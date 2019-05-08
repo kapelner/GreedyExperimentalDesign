@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 import ObjectiveFunctions.*;
+import ExperimentalDesign.AllExperimentalDesigns;
 import ExperimentalDesign.Tools;
 
-public abstract class KarpDesignSearcher {
+public abstract class KarpDesignSearcher extends AllExperimentalDesigns {
 	
 	protected Integer[] indicT;
 	protected int n;
@@ -157,6 +158,10 @@ public abstract class KarpDesignSearcher {
 			
 			//now check if there is only one thing left
 			if (obs_bundles.size() == 1){
+				break;
+			}
+			
+			if (search_stopped.get()) {
 				break;
 			}
 			iter++;

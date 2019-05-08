@@ -62,7 +62,8 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 
 		int n = 300;
 		int p = 5;
-		gd.setNandP(n, p);
+		gd.setN(n);
+		gd.setP(p);
 		for (int i = 0; i < n; i++){
 //			double[] x_i = {Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random()};
 			double[] x_i = new double[p];
@@ -113,6 +114,7 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 					new GreedySearch(
 							X, 
 							Sinv, 
+							Kgram,
 							starting_indicTs[d0], 
 							ending_indicTs[d0], 
 							switched_pairs.get(d0),
@@ -125,7 +127,8 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 							semigreedy, 
 							diagnostics, 
 							max_iters, 
-							rand_obj);
+							rand_obj,
+							search_stopped);
 				}
 			});
 		}		
@@ -197,7 +200,7 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 		diagnostics = true;
 	}
 	
-	public void setSemigreedy(){
+	public void setSemigreedy(){ //recommended never to set this
 		semigreedy = true;
 	}
 	

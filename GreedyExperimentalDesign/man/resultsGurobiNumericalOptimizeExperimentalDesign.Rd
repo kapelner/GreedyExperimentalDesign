@@ -2,7 +2,7 @@
 % Please edit documentation in R/gurobi_numerical_optimization_search.R
 \name{resultsGurobiNumericalOptimizeExperimentalDesign}
 \alias{resultsGurobiNumericalOptimizeExperimentalDesign}
-\title{Returns the results (thus far) of the Gurobi numerical optimization design search}
+\title{Query the Gurobi Results}
 \usage{
 resultsGurobiNumericalOptimizeExperimentalDesign(obj)
 }

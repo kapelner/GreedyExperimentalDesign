@@ -19,7 +19,8 @@ public class RerandomizationExperimentalDesign extends MultipleSearchExperimenta
 
 		int n = 10;
 		int p = 20;
-		rd.setNandP(n, p);
+		rd.setN(n);
+		rd.setP(p);
 		for (int i = 0; i < n; i++){
 			double[] x_i = new double[p];
 			for (int j = 0; j < p; j++){
@@ -62,10 +63,13 @@ public class RerandomizationExperimentalDesign extends MultipleSearchExperimenta
 		else if (objective.equals(ObjectiveFunction.ABS)){
 			obj_fun = new AbsSumObjective();	
 		}
+		else if (objective.equals(ObjectiveFunction.KER)){
+			obj_fun = new KernelObjective(Kgram);	
+		}
 		
 		final ObjectiveFunction fin_obj_fun = obj_fun;
 
-		System.out.println("before pool");
+//		System.out.println("before pool");
 
     	search_thread_pool.execute(new Runnable(){
 			public void run() {
@@ -73,23 +77,29 @@ public class RerandomizationExperimentalDesign extends MultipleSearchExperimenta
 					int r = progress();
 //					System.out.println("progress = " + r);
 					//break up here too to avoid one more iteration (ugly, but a tad faster)
-					if (r == max_designs){
+					if (r == max_designs || search_stopped.get()){
 						break;
 					}
 					
 					int[] indicT = Tools.fisherYatesShuffle(Tools.newBalancedBlankDesign(n), rand_obj);
 //					System.out.println("indicT " + Tools.StringJoin(indicT));
 					if (obj_val_cutoff_to_include != null){
+						
+						double obj_val = 0; 
 
-						int[] i_Ts = Tools.findIndicies(indicT, n / 2, 1);
-						int[] i_Cs = Tools.findIndicies(indicT, n / 2, 0);
-						ArrayList<double[]> XT = Tools.subsetMatrix(X, i_Ts); 
-						ArrayList<double[]> XC = Tools.subsetMatrix(X, i_Cs);
-						double[] avg_Ts = Tools.colAvg(XT, p);
-						double[] avg_Cs = Tools.colAvg(XC, p);	
-						fin_obj_fun.setXTbar(avg_Ts);
-						fin_obj_fun.setXCbar(avg_Cs);
-						double obj_val = fin_obj_fun.calc(false);
+						if (objective.equals(ObjectiveFunction.KER)){
+							((KernelObjective)fin_obj_fun).setIndicT(indicT);							
+						} else {
+							int[] i_Ts = Tools.findIndicies(indicT, n / 2, 1);
+							int[] i_Cs = Tools.findIndicies(indicT, n / 2, 0);
+							ArrayList<double[]> XT = Tools.subsetMatrix(X, i_Ts); 
+							ArrayList<double[]> XC = Tools.subsetMatrix(X, i_Cs);
+							double[] avg_Ts = Tools.colAvg(XT, p);
+							double[] avg_Cs = Tools.colAvg(XC, p);	
+							fin_obj_fun.setXTbar(avg_Ts);
+							fin_obj_fun.setXCbar(avg_Cs);
+						}
+						obj_val = fin_obj_fun.calc(false);
 						
 						if (obj_val < obj_val_cutoff_to_include){
 							if (r == max_designs){

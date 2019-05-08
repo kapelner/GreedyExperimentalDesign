@@ -1,3 +1,15 @@
+version 1.3
+
+Gurobi now works with Kernel distances.
+
+version 1.21
+
+Fixed small bug, deleted vignette which was causing compilation issues.
+
+version 1.2
+
+Gurobi setup for allocation searches via numerical optimization.
+
 version 1.1
 
 * Updated package to conform to CRAN's new policies.

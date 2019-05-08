@@ -2,6 +2,7 @@ package GreedyExperimentalDesign;
 
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import ExperimentalDesign.*;
 import ObjectiveFunctions.*;
@@ -14,6 +15,7 @@ public class GreedySearch {
 
 	public GreedySearch(double[][] Xstd, 
 			double[][] Sinvmat, 
+			double[][] Kgram,
 			int[] indicT, 
 			int[] ending_indicT, 
 			ArrayList<int[]> switched_pairs,
@@ -23,30 +25,41 @@ public class GreedySearch {
 			Integer[] num_iters, 
 			String objective, 
 			int d0, 
-			boolean semigreedy, 
+			boolean semigreedy, //purely experimental... we didn't see any gain in this
 			boolean diagnostics, 
 			Integer max_iters, 
-			Random r) 
+			Random r, 
+			AtomicBoolean search_stopped) 
 	{
-		this.Xstd = Xstd;
-		nT = Tools.count(indicT, 1);
-		int n = Xstd.length;
-		int p = Xstd[0].length;		
+
 		
 //		System.out.println("GreedySearch: ready to begin " + d0);
-		ObjectiveFunction obj_fun = null;
-		if (objective.equals(ObjectiveFunction.MAHAL)){
-			obj_fun = new MahalObjective(Sinvmat, n);
-		} 
-		else if (diagnostics && objective.equals(ObjectiveFunction.ABS)){
-			obj_fun = new AbsSumObjectiveWithDiagnostics();	
-		}
-		else if (objective.equals(ObjectiveFunction.ABS)){
-			obj_fun = new AbsSumObjective();	
-		}
-	
+		nT = Tools.count(indicT, 1);
 		
-		createScaledXstd(); //assume nT = n / 2
+		ObjectiveFunction obj_fun = null;
+		int p = 0;
+		int n = 0;
+		if (objective.equals(ObjectiveFunction.KER)){
+			obj_fun = new KernelObjective(Kgram);	
+			n = Kgram.length;
+		}
+		else {
+			this.Xstd = Xstd;
+			n = Xstd.length;
+			p = Xstd[0].length;		
+			
+			createScaledXstd();
+			
+			if (objective.equals(ObjectiveFunction.MAHAL)){
+				obj_fun = new MahalObjective(Sinvmat, n);
+			} 
+			else if (diagnostics && objective.equals(ObjectiveFunction.ABS)){
+				obj_fun = new AbsSumObjectiveWithDiagnostics();	
+			}
+			else if (objective.equals(ObjectiveFunction.ABS)){
+				obj_fun = new AbsSumObjective();	
+			}
+		}
 //		System.out.println("beginSearch: nT = " + nT + " and nC = " + (n - nT));
 		
 //		int[] i_Tss = Tools.findIndicies(indicT, nT, 1);
@@ -74,13 +87,19 @@ public class GreedySearch {
 				i_Cs = Tools.fisherYatesShuffle(i_Cs, r);
 			}
 			//build the first avg vectors for speed
-			ArrayList<double[]> XT = Tools.subsetMatrix(Xstd, i_Ts); 
-			ArrayList<double[]> XC = Tools.subsetMatrix(Xstd, i_Cs); 
-
-			double[] avg_Ts = Tools.colAvg(XT, p);
-			double[] avg_Cs = Tools.colAvg(XC, p);
-//			System.out.println("INIT XTbar: " + Tools.StringJoin(avg_Ts.getData(), ","));
-//			System.out.println("INIT XCbar: " + Tools.StringJoin(avg_Cs.getData(), ","));
+			ArrayList<double[]> XT = null;
+			ArrayList<double[]> XC = null;
+			double[] avg_Ts = null;
+			double[] avg_Cs = null;
+			if (!objective.equals(ObjectiveFunction.KER)){
+				XT = Tools.subsetMatrix(Xstd, i_Ts); 
+				XC = Tools.subsetMatrix(Xstd, i_Cs); 
+	
+				avg_Ts = Tools.colAvg(XT, p);
+				avg_Cs = Tools.colAvg(XC, p);
+			}
+//			System.out.println("INIT XTbar: " + Tools.StringJoin(avg_Ts, ","));
+//			System.out.println("INIT XCbar: " + Tools.StringJoin(avg_Cs, ","));
 			int[] switched_pair = new int[2];
 			
 //			System.out.println("iter " + iter + " #i_Ts: " + i_Ts.length + " #i_Cs: " + i_Cs.length);
@@ -93,23 +112,16 @@ public class GreedySearch {
 						indicT_proposal[i_T] = 0; //i_T is the new control
 						indicT_proposal[i_C] = 1; //i_C is the new treatment
 						
-						
-						/////////////////////OLD INEFFICIENT CODE
-//						XT = Tools.subsetMatrix(Xstd, nT, i_Ts, i_T, i_C); 
-//						XC = Tools.subsetMatrix(Xstd, nT, i_Cs, i_C, i_T);  
-//
-//						avg_Ts = Tools.colAvg(XT, p);
-//						avg_Cs = Tools.colAvg(XC, p);	
-//						
-//						obj_fun.setXTbar(avg_Ts);
-//						obj_fun.setXCbar(avg_Cs);
-						//////////////////////
+						if (objective.equals(ObjectiveFunction.KER)){
+							((KernelObjective)obj_fun).setIndicT(indicT_proposal);						
+						} else {
+							updateAvgVec(avg_Ts, i_T, i_C, nT);
+							obj_fun.setXTbar(avg_Ts);
+							
+							updateAvgVec(avg_Cs, i_C, i_T, n - nT);
+							obj_fun.setXCbar(avg_Cs);
+						}
 
-						updateAvgVec(avg_Ts, i_T, i_C, nT);
-						obj_fun.setXTbar(avg_Ts);
-						
-						updateAvgVec(avg_Cs, i_C, i_T, n - nT);
-						obj_fun.setXCbar(avg_Cs);
 						
 						//calculate our objective function (according to the user's specification)		
 						obj_val = obj_fun.calc(false);
@@ -121,9 +133,7 @@ public class GreedySearch {
 							indicTmin = indicT_proposal;
 //							System.out.println("best indicT so far " + Tools.StringJoin(indicTmin));
 							min_obj_val = obj_val;
-//							System.out.println("switched i_T " + i_T + " and i_C " + i_C);
-//							obj_fun.calc(true);
-							
+//							System.out.println("switched i_T " + i_T + " and i_C " + i_C);							
 //							System.out.println("min_obj_val " + min_obj_val + " for iter " + iter);
 
 							if (diagnostics){
@@ -138,11 +148,15 @@ public class GreedySearch {
 						}
 						
 						//reset the avg vecs
-						updateAvgVec(avg_Ts, i_C, i_T, nT);
-						updateAvgVec(avg_Cs, i_T, i_C, n - nT);						
+						if (!objective.equals(ObjectiveFunction.KER)){
+							updateAvgVec(avg_Ts, i_C, i_T, nT);
+							updateAvgVec(avg_Cs, i_T, i_C, n - nT);	
+						}
 					}	
 				}
 			}
+//			System.out.println("after indices loop");
+			
 			//we've finished one iteration by checking every possible switch
 			//record this switch only if it is a real switch
 			if (diagnostics && indicTmin != null){
@@ -162,6 +176,10 @@ public class GreedySearch {
 
 			//we can also be done if we hit our upper limit of iterations
 			if (max_iters != null && max_iters == iter){
+				break;
+			}
+//			System.out.println("before search_stopped");
+			if (search_stopped.get()) {
 				break;
 			}
 		}	

@@ -2,7 +2,7 @@
 % Please edit documentation in R/shared.R
 \name{startSearch}
 \alias{startSearch}
-\title{Starts the parallelized greedy design search. Once begun, this function cannot be run again.}
+\title{Starts the parallelized greedy design search.}
 \usage{
 startSearch(obj)
 }
@@ -10,7 +10,7 @@ startSearch(obj)
 \item{obj}{The \code{experimental_design} object that will be running the search}
 }
 \description{
-Starts the parallelized greedy design search. Once begun, this function cannot be run again.
+Once begun, this function cannot be run again.
 }
 \author{
 Adam Kapelner

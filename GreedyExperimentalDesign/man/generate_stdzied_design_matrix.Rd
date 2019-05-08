@@ -2,7 +2,7 @@
 % Please edit documentation in R/shared.R
 \name{generate_stdzied_design_matrix}
 \alias{generate_stdzied_design_matrix}
-\title{Generates a design matrix with standardized predictors. Useful for debugging.}
+\title{Generates a design matrix with standardized predictors.}
 \usage{
 generate_stdzied_design_matrix(n = 50, p = 1, covariate_gen = rnorm, ...)
 }
@@ -20,7 +20,7 @@ This defaults to \code{rnorm} for $N(0,1)$ draws.}
 THe design matrix
 }
 \description{
-Generates a design matrix with standardized predictors. Useful for debugging.
+This function is useful for debugging.
 }
 \author{
 Adam Kapelner

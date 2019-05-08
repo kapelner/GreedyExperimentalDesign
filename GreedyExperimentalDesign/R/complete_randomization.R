@@ -1,4 +1,4 @@
-#' Implements complete balanced randomization
+#' Implements forced balanced randomization
 #' 
 #' @param n 		number of observations
 #' @param r 		number of randomized designs you would like
@@ -6,7 +6,7 @@
 #' 
 #' @author Adam Kapelner
 #' @export
-complete_randomization_with_balanced_ns = function(n, r){
+complete_randomization_with_forced_balanced = function(n, r){
 	indicTs = matrix(NA, nrow = r, ncol = n)
 	
 	for (nsim in 1 : r){
@@ -16,7 +16,7 @@ complete_randomization_with_balanced_ns = function(n, r){
 }
 
 
-#' Implements complete randomization
+#' Implements complete randomization (without forced balance)
 #' 
 #' @param n 		number of observations
 #' @param r 		number of randomized designs you would like
