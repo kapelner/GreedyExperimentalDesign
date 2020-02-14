@@ -256,12 +256,7 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 		return num_vectors_checked() / (double)objective_vals.length;
 	}	
 	
-	public double[] getObjectiveVals(){		
-//		int d_finished = num_vectors_checked();
-//		double[] objective_vals = new double[d_finished];
-//		for (int i = 0; i < d_finished; i++){
-//			objective_vals[i] = this.objective_vals[i];
-//		}
+	public double[] getObjectiveVals(){
 		return this.objective_vals;
 	}
 	public double getOptObjectiveVal(){		
@@ -272,8 +267,20 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 		return objective_vals;
 	}
 	
+	public int[] getIndicT(int r) {
+		return Tools.convert_bitvector_to_intvector(all_indicTs.get(n).get(r), n);
+	}
+	
+	public int[][] getIndicTs(int[] rs) {
+		int[][] indicTs = new int[rs.length][];
+		for (int r : rs){
+			indicTs[r] = getIndicT(r);
+		}
+		return indicTs;
+	}
+	
 	public int[] getOptIndicT() {
-		return Tools.convert_bitvector_to_intvector(all_indicTs.get(n).get(d_opt), n);
+		return getIndicT(d_opt);
 	}
 	
 	public void setN(int n) throws Exception {

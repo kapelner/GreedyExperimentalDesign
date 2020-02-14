@@ -34,6 +34,7 @@ initOptimalExperimentalDesignObject = function(
 		p = NA
 	} else {
 		n = nrow(X)
+		p = ncol(X)
 	}
 	if (n %% 2 != 0){
 		stop("Design matrix must have even rows to have equal treatments and controls")
@@ -144,17 +145,25 @@ summary.optimal_experimental_design_search = function(object, ...){
 
 #' Returns the results (thus far) of the optimal design search
 #' 
-#' @param obj 			The \code{optimal_experimental_design} object that is currently running the search
+#' @param obj 				The \code{optimal_experimental_design} object that is currently running the search
+#' @param num_vectors		How many allocation vectors you wish to return. The default is 1 meaning the best vector. If \code{Inf},
+#' 							it means all vectors.
 #' 
 #' @author Adam Kapelner
 #' @export
-resultsOptimalSearch = function(obj){
-	opt_obj_val = .jcall(obj$java_obj, "D", "getOptObjectiveVal")
-	indicT = .jcall(obj$java_obj, "[I", "getOptIndicT", .jevalArray)
-	all_obj_vals = .jcall(obj$java_obj, "[D", "getAllObjectiveVals", .jevalArray)
+resultsOptimalSearch = function(obj, num_vectors = 1){
+	obj_vals = .jcall(obj$java_obj, "[D", "getAllObjectiveVals", .jevalArray)
+	ordered_indices = order(obj_vals)
+	
+	if (num_vectors == Inf){
+		num_vectors = length(num_vectors)
+	}
+	
+	indicTs = sapply(.jcall(obj$java_obj, "[[I", "getIndicTs", as.integer(ordered_indices[1 : num_vectors] - 1)), .jevalArray)
+		
 	list(
-		opt_obj_val = opt_obj_val,
-		indicT = indicT,
-		all_obj_vals = all_obj_vals
+		opt_obj_val = obj_vals[ordered_indices[1]],
+		indicTs = indicTs,
+		ordered_obj_vals = obj_vals[ordered_indices]
 	)
 }

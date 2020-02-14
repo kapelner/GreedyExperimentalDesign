@@ -28,6 +28,7 @@ Depends:
     R (>= 3.2.0),
     rJava (>= 0.9-6),
     kernlab,
+    checkmate,
     GreedyExperimentalDesignJARs (>= 1.0)
 SystemRequirements: Java (>= 7.0)
 Imports: graphics, grDevices, stats
