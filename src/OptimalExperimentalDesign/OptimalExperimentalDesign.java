@@ -273,8 +273,8 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 	
 	public int[][] getIndicTs(int[] rs) {
 		int[][] indicTs = new int[rs.length][];
-		for (int r : rs){
-			indicTs[r] = getIndicT(r);
+		for (int i = 0; i < rs.length; i++){
+			indicTs[i] = getIndicT(rs[i]);
 		}
 		return indicTs;
 	}

@@ -156,11 +156,11 @@ resultsOptimalSearch = function(obj, num_vectors = 1){
 	ordered_indices = order(obj_vals)
 	
 	if (num_vectors == Inf){
-		num_vectors = length(num_vectors)
+		num_vectors = length(ordered_indices)
 	}
 	
-	indicTs = sapply(.jcall(obj$java_obj, "[[I", "getIndicTs", as.integer(ordered_indices[1 : num_vectors] - 1)), .jevalArray)
-		
+	indicTs = .jcall(obj$java_obj, "[[I", "getIndicTs", as.integer(ordered_indices[1 : num_vectors] - 1), simplify = TRUE)
+	
 	list(
 		opt_obj_val = obj_vals[ordered_indices[1]],
 		indicTs = indicTs,
