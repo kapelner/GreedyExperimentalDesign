@@ -225,6 +225,8 @@ gurobi_min_of_multiple_designs = function(X, r, objective = "mahal_dist", ...){
 resultsGurobiNumericalOptimizeExperimentalDesign = function(obj){
 	indicTs = .jcall(obj$java_obj, "[[I", "getIndicTs", simplify = TRUE)
 	indicTs = t(unique(indicTs)) #remove all duplicates
+	###hack.... some Gurobi solutions are illegal because they do not respect n_T - n_C. Manually remove these
+	indicTs = indicTs[, colSums(indicTs) == obj$n / 2]	
 	list(indicTs = indicTs)
 }
 
