@@ -223,7 +223,7 @@ gurobi_min_of_multiple_designs = function(X, r, objective = "mahal_dist", ...){
 #' @author Adam Kapelner
 #' @export
 resultsGurobiNumericalOptimizeExperimentalDesign = function(obj){
-	indicTs = t(sapply(.jcall(obj$java_obj, "[[I", "getIndicTs"), .jevalArray))
+	indicTs = .jcall(obj$java_obj, "[[I", "getIndicTs", simplify = TRUE)
 	indicTs = t(unique(indicTs)) #remove all duplicates
 	list(indicTs = indicTs)
 }
