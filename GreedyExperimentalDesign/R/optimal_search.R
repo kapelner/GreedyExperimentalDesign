@@ -163,7 +163,9 @@ resultsOptimalSearch = function(obj, num_vectors = 1){
 	
 	list(
 		opt_obj_val = obj_vals[ordered_indices[1]],
-		indicTs = indicTs,
-		ordered_obj_vals = obj_vals[ordered_indices]
+		ordered_obj_vals = obj_vals[ordered_indices],
+		obj_vals_unordered = obj_vals,
+		orig_order = ordered_indices,
+		indicTs = indicTs
 	)
 }

@@ -59,6 +59,7 @@ initGurobiNumericalOptimizationExperimentalDesignObject = function(
 		p = NA
 	} else {
 		n = nrow(X)
+		p = ncol(X)
 	}
 	if (n %% 2 != 0){
 		stop("Design matrix must have even rows to have equal treatments and controls")
