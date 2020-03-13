@@ -64,7 +64,8 @@ searchTimeElapsed = function(obj){
 #' 
 #' @param X 		 	The n x p design matrix
 #' @param indic_T		The n-length binary allocation vector
-#' @param objective		The objective function to use. Default is \code{abs_sum_diff}.
+#' @param objective		The objective function to use. Default is \code{abs_sum_diff} and the other option is 
+#' 						\code{mahal_dist}.
 #' @param inv_cov_X		Optional: the inverse sample variance covariance matrix. Use this
 #' 						argument if you will be doing many calculations since passing this
 #' 						in will cache this data.
@@ -72,6 +73,9 @@ searchTimeElapsed = function(obj){
 #' @author Adam Kapelner
 #' @export
 compute_objective_val = function(X, indic_T, objective = "abs_sum_diff", inv_cov_X = NULL){
+	if (!isTRUE(all.equal(sort(unique(indic_T)), c(0, 1)))){
+		stop("indic_T must be binary")
+	}
 	X_T = X[indic_T == 1, , drop = FALSE] #coerce as matrix in order to matrix multiply later
 	X_C = X[indic_T == 0, , drop = FALSE] #coerce as matrix in order to matrix multiply later
 	X_T_bar = colMeans(X_T)

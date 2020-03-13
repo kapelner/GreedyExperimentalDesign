@@ -28,7 +28,7 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 	private boolean all_optimal;
 	// Gurobi environment object
 	private GRBEnv env;
-	
+
 	//running the Java as standalone is for debug purposes ONLY!!!
 	public static void main(String[] args) {	
 
@@ -111,6 +111,21 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 			System.err.println(err_msg + " Error code: " + e.getErrorCode());
 			e.printStackTrace();
 		}
+		if (max_solutions != null){
+			try {
+				model.set(GRB.IntParam.PoolSolutions, max_solutions);
+			} catch (GRBException e) {
+				System.err.println("Gurobi error when setting the maximum number of solutions. Error code: " + e.getErrorCode());
+				e.printStackTrace();
+			}
+			
+			try {
+				model.set(GRB.IntParam.PoolSearchMode, 2);
+			} catch (GRBException e) {
+				System.err.println("Gurobi error when setting the pool search mode. Error code: " + e.getErrorCode());
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public void beginSearch() {
@@ -154,6 +169,8 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 
 		//ensures equal number of treatments and controls
 		try {
+			System.out.println("constraint value: " +  (n / 2 + 1));
+		
 			model.addConstr(expr, GRB.EQUAL, n / 2, "c0");
 		} catch (GRBException e) {
 			System.err.println("Gurobi error when setting the constraint of equal treatments and equal controls. Error code: " + e.getErrorCode());
@@ -182,6 +199,7 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
         
         try {
 			num_solutions = model.get(GRB.IntAttr.SolCount);
+//			System.out.println("Gurobi num_solutions: " + num_solutions);
 		} catch (GRBException e) {
 			System.err.println("Gurobi error when querying the number of solutions. Error code: " + e.getErrorCode());
 			e.printStackTrace();
@@ -203,7 +221,8 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
         	}
         	for (int i = 0; i < n; i++) {
         		try {
-    				indicator_T[k][i] = (int)indicator_T_gur[i].get(GRB.DoubleAttr.X);
+        			//convert Gurobi indicator to a int vector
+    				indicator_T[k][i] = (int)indicator_T_gur[i].get(GRB.DoubleAttr.Xn);
 //        			System.out.println(indicator_T_gur[i].get(GRB.StringAttr.VarName) + " " +indicator_T_gur[i].get(GRB.DoubleAttr.X));
     			} catch (GRBException e) {
     				System.err.println("Gurobi error when extracting the solution for vector element #" + i + " for solution # " + (k + 1) + ". Error code: " + e.getErrorCode());
@@ -285,10 +304,6 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 	
 	public void setMaxSolutions(int max_solutions){
 		this.max_solutions = max_solutions;
-	}
-	
-	public void setAllOptimal() {
-		all_optimal = true;
 	}
 	
 	public int[][] getIndicTs() {
