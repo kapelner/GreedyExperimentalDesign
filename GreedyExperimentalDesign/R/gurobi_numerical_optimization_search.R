@@ -19,8 +19,7 @@
 #' @param time_limit_min	The maximum amount of time the optimizer can run for in minutes. The default is \code{5}.
 #' @param max_solutions		The maximum number of solutions Gurobi should retain incidentally while looking for one optimal 
 #' 							(if possible given the time limit and constraint of the node limit). The default is 
-#' 							\code{NULL} for Gurobi's default of 10.
-#' @param all_optimal_range	If \code{TRUE}, each of the \code{max_solutions} should be close to the optimal. Default is \code{FALSE}. 
+#' 							\code{NULL} for only the best.
 #' @param node_limit		The maximum number of nodes Gurobi should explore. Default is \code{NULL} for no limit.
 #' @param verbose			Should Gurobi print its log to screen? Default is \code{TRUE}.
 #' @param log_file			Log filename for Gurobi e.g. \code{my_log.txt}. Default is \code{""} for no file log. 
@@ -35,8 +34,7 @@ initGurobiNumericalOptimizationExperimentalDesignObject = function(
 		num_cores = 1, 
 		time_limit_min = 5, 
 		node_limit = NULL, 
-		max_solutions = 10,
-		all_optimal_range = FALSE,
+		max_solutions = NULL,
 		verbose = TRUE,
 		log_file = ""){
 	
@@ -105,10 +103,6 @@ initGurobiNumericalOptimizationExperimentalDesignObject = function(
 			stop("Max solutions must be one or more.")
 		}
 		.jcall(java_obj, "V", "setMaxSolutions", as.integer(round(max_solutions)))
-		
-		if (all_optimal_range){
-			.jcall(java_obj, "V", "setAllOptimal")
-		}
 	}	
 	
 	if (!verbose){
@@ -137,6 +131,9 @@ initGurobiNumericalOptimizationExperimentalDesignObject = function(
 	gurobi_numerical_optimization_experimental_design_search$SinvX = SinvX
 	gurobi_numerical_optimization_experimental_design_search$n = n
 	gurobi_numerical_optimization_experimental_design_search$p = p
+	gurobi_numerical_optimization_experimental_design_search$Kgram = Kgram
+	gurobi_numerical_optimization_experimental_design_search$objective = objective
+	gurobi_numerical_optimization_experimental_design_search$max_solutions = max_solutions
 	gurobi_numerical_optimization_experimental_design_search$time_limit_min = time_limit_min
 	gurobi_numerical_optimization_experimental_design_search$java_obj = java_obj
 	class(gurobi_numerical_optimization_experimental_design_search) = "gurobi_numerical_optimization_experimental_design_search"
@@ -226,8 +223,15 @@ resultsGurobiNumericalOptimizeExperimentalDesign = function(obj){
 	indicTs = .jcall(obj$java_obj, "[[I", "getIndicTs", simplify = TRUE)
 	indicTs = t(unique(indicTs)) #remove all duplicates
 	###hack.... some Gurobi solutions are illegal because they do not respect n_T - n_C. Manually remove these
-	indicTs = indicTs[, colSums(indicTs) == obj$n / 2]	
-	list(indicTs = indicTs)
+	indicTs = indicTs[, colSums(indicTs) == obj$n / 2]
+	if (is.null(obj$max_solutions)){ #we only wanted one
+
+	} else {
+		
+	}
+	obj_vals = apply(indicTs, 2, FUN = function(wj){compute_objective_val(X, wj, objective = obj$objective)})
+	indicTs = indicTs[, order(obj_vals), drop = FALSE]
+	list(indicTs = indicTs, obj_vals = sort(obj_vals))	
 }
 
 

@@ -24,8 +24,6 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 	private String log_file;
 	/** the Gurobi model object that will do the optimization */
 	private GRBModel model;
-	/** Should many solutions be close to optimal? */
-	private boolean all_optimal;
 	
 	//running the Java as standalone is for debug purposes ONLY!!!
 	public static void main(String[] args) {	
@@ -122,13 +120,11 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 				e.printStackTrace();
 			}
 			
-			if (all_optimal) {
-				try {
-					model.set(GRB.IntParam.PoolSearchMode, 2);
-				} catch (GRBException e) {
-					System.err.println("Gurobi error when setting the pool search mode. Error code: " + e.getErrorCode());
-					e.printStackTrace();
-				}
+			try {
+				model.set(GRB.IntParam.PoolSearchMode, 2);
+			} catch (GRBException e) {
+				System.err.println("Gurobi error when setting the pool search mode. Error code: " + e.getErrorCode());
+				e.printStackTrace();
 			}
 		}
 		
@@ -298,10 +294,6 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 	
 	public void setMaxSolutions(int max_solutions){
 		this.max_solutions = max_solutions;
-	}
-	
-	public void setAllOptimal() {
-		all_optimal = true;
 	}
 	
 	public int[][] getIndicTs() {
