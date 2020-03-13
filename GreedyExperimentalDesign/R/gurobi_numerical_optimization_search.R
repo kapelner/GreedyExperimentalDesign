@@ -219,7 +219,11 @@ resultsGurobiNumericalOptimizeExperimentalDesign = function(obj){
 	indicTs = .jcall(obj$java_obj, "[[I", "getIndicTs", simplify = TRUE)
 	indicTs = t(unique(indicTs)) #remove all duplicates
 	###hack.... some Gurobi solutions are illegal because they do not respect n_T - n_C. Manually remove these
-	indicTs = indicTs[, colSums(indicTs) == obj$n / 2]
+	is_feasible = colSums(indicTs) == obj$n / 2
+	if (!all(is_feasible)) {
+	  print("WARNING: Infeasible solutions violating n_T - n_C returned by Gurobi. Discarding.")
+	  indicTs = indicTs[, colSums(indicTs) == obj$n / 2]
+	}
 	if (is.null(obj$max_solutions)){ #we only wanted one
 
 	} else {
