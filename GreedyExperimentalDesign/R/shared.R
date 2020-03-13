@@ -91,6 +91,8 @@ compute_objective_val = function(X, indic_T, objective = "abs_sum_diff", inv_cov
 		}	
 		X_T_bar_minus_X_C_bar = as.matrix(X_T_bar - X_C_bar) #need to matricize for next computation
 		as.numeric(t(X_T_bar_minus_X_C_bar) %*% inv_cov_X %*% X_T_bar_minus_X_C_bar)
+	} else {
+		stop("objective invalid.")
 	}
 }
 
@@ -106,13 +108,13 @@ standardize_data_matrix = function(X){
 }
 
 #private
-verify_objective_function = function(objective, Kgram, n){
+verify_objective_function = function(objective, Kgram = NULL, n = NULL){
 	if (objective != "mahal_dist" && objective != "abs_sum_diff" && objective != "kernel"){
 		stop("Objective function must be one of the following:\n  mahal_dist\n  abs_sum_diff\n  kernel\n\n")
 	}
 	if (objective == "kernel"){
-		if (is.null(Kgram)){
-			stop("You must specify a gram matrix.\n")
+		if (is.null(Kgram) || is.null(n)){
+			stop("You must specify a gram matrix \"Kgram\" and \"n\".\n")
 		}
 		if (class(Kgram) != "kernelMatrix" && class(Kgram) != "matrix"){
 			stop("The gram matrix must be type kernelMatrix or type matrix.\n")
