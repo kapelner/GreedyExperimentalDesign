@@ -210,10 +210,6 @@ gurobi_min_of_multiple_designs = function(X, r, objective = "mahal_dist", ...){
 	list(indicT = indicTs[i_min, ], obj = obj_min)
 }
 
-
-
-
-
 #' Query the Gurobi Results
 #' 
 #' Returns the results (thus far) of the Gurobi numerical optimization design search
@@ -227,7 +223,3 @@ resultsGurobiNumericalOptimizeExperimentalDesign = function(obj){
 	indicTs = t(unique(indicTs)) #remove all duplicates
 	list(indicTs = indicTs)
 }
-
-
-
-
