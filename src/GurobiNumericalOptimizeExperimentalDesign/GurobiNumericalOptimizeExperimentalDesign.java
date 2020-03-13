@@ -24,7 +24,11 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 	private String log_file;
 	/** the Gurobi model object that will do the optimization */
 	private GRBModel model;
-	
+	/** Should many solutions be close to optimal? */
+	private boolean all_optimal;
+	// Gurobi environment object
+	private GRBEnv env;
+
 	//running the Java as standalone is for debug purposes ONLY!!!
 	public static void main(String[] args) {	
 
@@ -53,65 +57,60 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 		gnuoed.beginSearch();
 	}
 
-	public void beginSearch() {
-		super.beginSearch();
+	private void initEnv() {
+		String err_msg = "Gurobi error when ";
 
-				
-	    GRBEnv env = null;    	
-	    	
-	        
 		try {
 			env = new GRBEnv();
-		} catch (GRBException e) {
-			System.err.println("Gurobi error when creating the environment. Error code: " + e.getErrorCode());
-			e.printStackTrace();
-		}
-		try {
+			err_msg = "creating the environment. ";
+
 			env.set(GRB.StringParam.LogFile, log_file);
-		} catch (GRBException e) {
-			System.err.println("Gurobi error when setting the log file. Error code: " + e.getErrorCode());
-			e.printStackTrace();
-		}
-		
-        try {
+			err_msg = "setting the log file. ";
+
 			env.set(GRB.IntParam.Threads, num_cores);
-		} catch (GRBException e) {
-			System.err.println("Gurobi error when setting the number of cores. Error code: " + e.getErrorCode());
-			e.printStackTrace();
-		}		       
-		if (gurobi_log_off){
-			try {
+			err_msg = "setting the number of cores. ";
+
+			env.set(GRB.DoubleParam.MIPGapAbs, 1.00e-20);
+			env.set(GRB.DoubleParam.MIPGap, 1.00e-20);
+			err_msg = "setting MIP Gap. ";
+			if (gurobi_log_off) {
 				env.set(GRB.IntParam.LogToConsole, 0);
-			} catch (GRBException e) {
-				System.err.println("Gurobi error when turning off console log. Error code: " + e.getErrorCode());
-				e.printStackTrace();
+				err_msg = "turning off console log. ";
 			}
+		} catch (GRBException e) {
+			System.err.println(err_msg + "Error code: " + e.getErrorCode());
+			e.printStackTrace();
 		}
-        
-        
+	}
+
+	private void initModel() {
+		String err_msg = "Gurobi error when ";
 		try {
 			model = new GRBModel(env);
-		} catch (GRBException e) {
-			System.err.println("Gurobi error when creating the model. Error code: " + e.getErrorCode());
+			err_msg = "creating the model. ";
+			if (time_limit_min != null){
+                model.set(GRB.DoubleParam.TimeLimit, time_limit_min * 60);
+                err_msg += "setting the time limit. ";
+			}
+
+			if (node_limit != null){
+				model.set(GRB.DoubleParam.NodeLimit, node_limit);
+				err_msg += "setting the node limit. ";
+            }
+
+			if (max_solutions != null){
+                model.set(GRB.IntParam.PoolSolutions, max_solutions);
+                err_msg += "setting the maximum number of solutions. ";
+
+				if (all_optimal) {
+                    model.set(GRB.IntParam.PoolSearchMode, 2);
+                    err_msg += "setting the pool search mode. ";
+                }
+            }
+        } catch (GRBException e) {
+			System.err.println(err_msg + " Error code: " + e.getErrorCode());
 			e.printStackTrace();
 		}
-		if (time_limit_min != null){
-			 try {
-				model.set(GRB.DoubleParam.TimeLimit, time_limit_min * 60);
-			} catch (GRBException e) {
-				System.err.println("Gurobi error when setting the time limit. Error code: " + e.getErrorCode());
-				e.printStackTrace();
-			}
-		}
-		if (node_limit != null){
-			 try {
-				model.set(GRB.DoubleParam.NodeLimit, node_limit);
-			} catch (GRBException e) {
-				System.err.println("Gurobi error when setting the time limit. Error code: " + e.getErrorCode());
-				e.printStackTrace();
-			}
-		}
-
 		if (max_solutions != null){
 			try {
 				model.set(GRB.IntParam.PoolSolutions, max_solutions);
@@ -127,12 +126,18 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 				e.printStackTrace();
 			}
 		}
-		
+	}
+
+	public void beginSearch() {
+		super.beginSearch();
+		initEnv();
+		initModel();
+
 		//create variable where solutions are stored
 		GRBVar[] indicator_T_gur = new GRBVar[n];		
 		for (int i = 0; i < n; i++) {
 			try {
-				indicator_T_gur[i] = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, Integer.toString(i));
+				indicator_T_gur[i] = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, "w" + i);
 			}
 			catch (GRBException e) {
 				System.err.println("Gurobi error when setting the time limit for observation #" + i + " Error code: " + e.getErrorCode());
@@ -155,23 +160,20 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 			System.err.println("Gurobi error when setting the objective function in the model. Error code: " + e.getErrorCode());
 			e.printStackTrace();
 		}
-        
-		
-		
+
 		// Add constraint: sum of vars equal to n/2 (equal num 1's and 0's)
 		GRBLinExpr expr = new GRBLinExpr();
 		for (int i = 0; i < n; i++) {
 			 expr.addTerm(1.0, indicator_T_gur[i]);
 		}
-		
+
+		//ensures equal number of treatments and controls
 		try {
-			System.out.println("constraint value: " +  (n / 2 + 1));
-		
 			model.addConstr(expr, GRB.EQUAL, n / 2, "c0");
 		} catch (GRBException e) {
 			System.err.println("Gurobi error when setting the constraint of equal treatments and equal controls. Error code: " + e.getErrorCode());
 			e.printStackTrace();
-		} //ensures equal number of treatments and controls
+		}
 		
 		// Optimize model
 		Thread optimize_thread = new Thread() {
@@ -215,19 +217,29 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
             for (int i = 0; i < n; i++) {
         		indicator_T[k][i] = -99; //this is a "bad flag" to indicate to the user something went wrong
         	}
-        	for (int i = 0; i < n; i++) {
-        		try {
-        			//convert Gurobi indicator to a int vector
-    				indicator_T[k][i] = (int)indicator_T_gur[i].get(GRB.DoubleAttr.Xn);
+			for (int i = 0; i < n; i++) {
+				try {
+					//convert Gurobi indicator to a int vector- to avoid truncation errors, round first
+					indicator_T[k][i] = (int) Math.round(indicator_T_gur[i].get(GRB.DoubleAttr.Xn));
 //        			System.out.println(indicator_T_gur[i].get(GRB.StringAttr.VarName) + " " +indicator_T_gur[i].get(GRB.DoubleAttr.X));
-    			} catch (GRBException e) {
-    				System.err.println("Gurobi error when extracting the solution for vector element #" + i + " for solution # " + (k + 1) + ". Error code: " + e.getErrorCode());
-    				e.printStackTrace();
-    			}
-        	}
+				} catch (GRBException e) {
+					System.err.println("Gurobi error when extracting the solution for vector element #" + i + " for solution # " + (k + 1) + ". Error code: " + e.getErrorCode());
+					e.printStackTrace();
+				}
+			}
         }
-        
-    	// Dispose of model and environment
+
+		/*
+		// for debugging- write model and solution to file
+		try {
+			model.write("model.lp");
+			model.write("model.sol");
+		} catch (GRBException e) {
+			e.printStackTrace();
+		}
+		*/
+
+		// Dispose of model and environment
         model.dispose();
         try {
 			env.dispose();
@@ -257,8 +269,6 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 		}
 	}
 
-
-
 	private void mahalDistSearch(GRBModel model, GRBVar[] indicator_T_gur, GRBQuadExpr obj) {
     	
 		SimpleMatrix Xsm = new SimpleMatrix(X);
@@ -273,8 +283,6 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 			}
 		}
 	}
-
-
 
 	public void turnGurobiLogOff(){
 		this.gurobi_log_off = true; 

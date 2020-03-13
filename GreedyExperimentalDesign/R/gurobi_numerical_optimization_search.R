@@ -207,10 +207,6 @@ gurobi_min_of_multiple_designs = function(X, r, objective = "mahal_dist", ...){
 	list(indicT = indicTs[i_min, ], obj = obj_min)
 }
 
-
-
-
-
 #' Query the Gurobi Results
 #' 
 #' Returns the results (thus far) of the Gurobi numerical optimization design search
@@ -223,7 +219,11 @@ resultsGurobiNumericalOptimizeExperimentalDesign = function(obj){
 	indicTs = .jcall(obj$java_obj, "[[I", "getIndicTs", simplify = TRUE)
 	indicTs = t(unique(indicTs)) #remove all duplicates
 	###hack.... some Gurobi solutions are illegal because they do not respect n_T - n_C. Manually remove these
-	indicTs = indicTs[, colSums(indicTs) == obj$n / 2]
+	is_feasible = colSums(indicTs) == obj$n / 2
+	if (!all(is_feasible)) {
+	  warning("Infeasible solutions violating n_T - n_C returned by Gurobi. Discarding.")
+	  indicTs = indicTs[, colSums(indicTs) == obj$n / 2]
+	}
 	if (is.null(obj$max_solutions)){ #we only wanted one
 
 	} else {
@@ -233,7 +233,3 @@ resultsGurobiNumericalOptimizeExperimentalDesign = function(obj){
 	indicTs = indicTs[, order(obj_vals), drop = FALSE]
 	list(indicTs = indicTs, obj_vals = sort(obj_vals))	
 }
-
-
-
-
