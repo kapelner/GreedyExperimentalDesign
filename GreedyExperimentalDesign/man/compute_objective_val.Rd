@@ -12,7 +12,8 @@ compute_objective_val(X, indic_T, objective = "abs_sum_diff",
 
 \item{indic_T}{The n-length binary allocation vector}
 
-\item{objective}{The objective function to use. Default is \code{abs_sum_diff}.}
+\item{objective}{The objective function to use. Default is \code{abs_sum_diff} and the other option is 
+\code{mahal_dist}.}
 
 \item{inv_cov_X}{Optional: the inverse sample variance covariance matrix. Use this
 argument if you will be doing many calculations since passing this

@@ -6,8 +6,8 @@
 \usage{
 initGurobiNumericalOptimizationExperimentalDesignObject(X = NULL,
   objective = "mahal_dist", Kgram = NULL, num_cores = 1,
-  time_limit_min = 5, node_limit = NULL, max_solutions = 10,
-  all_optimal_range = FALSE, verbose = TRUE, log_file = "")
+  time_limit_min = 5, node_limit = NULL, max_solutions = NULL,
+  verbose = TRUE, log_file = "")
 }
 \arguments{
 \item{X}{The design matrix with $n$ rows (one for each subject) and $p$ columns 
@@ -28,9 +28,7 @@ entries are the evaluation of the kernel function between subject i and subject 
 
 \item{max_solutions}{The maximum number of solutions Gurobi should retain incidentally while looking for one optimal 
 (if possible given the time limit and constraint of the node limit). The default is 
-\code{NULL} for Gurobi's default of 10.}
-
-\item{all_optimal_range}{If \code{TRUE}, each of the \code{max_solutions} should be close to the optimal. Default is \code{FALSE}.}
+\code{NULL} for only the best.}
 
 \item{verbose}{Should Gurobi print its log to screen? Default is \code{TRUE}.}
 
