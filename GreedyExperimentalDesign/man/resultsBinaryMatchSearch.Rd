@@ -5,12 +5,21 @@
 \title{)
 Returns allocation vectors that are binary matched}
 \usage{
-resultsBinaryMatchSearch(obj, num_vectors = 1000)
+resultsBinaryMatchSearch(
+  obj,
+  num_vectors = 1000,
+  compute_obj_vals = FALSE,
+  form = "zero_one"
+)
 }
 \arguments{
 \item{obj}{The \code{binary_experimental_design} object where the pairs are computed.}
 
 \item{num_vectors}{How many random allocation vectors you wish to return. The default is 1000.}
+
+\item{compute_obj_vals}{Should we compute all the objective values for each allocation? Default is \code{FALSE}.}
+
+\item{form}{Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's.}
 }
 \description{
 )

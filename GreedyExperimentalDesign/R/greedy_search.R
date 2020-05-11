@@ -282,6 +282,7 @@ greedySearchCurrentProgress = function(obj){
 #' @param obj 			The \code{greedy_experimental_design} object that is currently running the search
 #' @param max_vectors	The number of design vectors you wish to return. \code{NULL} returns all of them. 
 #' 						This is not recommended as returning over 1,000 vectors is time-intensive. The default is 9. 
+#' @param form			Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's. 
 #' 
 #' @author Adam Kapelner
 #' @examples
@@ -308,7 +309,7 @@ greedySearchCurrentProgress = function(obj){
 #' 	stopSearch(ged)
 #' 	}
 #' @export
-resultsGreedySearch = function(obj, max_vectors = 9){
+resultsGreedySearch = function(obj, max_vectors = 9, form = "one_zero"){
 	obj_vals = .jcall(obj$java_obj, "[D", "getObjectiveVals")
 	num_iters = .jcall(obj$java_obj, "[I", "getNumIters")
 	#these two are in order, so let's order the indicTs by the final objective values
@@ -321,14 +322,20 @@ resultsGreedySearch = function(obj, max_vectors = 9){
 	xbarj_diffs = NULL
 	obj_val_by_iters = NULL
 	pct_vec_same = NULL
-	ending_indicTs = sapply(.jcall(obj$java_obj, "[[I", "getEndingIndicTs", as.integer(ordered_indices[1 : last_index] - 1)), .jevalArray)
+	ending_indicTs = .jcall(obj$java_obj, "[[I", "getEndingIndicTs", as.integer(ordered_indices[1 : last_index] - 1), simplify = TRUE)
+	if (form == "pos_one_min_one"){
+		ending_indicTs = (ending_indicTs - 0.5) * 2
+	}
 	if (obj$diagnostics){
-		starting_indicTs = sapply(.jcall(obj$java_obj, "[[I", "getStartingIndicTs", as.integer(ordered_indices[1 : last_index] - 1)), .jevalArray)
-		switches = lapply(.jcall(obj$java_obj, "[[[I", "getSwitchedPairs", as.integer(ordered_indices[1 : last_index] - 1)), sapply, .jevalArray)
+		starting_indicTs = .jcall(obj$java_obj, "[[I", "getStartingIndicTs", as.integer(ordered_indices[1 : last_index] - 1), simplify = TRUE)
+		if (form == "pos_one_min_one"){
+			starting_indicTs = (starting_indicTs - 0.5) * 2
+		}
+		switches = .jcall(obj$java_obj, "[[[I", "getSwitchedPairs", as.integer(ordered_indices[1 : last_index] - 1), simplify = TRUE)
 		#we should make switches into a list now
-		xbarj_diffs = lapply(.jcall(obj$java_obj, "[[[D", "getXbarjDiffs", as.integer(ordered_indices[1 : last_index] - 1)), sapply, .jevalArray)
+		xbarj_diffs = .jcall(obj$java_obj, "[[[D", "getXbarjDiffs", as.integer(ordered_indices[1 : last_index] - 1), simplify = TRUE)
 		obj_val_by_iters = sapply(.jcall(obj$java_obj, "[[D", "getObjValByIter", as.integer(ordered_indices[1 : last_index] - 1)), .jevalArray)
-		pct_vec_same = colSums(starting_indicTs == ending_indicTs) / length(starting_indicTs[,1]) * 100
+		pct_vec_same = colSums(starting_indicTs == ending_indicTs) / length(starting_indicTs[, 1]) * 100
 	}
 	greedy_experimental_design_search_results = list(
 		obj_vals = obj_vals[ordered_indices], 

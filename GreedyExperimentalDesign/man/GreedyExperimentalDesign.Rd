@@ -3,7 +3,6 @@
 \docType{package}
 \name{GreedyExperimentalDesign}
 \alias{GreedyExperimentalDesign}
-\alias{GreedyExperimentalDesign-package}
 \title{Greedy Experimental Design Search}
 \description{
 A tool to find a priori experimental designs with good balance greedily

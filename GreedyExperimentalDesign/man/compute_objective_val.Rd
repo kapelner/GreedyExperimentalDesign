@@ -4,8 +4,7 @@
 \alias{compute_objective_val}
 \title{Computes Objective Value From Allocation Vector}
 \usage{
-compute_objective_val(X, indic_T, objective = "abs_sum_diff",
-  inv_cov_X = NULL)
+compute_objective_val(X, indic_T, objective = "abs_sum_diff", inv_cov_X = NULL)
 }
 \arguments{
 \item{X}{The n x p design matrix}

@@ -4,8 +4,12 @@
 \alias{initKarpExperimentalDesignObject}
 \title{Begin Karp Search}
 \usage{
-initKarpExperimentalDesignObject(X, wait = FALSE, balanced = TRUE,
-  start = TRUE)
+initKarpExperimentalDesignObject(
+  X,
+  wait = FALSE,
+  balanced = TRUE,
+  start = TRUE
+)
 }
 \arguments{
 \item{X}{The design matrix with $n$ rows (one for each subject) and $p$ columns 

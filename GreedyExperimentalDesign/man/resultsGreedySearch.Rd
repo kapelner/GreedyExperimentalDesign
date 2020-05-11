@@ -4,13 +4,15 @@
 \alias{resultsGreedySearch}
 \title{Returns the results (thus far) of the greedy design search}
 \usage{
-resultsGreedySearch(obj, max_vectors = 9)
+resultsGreedySearch(obj, max_vectors = 9, form = "one_zero")
 }
 \arguments{
 \item{obj}{The \code{greedy_experimental_design} object that is currently running the search}
 
 \item{max_vectors}{The number of design vectors you wish to return. \code{NULL} returns all of them. 
 This is not recommended as returning over 1,000 vectors is time-intensive. The default is 9.}
+
+\item{form}{Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's.}
 }
 \description{
 Returns the results (thus far) of the greedy design search

@@ -35,8 +35,7 @@ binaryMatchExperimentalDesignSearch = function(
 		#we don't need to do anything except order them up
 		indices_pairs = matrix(order(X[, 1]), ncol = 2, byrow = TRUE)
 	} else {
-		if (is.null(compute_dist_matrix)) {
-			
+		if (is.null(compute_dist_matrix)) {			
 			euclidean_distance_sqd_cpp = CPP_FUNCTIONS[["euclidean_distance_sqd_cpp"]]
 			if (is.null(euclidean_distance_sqd_cpp)){
 				euclidean_distance_sqd_cpp = cppFunction('
@@ -59,7 +58,7 @@ binaryMatchExperimentalDesignSearch = function(
 						return D;
 					}
 				')
-				CPP_FUNCTIONS[["euclidean_distance_sqd_cpp"]] = euclidean_distance_sqd_cpp
+				CPP_FUNCTIONS[["euclidean_distance_sqd_cpp"]] = euclidean_distance_sqd_cpp #compile it once and cache
 			}
 			
 			D = euclidean_distance_sqd_cpp(X)
@@ -119,27 +118,41 @@ CPP_FUNCTIONS = list()
 #' 
 #' @param obj 				The \code{binary_experimental_design} object where the pairs are computed.
 #' @param num_vectors		How many random allocation vectors you wish to return. The default is 1000.
+#' @param compute_obj_vals	Should we compute all the objective values for each allocation? Default is \code{FALSE}.
+#' @param form				Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's. 
 #' 
 #' @author Adam Kapelner
 #' @export
-resultsBinaryMatchSearch = function(obj, num_vectors = 1000){
+resultsBinaryMatchSearch = function(obj, num_vectors = 1000, compute_obj_vals = FALSE, form = "zero_one"){
 	#now that we have the pairs, we can randomize for as many vectors as we wish
 	indicTs = matrix(NA, nrow = num_vectors, ncol = obj$n)
-	zero_one_set = c(0, 1)
+	one_minus_one = matrix(
+		sample(c(
+			rep(1, num_vectors / 2 * n / 2), 
+			rep(-1, num_vectors / 2 * n / 2)
+		)), 
+		nrow = num_vectors)
+	
+	minus_half_plus_half = c(-.5, .5)
 	for (r in 1 : num_vectors){
-		w = array(NA, n)
 		for (i in 1 : (n / 2)){
-			w[obj$indices_pairs[i, ]] = sample(zero_one_set, 2)
+			indicTs[r, obj$indices_pairs[i, ]] = minus_half_plus_half * one_minus_one[r, i] + 0.5
 		}
-		indicTs[r, ] = w
 	}
 	
-	if (obj$objective == "mahal_dist"){
-		SinvX = solve(var(obj$X))
-		obj_vals = apply(indicTs, 1, FUN = function(w){compute_objective_val(obj$X, w, objective = "mahal_dist", SinvX)})
-	} else {
-		obj_vals = apply(indicTs, 1, FUN = function(w){compute_objective_val(obj$X, w, objective = obj$objective)})	
-	}	
+	obj_vals = NULL
+	if (compute_obj_vals){
+		if (obj$objective == "mahal_dist"){
+			SinvX = solve(var(obj$X))
+			obj_vals = apply(indicTs, 1, FUN = function(w){compute_objective_val(obj$X, w, objective = "mahal_dist", SinvX)})
+		} else {
+			obj_vals = apply(indicTs, 1, FUN = function(w){compute_objective_val(obj$X, w, objective = obj$objective)})	
+		}	
+	}
+
+	if (form == "pos_one_min_one"){
+		indicTs = (indicTs - 0.5) * 2
+	}
 	list(
 		obj_vals_unordered = obj_vals,
 		indicTs = indicTs

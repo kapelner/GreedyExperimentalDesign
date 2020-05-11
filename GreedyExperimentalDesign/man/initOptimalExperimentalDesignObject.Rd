@@ -4,8 +4,14 @@
 \alias{initOptimalExperimentalDesignObject}
 \title{Begin a Search for the Optimal Solution}
 \usage{
-initOptimalExperimentalDesignObject(X = NULL, objective = "mahal_dist",
-  Kgram = NULL, wait = FALSE, start = TRUE, num_cores = 1)
+initOptimalExperimentalDesignObject(
+  X = NULL,
+  objective = "mahal_dist",
+  Kgram = NULL,
+  wait = FALSE,
+  start = TRUE,
+  num_cores = 1
+)
 }
 \arguments{
 \item{X}{The design matrix with $n$ rows (one for each subject) and $p$ columns 

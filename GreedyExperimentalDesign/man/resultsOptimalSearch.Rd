@@ -4,13 +4,15 @@
 \alias{resultsOptimalSearch}
 \title{Returns the results (thus far) of the optimal design search}
 \usage{
-resultsOptimalSearch(obj, num_vectors = 1)
+resultsOptimalSearch(obj, num_vectors = 1, form = "one_zero")
 }
 \arguments{
 \item{obj}{The \code{optimal_experimental_design} object that is currently running the search}
 
 \item{num_vectors}{How many allocation vectors you wish to return. The default is 1 meaning the best vector. If \code{Inf},
 it means all vectors.}
+
+\item{form}{Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's.}
 }
 \description{
 Returns the results (thus far) of the optimal design search

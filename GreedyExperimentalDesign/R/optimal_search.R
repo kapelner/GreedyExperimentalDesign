@@ -148,10 +148,11 @@ summary.optimal_experimental_design_search = function(object, ...){
 #' @param obj 				The \code{optimal_experimental_design} object that is currently running the search
 #' @param num_vectors		How many allocation vectors you wish to return. The default is 1 meaning the best vector. If \code{Inf},
 #' 							it means all vectors.
+#' @param form				Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's.
 #' 
 #' @author Adam Kapelner
 #' @export
-resultsOptimalSearch = function(obj, num_vectors = 1){
+resultsOptimalSearch = function(obj, num_vectors = 1, form = "one_zero"){
 	obj_vals = .jcall(obj$java_obj, "[D", "getAllObjectiveVals", .jevalArray)
 	ordered_indices = order(obj_vals)
 	
@@ -160,7 +161,9 @@ resultsOptimalSearch = function(obj, num_vectors = 1){
 	}
 	
 	indicTs = .jcall(obj$java_obj, "[[I", "getIndicTs", as.integer(ordered_indices[1 : num_vectors] - 1), simplify = TRUE)
-	
+	if (form == "pos_one_min_one"){
+		indicTs = (indicTs - 0.5) * 2
+	}
 	list(
 		opt_obj_val = obj_vals[ordered_indices[1]],
 		ordered_obj_vals = obj_vals[ordered_indices],

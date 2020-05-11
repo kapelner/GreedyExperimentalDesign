@@ -4,10 +4,18 @@
 \alias{initGreedyExperimentalDesignObject}
 \title{Begin A Greedy Pair Switching Search}
 \usage{
-initGreedyExperimentalDesignObject(X = NULL, max_designs = 10000,
-  objective = "mahal_dist", Kgram = NULL, wait = FALSE, start = TRUE,
-  max_iters = Inf, semigreedy = FALSE, diagnostics = FALSE,
-  num_cores = 1)
+initGreedyExperimentalDesignObject(
+  X = NULL,
+  max_designs = 10000,
+  objective = "mahal_dist",
+  Kgram = NULL,
+  wait = FALSE,
+  start = TRUE,
+  max_iters = Inf,
+  semigreedy = FALSE,
+  diagnostics = FALSE,
+  num_cores = 1
+)
 }
 \arguments{
 \item{X}{The design matrix with $n$ rows (one for each subject) and $p$ columns 

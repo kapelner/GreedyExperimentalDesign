@@ -4,9 +4,16 @@
 \alias{initRerandomizationExperimentalDesignObject}
 \title{Begin a Rerandomization Search}
 \usage{
-initRerandomizationExperimentalDesignObject(X = NULL, max_designs = 1000,
-  obj_val_cutoff_to_include = NULL, objective = "mahal_dist",
-  Kgram = NULL, wait = FALSE, start = TRUE, num_cores = 1)
+initRerandomizationExperimentalDesignObject(
+  X = NULL,
+  max_designs = 1000,
+  obj_val_cutoff_to_include = NULL,
+  objective = "mahal_dist",
+  Kgram = NULL,
+  wait = FALSE,
+  start = TRUE,
+  num_cores = 1
+)
 }
 \arguments{
 \item{X}{The design matrix with $n$ rows (one for each subject) and $p$ columns 

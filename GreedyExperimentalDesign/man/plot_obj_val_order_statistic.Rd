@@ -4,8 +4,13 @@
 \alias{plot_obj_val_order_statistic}
 \title{Plots an order statistic of the object value as a function of number of searches}
 \usage{
-plot_obj_val_order_statistic(obj, order_stat = 1, skip_every = 5,
-  type = "o", ...)
+plot_obj_val_order_statistic(
+  obj,
+  order_stat = 1,
+  skip_every = 5,
+  type = "o",
+  ...
+)
 }
 \arguments{
 \item{obj}{The \code{greedy_experimental_design_search} object whose search history is to be visualized}

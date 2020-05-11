@@ -4,10 +4,17 @@
 \alias{initGurobiNumericalOptimizationExperimentalDesignObject}
 \title{Begin Gurobi Optimized Search}
 \usage{
-initGurobiNumericalOptimizationExperimentalDesignObject(X = NULL,
-  objective = "mahal_dist", Kgram = NULL, num_cores = 1,
-  time_limit_min = 5, node_limit = NULL, max_solutions = NULL,
-  verbose = TRUE, log_file = "")
+initGurobiNumericalOptimizationExperimentalDesignObject(
+  X = NULL,
+  objective = "mahal_dist",
+  Kgram = NULL,
+  num_cores = 1,
+  time_limit_min = 5,
+  node_limit = NULL,
+  max_solutions = NULL,
+  verbose = TRUE,
+  log_file = ""
+)
 }
 \arguments{
 \item{X}{The design matrix with $n$ rows (one for each subject) and $p$ columns 

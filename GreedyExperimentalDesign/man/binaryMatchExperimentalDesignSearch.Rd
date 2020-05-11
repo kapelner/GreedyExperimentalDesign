@@ -4,8 +4,11 @@
 \alias{binaryMatchExperimentalDesignSearch}
 \title{Begin a Search for Binary Matching Designs}
 \usage{
-binaryMatchExperimentalDesignSearch(X, compute_dist_matrix = NULL,
-  objective = "mahal_dist")
+binaryMatchExperimentalDesignSearch(
+  X,
+  compute_dist_matrix = NULL,
+  objective = "mahal_dist"
+)
 }
 \arguments{
 \item{X}{The design matrix with $n$ rows (one for each subject) and $p$ columns 
@@ -23,7 +26,8 @@ An object of type \code{binary_experimental_design} which can be further operate
 }
 \description{
 This method creates an object of type binary_experimental_design and will find pairs. You can then
-use the function \code{resultsBinaryMatchSearch} to create randomized allocation vectors.
+use the function \code{resultsBinaryMatchSearch} to create randomized allocation vectors. For one column
+in X, we just sort to find the pairs trivially.
 }
 \author{
 Adam Kapelner
