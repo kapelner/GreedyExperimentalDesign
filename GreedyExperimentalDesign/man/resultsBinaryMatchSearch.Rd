@@ -2,8 +2,7 @@
 % Please edit documentation in R/binary_match_search.R
 \name{resultsBinaryMatchSearch}
 \alias{resultsBinaryMatchSearch}
-\title{)
-Returns allocation vectors that are binary matched}
+\title{Returns unique allocation vectors that are binary matched}
 \usage{
 resultsBinaryMatchSearch(
   obj,
@@ -22,8 +21,7 @@ resultsBinaryMatchSearch(
 \item{form}{Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's.}
 }
 \description{
-)
-Returns allocation vectors that are binary matched
+Returns unique allocation vectors that are binary matched
 }
 \author{
 Adam Kapelner

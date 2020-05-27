@@ -8,6 +8,9 @@ java_log.*
 gurobi_numerical_optimization_via_R_package_Gree.log
 .Rhistory
 /bin/
+/src/*.o
+/src/*.dll
+/src/RcppExports.*
 /src/.idea/*
 .DS_Store
 .RData

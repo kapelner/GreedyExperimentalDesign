@@ -35,32 +35,7 @@ binaryMatchExperimentalDesignSearch = function(
 		#we don't need to do anything except order them up
 		indices_pairs = matrix(order(X[, 1]), ncol = 2, byrow = TRUE)
 	} else {
-		if (is.null(compute_dist_matrix)) {			
-			euclidean_distance_sqd_cpp = CPP_FUNCTIONS[["euclidean_distance_sqd_cpp"]]
-			if (is.null(euclidean_distance_sqd_cpp)){
-				euclidean_distance_sqd_cpp = cppFunction('
-					NumericMatrix compute_distance_matrix_cpp(NumericMatrix X) {
-						int n = X.nrow();
-						int p = X.ncol();
-						NumericMatrix D(n, n);
-						std::fill(D.begin(), D.end(), NA_REAL);
-						for (int i_1 = 0; i_1 < (n - 1); i_1++){
-							//Rcout << "computing for row #: " << (i_1 + 1) << "\\n";
-							for (int i_2 = i_1 + 1; i_2 < n; i_2++){
-								double sqd_diff = 0;
-								for (int j = 0; j < p; j++){
-									sqd_diff += pow(X(i_1, j) - X(i_2, j), 2); //by default the cmath library in std is loaded
-								}
-								D(i_1, i_2) = sqd_diff;
-								D(i_2, i_1) = D(i_1, i_2);
-							}
-						}
-						return D;
-					}
-				')
-				CPP_FUNCTIONS[["euclidean_distance_sqd_cpp"]] = euclidean_distance_sqd_cpp #compile it once and cache
-			}
-			
+		if (is.null(compute_dist_matrix)) {	#default is C++-optimized sqd euclidean distance function		
 			D = euclidean_distance_sqd_cpp(X)
 		} else {
 			D = compute_dist_matrix(X)
@@ -91,30 +66,7 @@ binaryMatchExperimentalDesignSearch = function(
 	binary_experimental_design
 }
 
-CPP_FUNCTIONS = list()
-
-#euclidean_distance_cpp = cppFunction('
-#	NumericMatrix compute_distance_matrix_cpp(NumericMatrix X) {
-#		int n = X.nrow();
-#		int p = X.ncol();
-#		NumericMatrix D(n, n);
-#		std::fill(D.begin(), D.end(), NA_REAL);
-#		for (int i_1 = 0; i_1 < (n - 1); i_1++){
-#			//Rcout << "computing for row #: " << (i_1 + 1) << "\\n";
-#			for (int i_2 = i_1 + 1; i_2 < n; i_2++){
-#				double sqd_diff = 0;
-#				for (int j = 0; j < p; j++){
-#					sqd_diff += pow(X(i_1, j) - X(i_2, j), 2); //by default the cmath library in std is loaded
-#				}
-#				D(i_1, i_2) = sqrt(sqd_diff); //by default the cmath library in std is loaded
-#				//D(i_2, i_1) = D(i_1, i_2);
-#			}
-#		}
-#		return D;
-#	}
-#')
-
-#' Returns allocation vectors that are binary matched
+#' Returns unique allocation vectors that are binary matched
 #' 
 #' @param obj 				The \code{binary_experimental_design} object where the pairs are computed.
 #' @param num_vectors		How many random allocation vectors you wish to return. The default is 1000.
@@ -125,18 +77,34 @@ CPP_FUNCTIONS = list()
 #' @export
 resultsBinaryMatchSearch = function(obj, num_vectors = 1000, compute_obj_vals = FALSE, form = "zero_one"){
 	#now that we have the pairs, we can randomize for as many vectors as we wish
-	indicTs = matrix(NA, nrow = num_vectors, ncol = obj$n)
-	one_minus_one = matrix(
-		sample(c(
-			rep(1, num_vectors / 2 * n / 2), 
-			rep(-1, num_vectors / 2 * n / 2)
-		)), 
-		nrow = num_vectors)
+	n = obj$n
+	if (2^(n / 2) < num_vectors){
+		stop(paste("The total number of unique vectors is", 2^(n / 2), "which is less than the", num_vectors, "you requested."))
+	}
+
 	
 	minus_half_plus_half = c(-.5, .5)
-	for (r in 1 : num_vectors){
-		for (i in 1 : (n / 2)){
-			indicTs[r, obj$indices_pairs[i, ]] = minus_half_plus_half * one_minus_one[r, i] + 0.5
+	
+	indicTs = matrix(NA, nrow = 0, ncol = n)
+	batch_size = ceiling(num_vectors / 4)
+	repeat {
+		indicTs_batch = matrix(NA, nrow = batch_size, ncol = n)
+		one_minus_one = matrix(
+				sample(c(
+					rep(1, batch_size / 2 * n / 2), 
+					rep(-1, batch_size / 2 * n / 2)
+				)), 
+				nrow = batch_size)
+		for (r in 1 : batch_size){
+			for (i in 1 : (n / 2)){
+				indicTs_batch[r, obj$indices_pairs[i, ]] = minus_half_plus_half * one_minus_one[r, i] + 0.5
+			}
+		}
+		indicTs = rbind(indicTs, indicTs_batch)
+		indicTs = unique(indicTs)
+		if (nrow(indicTs) > num_vectors){
+			indicTs = indicTs[1 : num_vectors, , drop = FALSE]
+			break
 		}
 	}
 	
