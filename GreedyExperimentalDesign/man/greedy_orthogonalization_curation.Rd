@@ -7,7 +7,7 @@
 greedy_orthogonalization_curation(W, Rmin = 2, verbose = FALSE)
 }
 \arguments{
-\item{W}{A matrix $\in \{-1, 1\}^{R \times n} which have R allocation vectors for an experiment of sample size n.}
+\item{W}{A matrix in ${-1, 1}^{R x n}$ which have R allocation vectors for an experiment of sample size n.}
 
 \item{Rmin}{The minimum number of vectors to consider in a design. The default is the true bottom, two.}
 

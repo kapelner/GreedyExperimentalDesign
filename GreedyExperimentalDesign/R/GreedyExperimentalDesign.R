@@ -9,5 +9,7 @@
 #' @import      rJava stats graphics grDevices GreedyExperimentalDesignJARs
 #' @importFrom kernlab vanilladot rbfdot polydot tanhdot besseldot laplacedot anovadot splinedot kernelMatrix
 ##### Run "library(roxygen2); roxygenise("GreedyExperimentalDesign", clean = TRUE)" to regenerate all Rd files and NAMESPACE and DESCRIPTION file
-##### but make sure you are in the root directory of the project
+##### but make sure you are in the root directory of the project. Make sure to add these two to namespace afterwards:
+##### importFrom(Rcpp, evalCpp)
+##### useDynLib(GreedyExperimentalDesign)
 NULL
