@@ -8,12 +8,11 @@ initGurobiNumericalOptimizationExperimentalDesignObject(
   X = NULL,
   objective = "mahal_dist",
   Kgram = NULL,
-  num_cores = 1,
-  time_limit_min = 5,
-  node_limit = NULL,
-  max_solutions = NULL,
+  num_cores = 2,
+  w_0 = NULL,
+  time_limit_sec = 2 * 60,
   verbose = TRUE,
-  log_file = ""
+  gurobi_params = list()
 )
 }
 \arguments{
@@ -27,22 +26,20 @@ with valid values "\code{mahal_dist}" (the default) or "\code{kernel}".}
 \item{Kgram}{If the \code{objective = kernel}, this argument is required to be an \code{n x n} matrix whose
 entries are the evaluation of the kernel function between subject i and subject j. Default is \code{NULL}.}
 
-\item{num_cores}{The number of CPU cores you wish to use during the search. The default is \code{1}.}
+\item{num_cores}{Number of cores to use during search. Default is \code{2}.}
 
-\item{time_limit_min}{The maximum amount of time the optimizer can run for in minutes. The default is \code{5}.}
+\item{w_0}{The initial starting location (optional).}
 
-\item{node_limit}{The maximum number of nodes Gurobi should explore. Default is \code{NULL} for no limit.}
+\item{time_limit_sec}{The maximum amount of time the optimizer can run for in seconds. The default is \code{2 * 60}.}
 
-\item{max_solutions}{The maximum number of solutions Gurobi should retain incidentally while looking for one optimal 
-(if possible given the time limit and constraint of the node limit). The default is 
-\code{NULL} for only the best.}
+\item{verbose}{Should Gurobi log to console? Default is \code{TRUE}.}
 
-\item{verbose}{Should Gurobi print its log to screen? Default is \code{TRUE}.}
-
-\item{log_file}{Log filename for Gurobi e.g. \code{my_log.txt}. Default is \code{""} for no file log.}
+\item{gurobi_params}{A list of optional parameters to be passed to Gurobi (see their documentation online).}
 }
 \value{
-An object of type \code{optimal_experimental_design_search} which can be further operated upon
+A list object which houses the results from Gurobi. Depending on the \code{gurobi_parms},
+							the data within will be different. The most relevant tags are \code{x} for the best found solution and \code{objval}
+							for the object
 }
 \description{
 This method creates an object of type optimal_experimental_design and will immediately initiate
@@ -54,5 +51,5 @@ pain with cryptic errors! Currently, this method does not return multiple vector
 version. If you want this functionality now, use the hacked-up method \code{gurobi_multiple_designs}.
 }
 \author{
-Adam Kapelner and Bracha Blau
+Adam Kapelner
 }

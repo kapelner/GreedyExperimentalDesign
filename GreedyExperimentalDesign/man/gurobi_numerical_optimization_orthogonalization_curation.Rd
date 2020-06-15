@@ -8,28 +8,39 @@
 gurobi_numerical_optimization_orthogonalization_curation(
   W,
   R0,
-  verbose = FALSE
+  verbose = TRUE,
+  num_cores = 2,
+  time_limit_seconds = 2 * 60,
+  gurobi_params = list()
 )
 }
 \arguments{
 \item{W}{A matrix in the set ${-1, 1}^{R x n}$ which have R allocation vectors for an experiment of sample size n.}
 
 \item{R0}{The number of vectors in the pared-down design.}
+
+\item{verbose}{Should Gurobi log to console? Default is \code{TRUE}.}
+
+\item{num_cores}{Number of cores to use during search. Default is \code{2}.}
+
+\item{time_limit_seconds}{The limit on how long in seconds the binary integer quadratic program should run (default is 2 * 60s).}
+
+\item{gurobi_params}{A list of optional parameters to be passed to Gurobi (see their documentation online).}
 }
 \value{
-A list with two elements: (1) \code{avg_abs_rij_by_R} which is a data frame with R - Rmin + 1 rows and 
-					columns R and average absolute r_ij and (2) \code{Wsorted} which provides the collection of vectors in
-					sorted by best average absolute r_ij in row order from best to worst.
+A list object which houses the results from Gurobi. Depending on the \code{gurobi_parms},
+					the data within will be different. The most relevant tags are \code{x} for the best found solution and \code{objval}
+					for the object
 }
 \description{
 This function takes a set of allocation vectors and pares them down
 by eliminating the vectors that can result in the largest reduction in Avg[ |r_ij| ] via
-Gurobi's numerical optimization.
+Gurobi's numerical optimization for binary integer quadratic programs.
 }
 \details{
-Make sure you setup Gurobi properly first. This means applying for a license, downloading, installing, via
-\code{install.packages("c:/gurobi902/win64/R/gurobi_9.0-2.zip", repos=NULL)} then make sure you've registered it 
-on your computer using the \code{grbgetkey} command with the license file in the default directory.
+Make sure you setup Gurobi properly first. This means applying for a license, downloading, installing, then make sure 
+you've registered the license on your computer using the \code{grbgetkey} command. Then you need to install the R package
+from the local file (it is not on CRAN) via e.g. \code{install.packages("c:/gurobi902/win64/R/gurobi_9.0-2.zip", repos = NULL)}.
 }
 \author{
 Adam Kapelner

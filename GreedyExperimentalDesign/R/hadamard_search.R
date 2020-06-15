@@ -8,7 +8,7 @@
 #' @param strict		Hadamard matrices are not available for all $n$.
 #' @param form			Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's. 
 #' 
-#' @return				An matrix of dimension $R \times n$ where $R$ is the number of Hadamard allocations.
+#' @return				An matrix of dimension $R$ x $n$ where $R$ is the number of Hadamard allocations.
 #' 
 #' @author Adam Kapelner
 #' @export
@@ -48,4 +48,7 @@ assertMatrixWithEvenNumRows = function(x, .var.name = vname(x), add = NULL) {
 	assertClass(x, "matrix")
 	makeAssertion(x, (function(x){if (nrow(x) %% 2 != 0) "Matrix must have an even number of rows" else TRUE})(x), .var.name, add)
 }
+
+
+
 

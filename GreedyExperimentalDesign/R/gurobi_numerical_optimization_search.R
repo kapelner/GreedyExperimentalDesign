@@ -15,40 +15,39 @@
 #' 							with valid values "\code{mahal_dist}" (the default) or "\code{kernel}".
 #' @param Kgram				If the \code{objective = kernel}, this argument is required to be an \code{n x n} matrix whose
 #' 							entries are the evaluation of the kernel function between subject i and subject j. Default is \code{NULL}.
-#' @param num_cores 		The number of CPU cores you wish to use during the search. The default is \code{1}.
-#' @param time_limit_min	The maximum amount of time the optimizer can run for in minutes. The default is \code{5}.
-#' @param max_solutions		The maximum number of solutions Gurobi should retain incidentally while looking for one optimal 
-#' 							(if possible given the time limit and constraint of the node limit). The default is 
-#' 							\code{NULL} for only the best.
-#' @param node_limit		The maximum number of nodes Gurobi should explore. Default is \code{NULL} for no limit.
-#' @param verbose			Should Gurobi print its log to screen? Default is \code{TRUE}.
-#' @param log_file			Log filename for Gurobi e.g. \code{my_log.txt}. Default is \code{""} for no file log. 
-#' @return					An object of type \code{optimal_experimental_design_search} which can be further operated upon
+#' @param time_limit_sec	The maximum amount of time the optimizer can run for in seconds. The default is \code{2 * 60}.
+#' @param num_cores			Number of cores to use during search. Default is \code{2}.
+#' @param w_0				The initial starting location (optional).
+#' @param gurobi_params		A list of optional parameters to be passed to Gurobi (see their documentation online).
+#' @param verbose			Should Gurobi log to console? Default is \code{TRUE}.
+#' @return 					A list object which houses the results from Gurobi. Depending on the \code{gurobi_parms},
+#' 							the data within will be different. The most relevant tags are \code{x} for the best found solution and \code{objval}
+#' 							for the object
 #' 
-#' @author Adam Kapelner and Bracha Blau
+#' @author Adam Kapelner
 #' @export
 initGurobiNumericalOptimizationExperimentalDesignObject = function(
 		X = NULL, 
 		objective = "mahal_dist",
 		Kgram = NULL,
-		num_cores = 1, 
-		time_limit_min = 5, 
-		node_limit = NULL, 
-		max_solutions = NULL,
+		num_cores = 2, 
+		w_0 = NULL,
+		time_limit_sec = 2 * 60, 
 		verbose = TRUE,
-		log_file = ""){
+		gurobi_params = list()){
 	
-	#we need to check if the user has Gurobi
-	gurobi_exists = FALSE
-	for (path in .jclassPath()){
-		if (length(grep("gurobi.jar", path)) > 0){
-			gurobi_exists = TRUE
-		}
+	assertCount(num_cores, positive = TRUE)
+	assertNumeric(time_limit_sec, lower = 1)
+	assertLogical(verbose)
+	assertClass(gurobi_params, "list")
+	if (!is.null(w_0)){
+		assertSetEqual(unique(w_0), c(1, -1))
+		assertTRUE(sum(w_0) == 0)
 	}
 	
-	if (!gurobi_exists){
-		stop("You can only use this feature if you have a license for Gurobi\nand the optimizer installed. If so, you should link gurobi.jar via:\n\n .jaddClassPath(\"/<my path>/lib/gurobi.jar\")\n\n and then check to ensure it is properly listed in:\n\n.jclassPath().\n")
-	}
+	gurobi_params$LogToConsole = as.numeric(verbose)
+	gurobi_params$Threads = num_cores	
+	gurobi_params$TimeLimit = time_limit_sec
 	
 	verify_objective_function(objective, Kgram, n)
 	
@@ -68,11 +67,52 @@ initGurobiNumericalOptimizationExperimentalDesignObject = function(
 	}
 	SinvX = NULL
 	
+	# Let Q = X^T SinvX X =or= K
 	if (objective == "mahal_dist"){
 		if (p < n){
 			SinvX = solve(var(X))
 		}
+		Q = X %*% SinvX %*% t(X)
+	} else if (!is.null(Kgram)){
+		Q = Kgram
 	}
+	one_vec_n = t(as.matrix(rep(1, n)))	
+	
+	#   minimize_w w^T Q w = (2b - 1)^T Q (2b - 1) = 4b^T Q b - 2 1^T Q b - 2 b^T Q 1 + 1^T Q 1 = b^T 4Q b - b^T 4Q 1 + 1^T Q 1 
+	# = minimize_b b^T 4Q b - b^T 4Q 1 + 1^T Q 1 
+	# minimize
+	#        [b_1 b_2 ... b_n]^T Q [b_1 b_2 ... b_n] - 1^T Q [b_1 b_2 ... b_n]
+	# subject to
+	#        b_1 + b_2 + ... + b_n = n / 2,
+	#        b_1, b_2, ..., b_n binary
+	
+	model 		= list()
+	#quadratic component
+	model$Q     = 4 * Q
+	model$obj   = one_vec_n %*% (4 * Q)
+	model$ObjCon = as.numeric(one_vec_n %*% Q %*% t(one_vec_n)) #this will allow the objective value to be interpretable during verbose printouts
+	#constraint component
+	model$A     = one_vec_n
+	model$rhs   = n / 2
+	model$sense = "="
+	model$vtype = "B"
+	if (!is.null(w_0)){
+		model$start = w_0
+	}
+	
+	#now return information as an object (just a list)
+	gurobi_numerical_optimization_experimental_design_search = list()
+	gurobi_numerical_optimization_experimental_design_search$X = X
+	gurobi_numerical_optimization_experimental_design_search$SinvX = SinvX
+	gurobi_numerical_optimization_experimental_design_search$n = n
+	gurobi_numerical_optimization_experimental_design_search$p = p
+	gurobi_numerical_optimization_experimental_design_search$Kgram = Kgram
+	gurobi_numerical_optimization_experimental_design_search$objective = objective
+	gurobi_numerical_optimization_experimental_design_search$w_0 = w_0
+	gurobi_numerical_optimization_experimental_design_search$gurobi_params = gurobi_params
+	class(gurobi_numerical_optimization_experimental_design_search) = "gurobi_numerical_optimization_experimental_design_search"
+	#run the optimization and return the final object	
+	return(c(gurobi_numerical_optimization_experimental_design_search, gurobi::gurobi(model, gurobi_params)))
 	
 	#we are about to construct a GurobiNumericalOptimizeExperimentalDesign java object. First, let R garbage collect
 	#to clean up previous objects that are no longer in use. This is important
@@ -143,6 +183,12 @@ initGurobiNumericalOptimizationExperimentalDesignObject = function(
 	
 	#return the final object
 	gurobi_numerical_optimization_experimental_design_search
+	
+	
+	
+
+	
+
 }
 
 

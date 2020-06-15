@@ -16,7 +16,7 @@ compute the Hadamard designs, only the number of rows.}
 \item{form}{Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's.}
 }
 \value{
-An matrix of dimension $R \times n$ where $R$ is the number of Hadamard allocations.
+An matrix of dimension $R$ x $n$ where $R$ is the number of Hadamard allocations.
 }
 \description{
 This method returns unique designs according to a Hadamard matrix
