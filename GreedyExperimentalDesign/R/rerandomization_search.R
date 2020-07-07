@@ -7,7 +7,8 @@
 #' 									(one for each measurement on the subject). This is the design matrix you wish 
 #' 									to search for a more optimal design.
 #' @param obj_val_cutoff_to_include	Only allocation vectors with objective values lower than this threshold will be returned.
-#' 									The default is \code{NULL} which means all vectors are returned.
+#' 									If the cutoff is infinity, you are doing BCRD and you should use the \code{complete_randomization_with_forced_balanced}
+#' 									function instead.
 #' @param max_designs 				The maximum number of designs to be returned. Default is 10,000. Make this large 
 #' 									so you can search however long you wish as the search can be stopped at any time by
 #' 									using the \code{\link{stopSearch}} method 
@@ -25,8 +26,8 @@
 #' @export
 initRerandomizationExperimentalDesignObject = function(
 		X = NULL, 
+		obj_val_cutoff_to_include,
 		max_designs = 1000,
-		obj_val_cutoff_to_include = NULL,
 		objective = "mahal_dist", 
 		Kgram = NULL,
 		wait = FALSE, 
@@ -40,6 +41,7 @@ initRerandomizationExperimentalDesignObject = function(
 		p = NA
 	} else {
 		n = nrow(X)
+		p = ncol(X)
 	}
 	if (n %% 2 != 0){
 		stop("Design matrix must have even rows to have equal treatments and controls")
@@ -167,15 +169,19 @@ rerandomizationSearchCurrentProgress = function(obj){
 #' 
 #' @param obj 					The \code{rerandomization_experimental_design} object that is currently running the search
 #' @param include_assignments	Do we include the assignments (takes time) and default is \code{FALSE}.
+#' @param form					Which form should the assignments be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's. 
 #' 
 #' @author Adam Kapelner
 #' @export
-resultsRerandomizationSearch = function(obj, include_assignments = FALSE){
+resultsRerandomizationSearch = function(obj, include_assignments = FALSE, form = "one_zero"){
 	obj_vals = .jcall(obj$java_obj, "[D", "getObjectiveVals")
 	
 	ending_indicTs = NULL
 	if (include_assignments){
-		ending_indicTs = sapply(.jcall(obj$java_obj, "[[I", "getEndingIndicTs"), .jevalArray)
+		ending_indicTs = .jcall(obj$java_obj, "[[I", "getEndingIndicTs", simplify = TRUE)
+		if (form == "pos_one_min_one"){
+			ending_indicTs = (ending_indicTs - 0.5) * 2
+		}
 	}	
 	
 	rerandomization_experimental_design_search_results = list(

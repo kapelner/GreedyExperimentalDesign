@@ -175,7 +175,7 @@ for (i in 1 : length(log_ns)){
   n = 2 * round(10^(log_ns[i]) / 2)
   X = generate_stdzied_design_matrix(n = n, p = 1)
   rd = initRerandomizationExperimentalDesignObject(X, r, objective = "abs_sum_diff", wait = TRUE)
-  designs = sapply(.jcall(rd$java_obj, "[[I", "getEndingIndicTs"), .jevalArray)
+  designs = .jcall(rd$java_obj, "[[I", "getEndingIndicTs", simplify = TRUE)
   metr = compute_randomization_metrics(designs)
   cr_entropy[i] = metr$rand_entropy_metric
   cr_norm_se[i] = metr$rand_norm_se_metric

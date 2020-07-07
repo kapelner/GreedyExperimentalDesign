@@ -74,53 +74,64 @@ public class RerandomizationExperimentalDesign extends MultipleSearchExperimenta
     	search_thread_pool.execute(new Runnable(){
 			public void run() {
 				while (true){
-					int r = progress();
 //					System.out.println("progress = " + r);
 					//break up here too to avoid one more iteration (ugly, but a tad faster)
-					if (r == max_designs || search_stopped.get()){
+					if (num_completed >= max_designs || search_stopped.get()){
 						break;
 					}
 					
 					int[] indicT = Tools.fisherYatesShuffle(Tools.newBalancedBlankDesign(n), rand_obj);
 //					System.out.println("indicT " + Tools.StringJoin(indicT));
-					if (obj_val_cutoff_to_include != null){
 						
-						double obj_val = 0; 
-
-						if (objective.equals(ObjectiveFunction.KER)){
-							((KernelObjective)fin_obj_fun).setIndicT(indicT);							
-						} else {
-							int[] i_Ts = Tools.findIndicies(indicT, n / 2, 1);
-							int[] i_Cs = Tools.findIndicies(indicT, n / 2, 0);
-							ArrayList<double[]> XT = Tools.subsetMatrix(X, i_Ts); 
-							ArrayList<double[]> XC = Tools.subsetMatrix(X, i_Cs);
-							double[] avg_Ts = Tools.colAvg(XT, p);
-							double[] avg_Cs = Tools.colAvg(XC, p);	
-							fin_obj_fun.setXTbar(avg_Ts);
-							fin_obj_fun.setXCbar(avg_Cs);
-						}
-						obj_val = fin_obj_fun.calc(false);
-						
-						if (obj_val < obj_val_cutoff_to_include){
-							if (r == max_designs){
+					if (objective.equals(ObjectiveFunction.KER)){
+						((KernelObjective)fin_obj_fun).setIndicT(indicT);							
+					} else {
+						int[] i_Ts = Tools.findIndicies(indicT, n / 2, 1);
+						int[] i_Cs = Tools.findIndicies(indicT, n / 2, 0);
+						ArrayList<double[]> XT = Tools.subsetMatrix(X, i_Ts); 
+						ArrayList<double[]> XC = Tools.subsetMatrix(X, i_Cs);
+						double[] avg_Ts = Tools.colAvg(XT, p);
+						double[] avg_Cs = Tools.colAvg(XC, p);	
+						fin_obj_fun.setXTbar(avg_Ts);
+						fin_obj_fun.setXCbar(avg_Cs);
+					}
+					double obj_val = fin_obj_fun.calc(false);
+					
+					if (obj_val < obj_val_cutoff_to_include){
+						synchronized(num_completed) {
+							if (num_completed >= max_designs || search_stopped.get()){
 								break;
 							}
 							//create the new vector and its corresponding objective value
-							ending_indicTs[r] = indicT;
-							objective_vals[r] = obj_val;
+							ending_indicTs[num_completed] = indicT;
+							objective_vals[num_completed] = obj_val;
+							
+//							System.out.println("num_completed: " + (num_completed + 1) + " obj val: " + obj_val);
+//							System.out.println("w: " + Tools.StringJoin(indicT, ", "));
+//							int[] i_Ts = Tools.findIndicies(indicT, n / 2, 1);
+//							int[] i_Cs = Tools.findIndicies(indicT, n / 2, 0);
+//							ArrayList<double[]> XT = Tools.subsetMatrix(X, i_Ts); 
+//							ArrayList<double[]> XC = Tools.subsetMatrix(X, i_Cs);
+//							
+//							System.out.println("i_Ts size: " + i_Ts.length);
+//							System.out.println("i_Cs size: " + i_Cs.length);
+//							
+//							System.out.println("XT size: " + XT.size());
+//							System.out.println("XC size: " + XC.size());
+//							
+//							System.out.print("Ts: ");
+//							double[] avg_Ts = Tools.colAvgDebug(XT, p);
+//							System.out.print("\nCs: ");
+//							double[] avg_Cs = Tools.colAvgDebug(XC, p);	
+//							System.out.print("\n");
+////							System.out.println("Ts: " + Tools.StringJoin(XT, ", ") + " Cs: " + Tools.StringJoin(XC, ", "));
+//							System.out.println("xbarT: " + Tools.StringJoin(avg_Ts, " ") + " xbarC: " + Tools.StringJoin(avg_Cs, " "));
+							num_completed++;
 						}
-					}
-					else {
-						//we are just looking for a certain number and then we're done
-						if (r == max_designs){
-							break;
-						}
-						ending_indicTs[r] = indicT;
-						objective_vals[r] = Double.NaN; //flag it
 					}
 				}
 			}
-		});		
+    	});		
 		afterBeginSearch();		
 	}
 	

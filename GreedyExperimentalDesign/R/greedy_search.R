@@ -334,7 +334,8 @@ resultsGreedySearch = function(obj, max_vectors = 9, form = "one_zero"){
 		switches = .jcall(obj$java_obj, "[[[I", "getSwitchedPairs", as.integer(ordered_indices[1 : last_index] - 1), simplify = TRUE)
 		#we should make switches into a list now
 		xbarj_diffs = .jcall(obj$java_obj, "[[[D", "getXbarjDiffs", as.integer(ordered_indices[1 : last_index] - 1), simplify = TRUE)
-		obj_val_by_iters = sapply(.jcall(obj$java_obj, "[[D", "getObjValByIter", as.integer(ordered_indices[1 : last_index] - 1)), .jevalArray)
+		obj_val_by_iters = .jcall(obj$java_obj, "[[D", "getObjValByIter", as.integer(ordered_indices[1 : last_index] - 1), simplify = TRUE)
+		
 		pct_vec_same = colSums(starting_indicTs == ending_indicTs) / length(starting_indicTs[, 1]) * 100
 	}
 	greedy_experimental_design_search_results = list(

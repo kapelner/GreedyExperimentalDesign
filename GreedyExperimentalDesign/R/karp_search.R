@@ -108,7 +108,7 @@ summary.karp_experimental_design_search = function(object, ...){
 #' @export
 resultsKarpSearch = function(obj){
 	obj_val = .jcall(obj$java_obj, "D", "getKarpObjectiveVal")
-	indicT = .jcall(obj$java_obj, "[I", "getKarpIndicT", .jevalArray)
+	indicT = .jcall(obj$java_obj, "[I", "getKarpIndicT", simplify = TRUE)
 	list(
 		obj_val = obj_val,
 		indicT = indicT

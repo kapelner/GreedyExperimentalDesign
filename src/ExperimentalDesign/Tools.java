@@ -27,6 +27,7 @@ package ExperimentalDesign;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Random;
 
 /**
@@ -41,6 +42,20 @@ public class Tools {
 		double[] tally = new double[p];
 		for (int i = 0; i < n; i++){
 			for (int j = 0; j < p; j++){
+				tally[j] += X.get(i)[j];
+			}			
+		}
+		for (int j = 0; j < p; j++){
+			tally[j] /= n;
+		}
+		return tally;
+	}
+	public static double[] colAvgDebug(ArrayList<double[]> X, int p) {
+		int n = X.size();	
+		double[] tally = new double[p];
+		for (int i = 0; i < n; i++){
+			for (int j = 0; j < p; j++){
+				System.out.print(X.get(i)[j] + " ");
 				tally[j] += X.get(i)[j];
 			}			
 		}
@@ -98,13 +113,9 @@ public class Tools {
 		return indicies;
 	}	
 
-	
-	//from http://algs4.cs.princeton.edu/11model/Knuth.java.html
 	public static int[] fisherYatesShuffle(int[] arr, Random rand){
-	    int n = arr.length;
-        for (int i = 0; i < n; i++) {
-            // choose index uniformly in [i, N-1]
-            int r = i + (int) (rand.nextDouble() * (n - i));
+        for (int i = arr.length - 1; i > 0; i--) {
+            int r = rand.nextInt(i + 1);
             int swap = arr[r];
             arr[r] = arr[i];
             arr[i] = swap;
@@ -112,12 +123,19 @@ public class Tools {
 	    return arr;
 	}
 	
+	static final HashMap<Integer, int[]> allBalancedBlankDesigns = new HashMap<Integer, int[]>();
 	public static int[] newBalancedBlankDesign(int n){
-		int[] design = new int[n];
-		for (int i = 0; i < n; i++){
-			design[i] = i < n / 2 ? 1 : 0;
+		if (allBalancedBlankDesigns.get(n) == null) {
+			int[] design = new int[n];
+			for (int i = 0; i < n; i++){
+				design[i] = i < n / 2 ? 1 : 0;
+			}
+			allBalancedBlankDesigns.put(n, design);
+			return design;
+		} 
+		else {
+			return allBalancedBlankDesigns.get(n).clone();
 		}
-		return design;
 	}
 	
 	/**

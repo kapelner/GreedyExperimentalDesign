@@ -29,7 +29,7 @@ compute_randomization_metrics = function(designs){
 	.jcall(java_obj, "V", "compute")
 	
 	#harvest the data and return it as a list
-	p_hat_ijs = sapply(.jcall(java_obj, "[[D", "getPhats"), .jevalArray)
+	p_hat_ijs = .jcall(obj$java_obj, "[[D", "getPhats", simplify = TRUE)
 	rand_entropy_metric = .jcall(java_obj, "D", "getRandEntropyMetric")
 	rand_norm_se_metric = .jcall(java_obj, "D", "getRandStdErrMetric")
 	
