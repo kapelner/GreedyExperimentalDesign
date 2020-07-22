@@ -25,7 +25,6 @@
 package GreedyExperimentalDesign;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 import ExperimentalDesign.*;
 import ObjectiveFunctions.*;
@@ -101,7 +100,7 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 		for (int d = 0; d < max_designs; d++){
 			min_obj_val_by_iterations.add(new ArrayList<Double>());
 		}			
-//		System.out.println("resulting data initialized");
+//		System.out.println("GreedyExperimentalDesign.");
 		
 		initializeStartingIndicTs();
 		
@@ -130,13 +129,21 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 							max_iters, 
 							rand_obj,
 							search_stopped);
+					if (!search_stopped.get()) {
+						num_completed.getAndIncrement();
+//						System.out.println("did one num_completed: " + num_completed.get());
+					}
 				}
 			});
 		}		
 		afterBeginSearch();
 		//System.out.println("min_obj_val_by_iterations: " + min_obj_val_by_iterations);
-//		System.out.println("num_iters: " + num_iters);
+//		System.out.println("afterBeginSearch num_completed: " + num_completed);
 		
+	}
+	
+	public int progress(){
+		return num_completed.get();
 	}
 
 

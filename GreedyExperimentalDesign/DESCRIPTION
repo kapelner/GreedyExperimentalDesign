@@ -30,7 +30,7 @@ Depends:
     kernlab,
     checkmate,
     survey,
-    lpSolve,
+    nbpMatching,
     Rcpp,
     GreedyExperimentalDesignJARs (>= 1.0)
 SystemRequirements: Java (>= 7.0)

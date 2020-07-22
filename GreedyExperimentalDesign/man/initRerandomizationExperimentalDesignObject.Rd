@@ -6,8 +6,8 @@
 \usage{
 initRerandomizationExperimentalDesignObject(
   X = NULL,
+  obj_val_cutoff_to_include,
   max_designs = 1000,
-  obj_val_cutoff_to_include = NULL,
   objective = "mahal_dist",
   Kgram = NULL,
   wait = FALSE,
@@ -20,12 +20,13 @@ initRerandomizationExperimentalDesignObject(
 (one for each measurement on the subject). This is the design matrix you wish 
 to search for a more optimal design.}
 
+\item{obj_val_cutoff_to_include}{Only allocation vectors with objective values lower than this threshold will be returned.
+If the cutoff is infinity, you are doing BCRD and you should use the \code{complete_randomization_with_forced_balanced}
+function instead.}
+
 \item{max_designs}{The maximum number of designs to be returned. Default is 10,000. Make this large 
 so you can search however long you wish as the search can be stopped at any time by
 using the \code{\link{stopSearch}} method}
-
-\item{obj_val_cutoff_to_include}{Only allocation vectors with objective values lower than this threshold will be returned.
-The default is \code{NULL} which means all vectors are returned.}
 
 \item{objective}{The objective function to use when searching design space. This is a string
 with valid values "\code{mahal_dist}" (the default), "\code{abs_sum_diff}" or "\code{kernel}".}

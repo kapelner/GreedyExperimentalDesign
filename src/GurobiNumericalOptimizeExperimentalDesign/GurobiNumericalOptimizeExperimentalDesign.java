@@ -14,8 +14,6 @@ public class GurobiNumericalOptimizeExperimentalDesign extends AllExperimentalDe
 	private Double time_limit_min;
 	/** how many nodes can the optimizer explore? */	
 	private Integer node_limit;
-	/** What tolerance to use? */	
-	private Double tol;
 	/** max number of solutions Gurobi should retain */
 	private Integer max_solutions;
 	/** should we turn the optimizer's screen log off? */	

@@ -36,7 +36,7 @@ binaryMatchExperimentalDesignSearch = function(
 		indices_pairs = matrix(order(X[, 1]), ncol = 2, byrow = TRUE)
 	} else {
 		if (is.null(compute_dist_matrix)) {	#default is C++-optimized sqd euclidean distance function		
-			D = euclidean_distance_sqd_cpp(X)
+			D = compute_distance_matrix_cpp(X)
 		} else {
 			D = compute_dist_matrix(X)
 		}
@@ -44,9 +44,8 @@ binaryMatchExperimentalDesignSearch = function(
 		diag(D) = .Machine$double.xmax
 		
 		#get the matching solution using the heuristic
-		matrix_sol = round(lp.assign(D)$solution) #just like Gurobi -- the 0/1's are sometimes not precisely 0/1
+		indices_pairs = as.matrix(nbpMatching::nonbimatch(distancematrix(D))$matches[, c("Group1.Row", "Group2.Row")])
 		
-		indices_pairs = which(matrix_sol == 1, arr.ind = TRUE)
 		for (i in 1 : n){
 			indices_pairs[i, ] = sort(indices_pairs[i, ])
 		}	
@@ -82,11 +81,10 @@ resultsBinaryMatchSearch = function(obj, num_vectors = 1000, compute_obj_vals = 
 		stop(paste("The total number of unique vectors is", 2^(n / 2), "which is less than the", num_vectors, "you requested."))
 	}
 
-	
 	minus_half_plus_half = c(-.5, .5)
 	
 	indicTs = matrix(NA, nrow = 0, ncol = n)
-	batch_size = ceiling(num_vectors / 4)
+	batch_size = ceiling(num_vectors / 16) * 4 #needs to be divisible by 4 because when divided by two, it must be even
 	repeat {
 		indicTs_batch = matrix(NA, nrow = batch_size, ncol = n)
 		one_minus_one = matrix(
@@ -102,7 +100,7 @@ resultsBinaryMatchSearch = function(obj, num_vectors = 1000, compute_obj_vals = 
 		}
 		indicTs = rbind(indicTs, indicTs_batch)
 		indicTs = unique(indicTs)
-		if (nrow(indicTs) > num_vectors){
+		if (nrow(indicTs) >= num_vectors){
 			indicTs = indicTs[1 : num_vectors, , drop = FALSE]
 			break
 		}

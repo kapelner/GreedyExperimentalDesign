@@ -76,7 +76,7 @@ public class RerandomizationExperimentalDesign extends MultipleSearchExperimenta
 				while (true){
 //					System.out.println("progress = " + r);
 					//break up here too to avoid one more iteration (ugly, but a tad faster)
-					if (num_completed >= max_designs || search_stopped.get()){
+					if (num_completed.get() >= max_designs || search_stopped.get()){
 						break;
 					}
 					
@@ -99,12 +99,12 @@ public class RerandomizationExperimentalDesign extends MultipleSearchExperimenta
 					
 					if (obj_val < obj_val_cutoff_to_include){
 						synchronized(num_completed) {
-							if (num_completed >= max_designs || search_stopped.get()){
+							if (num_completed.get() >= max_designs || search_stopped.get()){
 								break;
 							}
 							//create the new vector and its corresponding objective value
-							ending_indicTs[num_completed] = indicT;
-							objective_vals[num_completed] = obj_val;
+							ending_indicTs[num_completed.get()] = indicT;
+							objective_vals[num_completed.get()] = obj_val;
 							
 //							System.out.println("num_completed: " + (num_completed + 1) + " obj val: " + obj_val);
 //							System.out.println("w: " + Tools.StringJoin(indicT, ", "));
@@ -126,7 +126,7 @@ public class RerandomizationExperimentalDesign extends MultipleSearchExperimenta
 //							System.out.print("\n");
 ////							System.out.println("Ts: " + Tools.StringJoin(XT, ", ") + " Cs: " + Tools.StringJoin(XC, ", "));
 //							System.out.println("xbarT: " + Tools.StringJoin(avg_Ts, " ") + " xbarC: " + Tools.StringJoin(avg_Cs, " "));
-							num_completed++;
+							num_completed.getAndIncrement();
 						}
 					}
 				}
