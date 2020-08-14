@@ -72,7 +72,6 @@ initGreedyExperimentalDesignObject = function(
 		stop("Design matrix must have even rows to have equal treatments and controls")
 	}
 	
-	
 	if (objective == "abs_sum_diff"){
 		#standardize it -- much faster here
 		Xstd = standardize_data_matrix(X)

@@ -1,3 +1,7 @@
+version 1.36
+
+* Binary match followed by greedy within-the-binary-pairs search
+
 version 1.35
 
 * Curation of designs based on minimizing orthogonality as measured by average absolute correlation between each pair of vectors

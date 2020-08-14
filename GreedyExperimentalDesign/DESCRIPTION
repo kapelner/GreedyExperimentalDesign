@@ -1,24 +1,26 @@
 Package: GreedyExperimentalDesign
 Type: Package
 Title: Greedy Experimental Design Construction
-Version: 1.35
-Date: 2020-06-01
+Version: 1.36
+Date: 2020-08-30
 Author: Adam Kapelner, David Azriel and Abba M. Krieger
 Maintainer: Adam Kapelner <kapelner@qc.cuny.edu>
 Description: Computes experimental designs for a
-    two-arm experiment with covariates via a number of methods. The first
-    is by greedily optimizing a
+    two-arm experiment with covariates via a number of methods. 
+    (1) Greedily optimizing a
     balance objective function via pairwise switching. This optimization 
     provides lower variance for the treatment effect estimator (and higher 
     power) while preserving a design that is close to complete randomization.
     We return all iterations of the designs for use in a permutation test.
-    The second is via numerial optimization 
+    (2) The second is via numerical optimization 
     (via Gurobi which must be installed) a la Bertsimas and Kallus. 
-    Then we include a few more: Morgan & Rubin's rerandomization, 
-    Karp's method for one covariate, 
-    exhaustive enumeration to find the 
-    optimal solution (only for small sample sizes) and of course
-    complete randomization and randomization with forced-balance.
+    (3) rerandomization, 
+    (4) Karp's method for one covariate, 
+    (5) exhaustive enumeration to find the 
+    optimal solution (only for small sample sizes)
+    (6) Binary pair matching using the nbpMatching library
+    (7) Binary pair matching plus (1) to further optimize balance and of course 
+    (8) complete randomization and randomization with forced-balance.
     We also allow for three objective functions:
     Mahalanobis distance,
     Sum of absolute differences standardized and

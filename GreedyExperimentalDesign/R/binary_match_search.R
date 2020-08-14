@@ -15,20 +15,13 @@
 #' 
 #' @author Adam Kapelner
 #' @export
-binaryMatchExperimentalDesignSearch = function(
-		X,
-		compute_dist_matrix = NULL,
-		objective = "mahal_dist"){
-	
-	verify_objective_function(objective)
-	
+binaryMatchExperimentalDesignSearch = function(X, compute_dist_matrix = NULL){
+	assertClass(X, "matrix")
+	assertClass(compute_dist_matrix, "function", null.ok = TRUE)
 	n = nrow(X)
 	p = ncol(X)
 	if (n %% 2 != 0){
 		stop("Design matrix must have even rows to have equal treatments and controls")
-	}	
-	if (objective == "mahal_dist" && p > n){
-		stop("Objective cannot be mahalanobis distance if p > n.")
 	}
 	
 	if (is.null(compute_dist_matrix) & p == 1){
@@ -57,7 +50,6 @@ binaryMatchExperimentalDesignSearch = function(
 	binary_experimental_design$X = X
 	binary_experimental_design$n = n
 	binary_experimental_design$p = p
-	binary_experimental_design$objective = objective
 	binary_experimental_design$compute_dist_matrix = compute_dist_matrix
 	binary_experimental_design$D = D
 	binary_experimental_design$indices_pairs = indices_pairs
@@ -121,7 +113,8 @@ resultsBinaryMatchSearch = function(obj, num_vectors = 1000, compute_obj_vals = 
 	}
 	list(
 		obj_vals_unordered = obj_vals,
-		indicTs = indicTs
+		indicTs = indicTs,
+		form = form
 	)
 }
 
@@ -143,7 +136,7 @@ print.binary_experimental_design = function(x, ...){
 #' @param ...			Other parameters to pass to the default summary function
 #' 
 #' @author 				Adam Kapelner
-#' @method summary optimal_experimental_design_search
+#' @method summary binary_experimental_design
 #' @export
 summary.binary_experimental_design = function(object, ...){
 	print(object, ...)
