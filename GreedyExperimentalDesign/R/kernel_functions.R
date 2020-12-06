@@ -30,46 +30,46 @@ compute_gram_matrix = function(X, kernel_type, params = c()){
 		if (length(params) != 0){
 			stop("vanilla kernels do not take parameters")
 		}
-		kernel = vanilladot()
+		kernel = kernlab::vanilladot()
 	} else if (kernel_type == "rbf"){
 		if (length(params) != 1){
 			stop("gaussian radial basis function kernels require one parameter: gamma")
 		}
-		kernel = rbfdot(params[1])
+		kernel = kernlab::rbfdot(params[1])
 	} else if (kernel_type == "poly"){
 		if (length(params) != 3){
 			stop("polynomial kernels require three parameters: degree, scale and offset in that order")
 		}
-		kernel = polydot(params[1], params[2])
+		kernel = kernlab::polydot(params[1], params[2])
 	} else if (kernel_type == "tanh"){
 		if (length(params) != 2){
 			stop("hyperbolic tangent kernels require two parameters: scale and offset in that order")
 		}
-		kernel = tanhdot(params[1], params[2])
+		kernel = kernlab::tanhdot(params[1], params[2])
 	} else if (kernel_type == "bessel"){
 		if (length(params) != 3){
 			stop("bessel kernels require three parameters: gamma, order and degree in that order")
 		}
-		kernel = besseldot(params[1], params[2], params[3])
+		kernel = kernlab::besseldot(params[1], params[2], params[3])
 	} else if (kernel_type == "laplace"){
 		if (length(params) != 1){
 			stop("laplace kernels require one parameter: gamma")
 		}
-		kernel = laplacedot(params[1])
+		kernel = kernlab::laplacedot(params[1])
 	} else if (kernel_type == "anova"){
 		if (length(params) != 2){
 			stop("anova kernels require two parameters: gamma and degree in that order")
 		}
-		kernel = anovadot(params[1], params[2])
+		kernel = kernlab::anovadot(params[1], params[2])
 	} else if (kernel_type == "spline"){
 		if (length(params) != 0){
 			stop("spline kernels do not take parameters")
 		}
-		kernel = splinedot()
+		kernel = kernlab::splinedot()
 	}
 	
 	#compute the Gram matrix as type matrix
-	kernelMatrix(kernel, standardize_data_matrix(X))
+	kernlab::kernelMatrix(kernel, standardize_data_matrix(X))
 }
 
 

@@ -1,8 +1,8 @@
-#' Begin a Search for Binary Matching Followed by Greedy Switch Designs
+#' Begin a Search for Binary Matching Followed by Rerandomization
 #' 
-#' This method creates an object of type binary_then_greedy_experimental_design and will find optimal matched pairs which
-#' are then greedily switched in order to further minimize a balance metric. You can then
-#' use the function \code{resultsBinaryMatchThenGreedySearch} to obtain the randomized allocation vectors. For one column
+#' This method creates an object of type binary_then_rerandomization_experimental_design and will find optimal matched pairs which
+#' are then rerandomized in order to further minimize a balance metric. You can then
+#' use the function \code{resultsBinaryMatchThenRerandomizationSearch} to obtain the randomized allocation vectors. For one column
 #' in X, the matching just sorts the values to find the pairs trivially.
 #' 
 #' @param X						The design matrix with $n$ rows (one for each subject) and $p$ columns 
@@ -16,7 +16,7 @@
 #' 
 #' @author Adam Kapelner
 #' @export
-binaryMatchFollowedByGreedyExperimentalDesignSearch = function(X, compute_dist_matrix = NULL, ...){
+binaryMatchFollowedByRerandomizationDesignSearch = function(X, compute_dist_matrix = NULL, ...){
 	n = nrow(X)
 	p = ncol(X)
 	
@@ -30,14 +30,14 @@ binaryMatchFollowedByGreedyExperimentalDesignSearch = function(X, compute_dist_m
 		Xdiffs[i, ] = X[binary_match_design$indices_pairs[i, 1], ] - X[binary_match_design$indices_pairs[i, 2], ]
 	}
 	
-	binary_then_greedy_experimental_design = list()
-	binary_then_greedy_experimental_design$X = X
-	binary_then_greedy_experimental_design$n = n
-	binary_then_greedy_experimental_design$p = p
-	binary_then_greedy_experimental_design$binary_match_design = binary_match_design
-	binary_then_greedy_experimental_design$greedy_design = initGreedyExperimentalDesignObject(Xdiffs, ...)
-	class(binary_then_greedy_experimental_design) = "binary_then_greedy_experimental_design"
-	binary_then_greedy_experimental_design
+	binary_then_rerandomization_experimental_design = list()
+	binary_then_rerandomization_experimental_design$X = X
+	binary_then_rerandomization_experimental_design$n = n
+	binary_then_rerandomization_experimental_design$p = p
+	binary_then_rerandomization_experimental_design$binary_match_design = binary_match_design
+	binary_then_rerandomization_experimental_design$rerandomization_design = initRerandomizationExperimentalDesignObject(Xdiffs, ...)
+	class(binary_then_rerandomization_experimental_design) = "binary_then_rerandomization_experimental_design"
+	binary_then_rerandomization_experimental_design
 }
 
 #' Returns unique allocation vectors that are binary matched
@@ -49,13 +49,13 @@ binaryMatchFollowedByGreedyExperimentalDesignSearch = function(X, compute_dist_m
 #' 
 #' @author Adam Kapelner
 #' @export
-resultsBinaryMatchThenGreedySearch = function(obj, num_vectors = NULL, compute_obj_vals = FALSE, form = "zero_one"){
-	assertClass(obj, "binary_then_greedy_experimental_design")
+resultsBinaryMatchThenRerandomizationSearch = function(obj, num_vectors = NULL, compute_obj_vals = FALSE, form = "zero_one"){
+	assertClass(obj, "binary_then_rerandomization_experimental_design")
 	assertCount(num_vectors, positive = TRUE, null.ok = TRUE)
 	if (is.null(num_vectors)){
-		num_vectors = obj$greedy_design$max_designs
+		num_vectors = obj$rerandomization_design$max_designs
 	}
-	num_vectors_completed = greedySearchCurrentProgress(obj$greedy_design)
+	num_vectors_completed = rerandomizationSearchCurrentProgress(obj$rerandomization_design)
 	if (num_vectors > num_vectors_completed){
 		warning("You requested ", num_vectors, " but only ", num_vectors_completed, " are available.")
 		num_vectors = num_vectors_completed
@@ -63,7 +63,7 @@ resultsBinaryMatchThenGreedySearch = function(obj, num_vectors = NULL, compute_o
 	assertLogical(compute_obj_vals)
 	assertChoice(form, c("zero_one", "pos_one_min_one"))
 	
-	ged_res = resultsGreedySearch(obj$greedy_design, num_vectors, "zero_one")
+	rerand_res = resultsRerandomizationSearch(obj$rerandomization_design, include_assignments = TRUE, "zero_one")
 	#the allocation vectors returned here have entries = 1 if the pair is left unswitched and = 0 if we should switch the pair
 	
 	indicTs = matrix(NA, nrow = num_vectors, ncol = obj$n)
@@ -71,7 +71,7 @@ resultsBinaryMatchThenGreedySearch = function(obj, num_vectors = NULL, compute_o
 		#first we copy the binary indices starting point
 		pair_matrix_copy = obj$binary_match_design$indices_pairs
 		#now we pull out a w_diff
-		w_diff = ged_res$ending_indicTs[r, ]
+		w_diff = rerand_res$ending_indicTs[r, ]
 		
 		#split the pair matrix based on the greedy vector
 		pair_matrix_T_is_first = pair_matrix_copy[w_diff == 1, ] #"zero_one" form was forced above
@@ -86,7 +86,7 @@ resultsBinaryMatchThenGreedySearch = function(obj, num_vectors = NULL, compute_o
 	
 	obj_vals = NULL
 	if (compute_obj_vals){
-		if (obj$greedy_design$objective == "mahal_dist"){
+		if (obj$rerandomization_design$objective == "mahal_dist"){
 			SinvX = solve(var(obj$X))
 			obj_vals = apply(indicTs, 1, FUN = function(w){compute_objective_val(obj$X, w, objective = "mahal_dist", SinvX)})
 		} else {
@@ -104,26 +104,26 @@ resultsBinaryMatchThenGreedySearch = function(obj, num_vectors = NULL, compute_o
 	)
 }
 
-#' Prints a summary of a \code{binary_then_greedy_experimental_design} object
+#' Prints a summary of a \code{binary_then_rerandomization_experimental_design} object
 #' 
-#' @param x			The \code{binary_then_greedy_experimental_design} object to be summarized in the console
+#' @param x			The \code{binary_then_rerandomization_experimental_design} object to be summarized in the console
 #' @param ...		Other parameters to pass to the default print function
 #' 
 #' @author 			Adam Kapelner
-#' @method print binary_then_greedy_experimental_design
+#' @method print binary_then_rerandomization_experimental_design
 #' @export
-print.binary_then_greedy_experimental_design = function(x, ...){
-	print.greedy_experimental_design_search(x$greedy_design)
+print.binary_then_rerandomization_experimental_design = function(x, ...){
+	print.binary_then_rerandomization_experimental_design(x$rerandomization_design)
 }
 
-#' Prints a summary of a \code{binary_then_greedy_experimental_design} object
+#' Prints a summary of a \code{binary_then_rerandomization_experimental_design} object
 #' 
-#' @param object		The \code{binary_then_greedy_experimental_design} object to be summarized in the console
+#' @param object		The \code{binary_then_rerandomization_experimental_design} object to be summarized in the console
 #' @param ...			Other parameters to pass to the default summary function
 #' 
 #' @author 				Adam Kapelner
-#' @method summary binary_then_greedy_experimental_design
+#' @method summary binary_then_rerandomization_experimental_design
 #' @export
-summary.binary_then_greedy_experimental_design = function(object, ...){
+summary.binary_then_rerandomization_experimental_design = function(object, ...){
 	print(object, ...)
 }

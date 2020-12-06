@@ -2,17 +2,17 @@
 % Please edit documentation in R/binary_match_followed_by_greedy_search.R
 \name{print.binary_then_greedy_experimental_design}
 \alias{print.binary_then_greedy_experimental_design}
-\title{Prints a summary of a \code{binary_experimental_design} object}
+\title{Prints a summary of a \code{binary_then_greedy_experimental_design} object}
 \usage{
-\method{print}{binary_experimental_design}(x, ...)
+\method{print}{binary_then_greedy_experimental_design}(x, ...)
 }
 \arguments{
-\item{x}{The \code{binary_experimental_design} object to be summarized in the console}
+\item{x}{The \code{binary_then_greedy_experimental_design} object to be summarized in the console}
 
 \item{...}{Other parameters to pass to the default print function}
 }
 \description{
-Prints a summary of a \code{binary_experimental_design} object
+Prints a summary of a \code{binary_then_greedy_experimental_design} object
 }
 \author{
 Adam Kapelner

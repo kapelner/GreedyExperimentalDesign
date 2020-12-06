@@ -4,7 +4,7 @@
 \alias{summary.binary_experimental_design}
 \title{Prints a summary of a \code{binary_experimental_design} object}
 \usage{
-\method{summary}{optimal_experimental_design_search}(object, ...)
+\method{summary}{binary_experimental_design}(object, ...)
 }
 \arguments{
 \item{object}{The \code{binary_experimental_design} object to be summarized in the console}

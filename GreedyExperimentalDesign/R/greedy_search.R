@@ -55,7 +55,6 @@ initGreedyExperimentalDesignObject = function(
 		diagnostics = FALSE,
 		num_cores = 1){
 	
-	verify_objective_function(objective, Kgram, n)
 	
 	if (diagnostics && objective != "abs_sum_diff"){
 		stop("Diagnostic output only available with objective type \"abs_sum_diff\".")
@@ -71,6 +70,7 @@ initGreedyExperimentalDesignObject = function(
 	if (n %% 2 != 0){
 		stop("Design matrix must have even rows to have equal treatments and controls")
 	}
+	verify_objective_function(objective, Kgram, n)
 	
 	if (objective == "abs_sum_diff"){
 		#standardize it -- much faster here

@@ -13,7 +13,5 @@ Kapelner, A
 \author{
 Adam Kapelner \email{kapelner@qc.cuny.edu}
 }
-\keyword{Design,}
-\keyword{Experimental}
-\keyword{Greedy}
-\keyword{search}
+\keyword{design}
+\keyword{optimize}

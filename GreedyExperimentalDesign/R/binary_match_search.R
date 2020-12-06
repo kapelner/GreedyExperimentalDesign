@@ -61,12 +61,20 @@ binaryMatchExperimentalDesignSearch = function(X, compute_dist_matrix = NULL){
 #' 
 #' @param obj 				The \code{binary_experimental_design} object where the pairs are computed.
 #' @param num_vectors		How many random allocation vectors you wish to return. The default is 1000.
-#' @param compute_obj_vals	Should we compute all the objective values for each allocation? Default is \code{FALSE}.
+#' @param objective			Should we compute all the objective values for each allocation? Default is \code{NULL} for "no".
+#' 							If non-null, it needs to either be "mahal_dist" or "abs_sum_diff".
 #' @param form				Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's. 
 #' 
 #' @author Adam Kapelner
 #' @export
-resultsBinaryMatchSearch = function(obj, num_vectors = 1000, compute_obj_vals = FALSE, form = "zero_one"){
+resultsBinaryMatchSearch = function(obj, num_vectors = 1000, objective = NULL, form = "zero_one"){
+	assertClass(obj, "binary_experimental_design")
+	assertCount(num_vectors, positive = TRUE)
+	assertChoice(form, c("zero_one", "pos_one_min_one"))
+	if (!is.null(objective)){
+		verify_objective_function(objective)
+	}	
+	
 	#now that we have the pairs, we can randomize for as many vectors as we wish
 	n = obj$n
 	if (2^(n / 2) < num_vectors){
@@ -99,12 +107,13 @@ resultsBinaryMatchSearch = function(obj, num_vectors = 1000, compute_obj_vals = 
 	}
 	
 	obj_vals = NULL
-	if (compute_obj_vals){
-		if (obj$objective == "mahal_dist"){
+	if (!is.null(objective)){
+		verify_objective_function(objective)
+		if (objective == "mahal_dist"){
 			SinvX = solve(var(obj$X))
 			obj_vals = apply(indicTs, 1, FUN = function(w){compute_objective_val(obj$X, w, objective = "mahal_dist", SinvX)})
 		} else {
-			obj_vals = apply(indicTs, 1, FUN = function(w){compute_objective_val(obj$X, w, objective = obj$objective)})	
+			obj_vals = apply(indicTs, 1, FUN = function(w){compute_objective_val(obj$X, w, objective = "abs_sum_diff")})	
 		}	
 	}
 
