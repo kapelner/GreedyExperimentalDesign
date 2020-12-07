@@ -14,7 +14,7 @@ Description: Computes experimental designs for a
     power) while preserving a design that is close to complete randomization.
     We return all iterations of the designs for use in a permutation test.
     (2) The second is via numerical optimization 
-    (via Gurobi which must be installed) a la Bertsimas and Kallus. 
+    (via Gurobi which must be installed, see gurobi.com) a la Bertsimas and Kallus. 
     (3) rerandomization, 
     (4) Karp's method for one covariate, 
     (5) exhaustive enumeration to find the 
@@ -31,13 +31,12 @@ License: GPL-3
 Depends:
     R (>= 3.2.0),
     rJava (>= 0.9-6),
-    checkmate,
-    Rcpp,
     GreedyExperimentalDesignJARs (>= 1.0)
 SystemRequirements: Java (>= 7.0)
 LinkingTo: Rcpp
 Imports: 
 	Rcpp,
+    checkmate,
 	nbpMatching,
 	survey,
     kernlab,

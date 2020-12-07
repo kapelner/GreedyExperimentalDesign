@@ -9,8 +9,6 @@
 #' 							to search for a more optimal design.
 #' @param compute_dist_matrix	The function that computes the distance matrix between every two observations in \code{X}, 
 #' 								its only argument. The default is \code{NULL} signifying euclidean squared distance optimized in C++.
-#' @param objective			The objective function to use when searching design space. This is a string
-#' 							with valid values "\code{mahal_dist}" (the default), "\code{abs_sum_diff}".
 #' @return					An object of type \code{binary_experimental_design} which can be further operated upon.
 #' 
 #' @author Adam Kapelner
@@ -37,7 +35,7 @@ binaryMatchExperimentalDesignSearch = function(X, compute_dist_matrix = NULL){
 		diag(D) = .Machine$double.xmax
 		
 		#get the matching solution using the heuristic
-		indices_pairs = as.matrix(nbpMatching::nonbimatch(distancematrix(D))$matches[, c("Group1.Row", "Group2.Row")])
+		indices_pairs = as.matrix(nbpMatching::nonbimatch(nbpMatching::distancematrix(D))$matches[, c("Group1.Row", "Group2.Row")])
 		
 		for (i in 1 : n){
 			indices_pairs[i, ] = sort(indices_pairs[i, ])

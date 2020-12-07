@@ -6,7 +6,7 @@
 #' for whichever subset you wish.
 #' 
 #' @param W 		A matrix in ${-1, 1}^{R x n}$ which have R allocation vectors for an experiment of sample size n.
-#' @param Rmin 		The minimum number of vectors to consider in a design. The default is the true bottom, two.
+#' @param R0 		The minimum number of vectors to consider in a design. The default is the true bottom, two.
 #' @param verbose 	Default is \code{FALSE} but if not, it will print out a message for each iteration.
 #' @return 			A list with two elements: (1) \code{avg_abs_rij_by_R} which is a data frame with R - Rmin + 1 rows and 
 #' 					columns R and average absolute r_ij and (2) \code{Wsorted} which provides the collection of vectors in
@@ -15,7 +15,7 @@
 #' @author Adam Kapelner
 #' @export
 greedy_orthogonalization_curation2 = function(W, R0 = 100, verbose = FALSE){
-	assert_class(W, "matrix")
+	assertClass(W, "matrix")
 	assertCount(R0)
 	R = nrow(W)
 	assertNumeric(R0, upper = R)

@@ -9,9 +9,9 @@ greedy_orthogonalization_curation2(W, R0 = 100, verbose = FALSE)
 \arguments{
 \item{W}{A matrix in ${-1, 1}^{R x n}$ which have R allocation vectors for an experiment of sample size n.}
 
-\item{verbose}{Default is \code{FALSE} but if not, it will print out a message for each iteration.}
+\item{R0}{The minimum number of vectors to consider in a design. The default is the true bottom, two.}
 
-\item{Rmin}{The minimum number of vectors to consider in a design. The default is the true bottom, two.}
+\item{verbose}{Default is \code{FALSE} but if not, it will print out a message for each iteration.}
 }
 \value{
 A list with two elements: (1) \code{avg_abs_rij_by_R} which is a data frame with R - Rmin + 1 rows and 

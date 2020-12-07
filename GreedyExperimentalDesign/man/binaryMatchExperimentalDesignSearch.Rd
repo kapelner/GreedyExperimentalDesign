@@ -13,9 +13,6 @@ to search for a more optimal design.}
 
 \item{compute_dist_matrix}{The function that computes the distance matrix between every two observations in \code{X}, 
 its only argument. The default is \code{NULL} signifying euclidean squared distance optimized in C++.}
-
-\item{objective}{The objective function to use when searching design space. This is a string
-with valid values "\code{mahal_dist}" (the default), "\code{abs_sum_diff}".}
 }
 \value{
 An object of type \code{binary_experimental_design} which can be further operated upon.

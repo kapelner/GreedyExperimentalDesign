@@ -15,7 +15,7 @@
 #' @author Adam Kapelner
 #' @export
 greedy_orthogonalization_curation = function(W, Rmin = 2, verbose = FALSE){
-	assert_class(W, "matrix")
+	assertClass(W, "matrix")
 	assertCount(Rmin)
 	R = nrow(W)
 	assertNumeric(Rmin, upper = R)
