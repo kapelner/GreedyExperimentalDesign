@@ -30,37 +30,39 @@ for (n in ns){
   		    cat("n", n, "nx", nx, "neps", neps, "p", p, "\n")
   			  X = Xall[, 1 : p]
   			  
+  			  nr = ifelse(nx == 1 & neps == 1, nR0, nR)
+  			  
   			  ##ADD BCRD HERE
-  			  bcrds = complete_randomization_with_forced_balanced(n, nR)
+  			  bcrds = complete_randomization_with_forced_balanced(n, nr)
   			  
   			  bmeds = binaryMatchExperimentalDesignSearch(X)
-  			  bmeds_res = resultsBinaryMatchSearch(bmeds, num_vectors = min(nR, 2^(n/2)), objective = objective)
+  			  bmeds_res = resultsBinaryMatchSearch(bmeds, num_vectors = min(nr, 2^(n/2)), objective = objective)
   			  # dim(bmeds_res$indicTs)
   			  
-  			  bmfged = binaryMatchFollowedByGreedyExperimentalDesignSearch(X, objective = objective, max_designs = nR, wait = TRUE, num_cores = nC)
+  			  bmfged = binaryMatchFollowedByGreedyExperimentalDesignSearch(X, objective = objective, max_designs = nr, wait = TRUE, num_cores = nC)
   			  # bmfged$binary_match_design
   			  # bmfged$greedy_design
   			  bmfged_res = resultsBinaryMatchThenGreedySearch(bmfged)
   			  # dim(bmfged_res$indicTs)
   			  
   			  #rerand
-  			  bcrds_rerand = complete_randomization_with_forced_balanced(n, nR * 1 / rerand_threshold)
+  			  bcrds_rerand = complete_randomization_with_forced_balanced(n, nr * 1 / rerand_threshold)
   			  bcrds_rerand_balances = apply(bcrds_rerand, 1, function(w){compute_objective_val(X, w)})
-  			  rerands = bcrds_rerand[order(bcrds_rerand_balances)[1 : nR], ]
+  			  rerands = bcrds_rerand[order(bcrds_rerand_balances)[1 : nr], ]
   			  
   			  #matching then rerand
-  			  bmeds_rerand = resultsBinaryMatchSearch(bmeds, num_vectors = nR * 1 / rerand_threshold, objective = objective)$indicTs
+  			  bmeds_rerand = resultsBinaryMatchSearch(bmeds, num_vectors = nr * 1 / rerand_threshold, objective = objective)$indicTs
   			  bmeds_rerand_balances = apply(bmeds_rerand, 1, function(w){compute_objective_val(X, w)})
-  			  matching_then_rerands = bmeds_rerand[order(bmeds_rerand_balances)[1 : nR], ]
+  			  matching_then_rerands = bmeds_rerand[order(bmeds_rerand_balances)[1 : nr], ]
   			  
   			  ged = initGreedyExperimentalDesignObject(X, objective = objective, wait = TRUE, num_cores = nC)
-  			  ged_res = resultsGreedySearch(ged, max_vectors = nR)
+  			  ged_res = resultsGreedySearch(ged, max_vectors = nr)
   			  # dim(ged_res$ending_indicTs)
   			  
   			  clusterExport(cl, list("all_betas_and_correlations", "X", "epsilons", "betaT", "bcrds", "rerands", "bmeds_res", "bmfged_res", "matching_then_rerands", "ged_res", "n", "p", "nx", "neps"), envir = environment())
   			  
-  			  block_results = foreach(nsim = 1 : ifelse(nx == 1 & neps == 1, nR0, nR), .inorder = FALSE, .combine = rbind) %dopar% {
-  			  # for (nsim in 1 : ifelse(nx == 1 & neps == 1, nR0, nR)){
+  			  block_results = foreach(nsim = 1 : nr, .inorder = FALSE, .combine = rbind) %dopar% {
+  			  # for (nsim in 1 : nr){
   			    inner_res = data.frame()
   			    
   				  for (model_name in names(all_betas_and_correlations)){

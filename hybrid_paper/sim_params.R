@@ -1,3 +1,6 @@
+#https://console.aws.amazon.com/cost-management/home?#/custom?reportType=CostUsage&chartStyle=Stack&groupBy=InstanceType&forecastTimeRangeOption=None&hasBlended=false&hasAmortized=false&excludeDiscounts=true&usageAs=usageQuantity&excludeCategorizedResources=false&excludeTaggedResources=false&excludeForecast=false&reportName=&timeRangeOption=Last6Months&startDate=2020-12-01&endDate=2021-05-31&granularity=Monthly&filter=%5B%5D&isTemplate=true
+
+
 ns = 100 #c(32, 100, 132, 200)
 ps = c(2, 5, 10)
 nX = 50
