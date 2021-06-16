@@ -4,12 +4,6 @@ pacman::p_load_gh("zeehio/facetscales")
 ###run the simulation first
 source("illustration_params.R")
 
-
-res_pop1_frame = res %>% filter(nx == 1 & neps > 1) 
-summary_pop1_frame = res_pop1_frame %>% 
-  group_by(model, p, design, nx) %>% 
-  summarize(avg_squared_error = mean(squared_error))
-
 avg_summary_nx_neps = res %>% group_by(model, n, p, design, nx, neps) %>% summarize(squared_error_avg_nx_neps = mean(squared_error))
 
 ###########################
