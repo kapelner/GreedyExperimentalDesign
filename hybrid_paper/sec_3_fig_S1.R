@@ -4,7 +4,9 @@ pacman::p_load_gh("zeehio/facetscales")
 ###run the simulation first
 source("illustration_params.R")
 
-avg_summary_nx_neps = res %>% group_by(model, n, p, design, nx, neps) %>% summarize(squared_error_avg_nx_neps = mean(squared_error))
+avg_summary_nx_neps = res %>% 
+  group_by(model, n, p, design, nx, neps) %>% 
+  summarize(squared_error_avg_nx_neps = mean(squared_error))
 
 ###########################
 avg_summary_nx_neps %<>% ungroup() %>% select(-n)
@@ -110,7 +112,7 @@ x_custom_scales = list(
 )
 
 
-ggplot(avg_summary_nx_neps) +
+ggplot(avg_summary_nx_neps %>% sample_n(200000)) +
   aes(x = log10_squared_error_avg_nx_neps, col = design, fill = design) +
   geom_density(aes(col = design), alpha = 0.1, trim = FALSE) +
   facet_grid_sc(
@@ -156,6 +158,10 @@ summary_pop_frame_comps1 = summary_pop_frame %>%
   mutate(vs_3 = 100 - squared_error_avg / nth(squared_error_avg, n = 3) * 100) %>%
   mutate(vs_2 = 100 - squared_error_avg / nth(squared_error_avg, n = 2) * 100) %>%
   mutate(vs_6 = ifelse(vs_6 <= 0, NA, vs_6), vs_2 = ifelse(vs_2 <= 0, NA, vs_2), vs_3 = ifelse(vs_3 <= 0, NA, vs_3), vs_4 = ifelse(vs_4 <= 0, NA, vs_4), vs_5 = ifelse(vs_5 <= 0, NA, vs_5))
+
+n = 100
+sigma_e = 0.5
+ideal_sq_err = 2 * sigma_e^2 / (n / 2)
 
 summary_pop_frame_comps3 = summary_pop_frame %>%
   group_by(p, model) %>%

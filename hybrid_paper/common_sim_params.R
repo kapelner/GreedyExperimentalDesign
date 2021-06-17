@@ -6,6 +6,7 @@ ps = c(2, 5, 10)
 rerand_threshold = 0.01
 betaT = 1
 sigma_e = 0.5
+objective = "mahal_dist"
 
 nC = 6
 
@@ -99,5 +100,3 @@ all_betas_and_correlations$purely_nonlinear_plus_hetero_tx_effect = list(
   beta_x2_T = 1
 )
 
-
-objective = "abs_sum_diff"

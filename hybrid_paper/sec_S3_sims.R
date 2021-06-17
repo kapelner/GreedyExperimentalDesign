@@ -16,9 +16,6 @@ filename = "sec_S3"
 
 source("common_sims.R")
 
-
-
-
 pacman::p_load(stringr, dplyr)
 res = tibble(design = factor(), model = factor(), p = numeric(), nx = integer(), neps = integer(), log10_squared_error = numeric())
 for (filename in dir()){

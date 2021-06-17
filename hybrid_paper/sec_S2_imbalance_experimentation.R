@@ -137,10 +137,12 @@ rownames(power_res_wide) = levels(res$method)
 colnames(power_res_wide) = ps
 for (i_p in 1 : length(ps)){
   coefs = coef(lm(avg_log10_imbalance ~ log10(n) * method, (res_summary_nx[res_summary_nx$p == ps[i_p], ])))[c(2,8:12)]
-  coefs = coefs + coefs[1]
+  bcrd_baseline = coefs[1]
+  coefs[2:6] = coefs[2:6] + bcrd_baseline
+  coefs
   power_res = rbind(power_res,
     data.frame(
-      p = p, 
+      p = ps[i_p], 
       method = levels(res$method), 
       slope = coefs
     )               
