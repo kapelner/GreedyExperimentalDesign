@@ -4,6 +4,7 @@ pacman::p_load_gh("zeehio/facetscales")
 ###run the simulation first
 source("illustration_params.R")
 
+
 avg_summary_nx_neps = res %>% 
   group_by(model, n, p, design, nx, neps) %>% 
   summarize(squared_error_avg_nx_neps = mean(squared_error))
@@ -174,7 +175,7 @@ summary_pop_frame_comps3 = summary_pop_frame %>%
 
 #########Tables S2, S3, S4
 
-p = 10
+p = 5
 for (model in model_codes_properly_ordered){
   summary_pop_frame_p_mod = summary_pop_frame_comps3[summary_pop_frame_comps3$model == model & summary_pop_frame_comps3$p == p, ]
   
@@ -187,9 +188,10 @@ for (model in model_codes_properly_ordered){
 
 
 ########### check if performance of the designs in model Z is statistically different
+p0 = 10
 TK_results = list()
 for (model_name in model_codes_properly_ordered){
-  res_mod = aov(squared_error_avg_nx_neps ~ 0 + design, data = avg_summary_nx_neps[avg_summary_nx_neps$model == model_name, ])
+  res_mod = aov(squared_error_avg_nx_neps ~ 0 + design, data = avg_summary_nx_neps %>% filter(model == model_name & p == p0))
   coef(res_mod)
   TK_results[[model_name]] = TukeyHSD(x = res_mod, which = "design", conf.level = 0.95)$design
 }
@@ -235,7 +237,7 @@ for (model in model_codes_properly_ordered){
   print(xtable(pval_res_model))
   all_pval_res = cbind(all_pval_res, pval_res_model)
 }
-######conclusion: Z has no statistically significant differences
+
 
 
 

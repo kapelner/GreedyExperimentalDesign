@@ -97,8 +97,8 @@ print(ggplot(res) +
 res_summary_nx = res %>% group_by(n, p, method, nx) %>% summarize(avg_log10_imbalance = mean(log10(imbalance)))
 ggplot_obj = ggplot(res_summary_nx) +
   aes(x = log10(n), y = avg_log10_imbalance, col = method) +
-  xlab("log10 n") +
-  ylab("log10 d_M covariate imbalance") +
+  xlab("log10(2n)") +
+  ylab("log10(d_M)") +
   scale_x_continuous(breaks = c(2, 3)) +
   scale_color_manual(values = alpha(manual_colors, 1)) +
   facet_wrap(p ~ ., scales = "free_x", ncol = 4 ,labeller = function(labs){label_both(labs, multi_line = FALSE)})  
