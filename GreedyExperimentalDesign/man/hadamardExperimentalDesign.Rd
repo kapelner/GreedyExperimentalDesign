@@ -19,7 +19,8 @@ compute the Hadamard designs, only the number of rows.}
 An matrix of dimension $R$ x $n$ where $R$ is the number of Hadamard allocations.
 }
 \description{
-This method returns unique designs according to a Hadamard matrix
+This method returns unique designs according to a Hadamard matrix. For debugging, you can use \code{set.seed}
+to be assured of deterministic output.
 }
 \author{
 Adam Kapelner

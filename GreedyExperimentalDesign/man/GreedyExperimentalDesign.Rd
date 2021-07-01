@@ -5,7 +5,7 @@
 \alias{GreedyExperimentalDesign}
 \title{Greedy Experimental Design Search}
 \description{
-A tool to find a priori experimental designs with good balance greedily
+A tool to find many types of a priori experimental designs
 }
 \references{
 Kapelner, A

@@ -1,3 +1,7 @@
+version 1.5
+
+* Greedy Design on Multiple Kernels simultaneously
+
 version 1.4
 
 * Binary match followed by greedy within-the-binary-pairs search / rerandomization

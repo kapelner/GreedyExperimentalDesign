@@ -12,7 +12,8 @@ initRerandomizationExperimentalDesignObject(
   Kgram = NULL,
   wait = FALSE,
   start = TRUE,
-  num_cores = 1
+  num_cores = 1,
+  seed = NULL
 )
 }
 \arguments{
@@ -40,13 +41,17 @@ default is \code{FALSE}.}
 \item{start}{Should we start searching immediately (default is \code{TRUE}).}
 
 \item{num_cores}{The number of CPU cores you wish to use during the search. The default is \code{1}.}
+
+\item{seed}{The set to set for deterministic output. This should only be set if \code{num_cores = 1} otherwise
+the output will not be deterministic. Default is \code{NULL} for no seed set.}
 }
 \value{
 An object of type \code{rerandomization_experimental_design_search} which can be further operated upon.
 }
 \description{
 This method creates an object of type rerandomization_experimental_design and will immediately initiate
-a search through $1_{T}$ space for forced-balance designs.
+a search through $1_{T}$ space for forced-balance designs. For debugging, you can use set the \code{seed}
+parameter and \code{num_cores = 1} to be assured of deterministic output.
 }
 \author{
 Adam Kapelner

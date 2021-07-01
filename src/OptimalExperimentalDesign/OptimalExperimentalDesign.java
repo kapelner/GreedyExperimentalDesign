@@ -131,7 +131,7 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 //						System.out.println((d0 + 1) + "intvector: " + Tools.StringJoin(indicT, ""));
 						
 						if (objective.equals(ObjectiveFunction.KER)){
-							((KernelObjective)obj_fun).setIndicT(indicT);							
+							((KernelObjective)obj_fun).setW(indicT);			
 						} else {
 							//get the indicies
 							int[] i_Ts = Tools.findIndicies(indicT, n_over_two, 1);

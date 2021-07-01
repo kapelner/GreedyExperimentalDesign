@@ -15,6 +15,7 @@ public class GreedySearch {
 
 	public GreedySearch(double[][] Xstd, 
 			double[][] Sinvmat, 
+			int[][] legal_pairs,
 			double[][] Kgram,
 			int[] indicT, 
 			int[] ending_indicT, 
@@ -42,13 +43,16 @@ public class GreedySearch {
 		if (objective.equals(ObjectiveFunction.KER)){
 			obj_fun = new KernelObjective(Kgram);	
 			n = Kgram.length;
+			((KernelObjective)obj_fun).setW(indicT);	
 		}
 		else {
 			this.Xstd = Xstd;
 			n = Xstd.length;
 			p = Xstd[0].length;		
 			
-			createScaledXstd();
+			if (!objective.equals(ObjectiveFunction.KER)){
+				createScaledXstd();
+			}
 			
 			if (objective.equals(ObjectiveFunction.MAHAL)){
 				obj_fun = new MahalObjective(Sinvmat, n);
@@ -60,14 +64,20 @@ public class GreedySearch {
 				obj_fun = new AbsSumObjective();	
 			}
 		}
-//		System.out.println("beginSearch: nT = " + nT + " and nC = " + (n - nT));
+//		System.out.println("beginSearch d0:" + (d0 + 1) + " nT = " + nT + " and nC = " + (n - nT));
 		
 //		int[] i_Tss = Tools.findIndicies(indicT, nT, 1);
 //		System.out.println("i_Ts " + Tools.StringJoin(i_Tss));
 		
 		Double obj_val = null;		
 		
-		double min_obj_val = Double.MAX_VALUE;
+		double min_obj_val = obj_fun.calc(false); //start at wherever we begin
+		
+		if (diagnostics){
+//			System.out.println("calculating objective function for first time");
+			min_obj_val_by_iteration.add(min_obj_val);
+//			System.out.println("  iter 0 obj_val = " + min_obj_val);
+		}
 		
 		int iter = 0;
 		while (true){
@@ -102,6 +112,10 @@ public class GreedySearch {
 //			System.out.println("INIT XCbar: " + Tools.StringJoin(avg_Cs, ","));
 			int[] switched_pair = new int[2];
 			
+			if (legal_pairs == null) {
+				
+			}
+			
 //			System.out.println("iter " + iter + " #i_Ts: " + i_Ts.length + " #i_Cs: " + i_Cs.length);
 			indices_loop: {
 				for (int i_T : i_Ts){
@@ -112,8 +126,8 @@ public class GreedySearch {
 						indicT_proposal[i_T] = 0; //i_T is the new control
 						indicT_proposal[i_C] = 1; //i_C is the new treatment
 						
-						if (objective.equals(ObjectiveFunction.KER)){
-							((KernelObjective)obj_fun).setIndicT(indicT_proposal);						
+						if (objective.equals(ObjectiveFunction.KER)){	
+							((KernelObjective)obj_fun).setSwitch(i_T, i_C);						
 						} else {
 							updateAvgVec(avg_Ts, i_T, i_C, nT);
 							obj_fun.setXTbar(avg_Ts);
@@ -123,7 +137,8 @@ public class GreedySearch {
 						}
 
 						
-						//calculate our objective function (according to the user's specification)		
+						//calculate our objective function (according to the user's specification)
+//						System.out.println("calculating objective function for iter " + iter + " i_T = " + i_T + " i_C = " + i_C);
 						obj_val = obj_fun.calc(false);
 						
 
@@ -135,11 +150,16 @@ public class GreedySearch {
 							min_obj_val = obj_val;
 //							System.out.println("switched i_T " + i_T + " and i_C " + i_C);							
 //							System.out.println("min_obj_val " + min_obj_val + " for iter " + iter);
+							
+							
+
 
 							if (diagnostics){
 								switched_pair[0] = i_T;
 								switched_pair[1] = i_C;
-								xbardiffjs = ((AbsSumObjectiveWithDiagnostics)obj_fun).getXbardiffjs().clone();
+								if (objective.equals(ObjectiveFunction.ABS)){
+									xbardiffjs = ((AbsSumObjectiveWithDiagnostics)obj_fun).getXbardiffjs().clone();
+								}
 							}
 							
 							if (semigreedy){ //semigreedy means as soon as we find improvement, we ditch
@@ -151,6 +171,7 @@ public class GreedySearch {
 						if (!objective.equals(ObjectiveFunction.KER)){
 							updateAvgVec(avg_Ts, i_C, i_T, nT);
 							updateAvgVec(avg_Cs, i_T, i_C, n - nT);	
+							
 						}
 					}	
 				}
@@ -161,8 +182,10 @@ public class GreedySearch {
 			//record this switch only if it is a real switch
 			if (diagnostics && indicTmin != null){
 				switched_pairs.add(switched_pair);
-				xbardiffjs_by_iteration.add(xbardiffjs);
 				min_obj_val_by_iteration.add(min_obj_val);
+				if (objective.equals(ObjectiveFunction.ABS)){
+					xbardiffjs_by_iteration.add(xbardiffjs);
+				}
 			}
 			
 			//after searching through every possible switch, we didn't find anything, so break
@@ -173,6 +196,15 @@ public class GreedySearch {
 			else {
 				indicT = indicTmin;
 			}
+			
+			if (objective.equals(ObjectiveFunction.KER)){	
+				((KernelObjective)obj_fun).resetKernelSum();
+				((KernelObjective)obj_fun).setW(indicT);
+				obj_fun.calc(false); //caches the current objective value
+//				((KernelObjective)obj_fun).setPermanentSwitch(switched_pair[0], switched_pair[1]);						
+			}
+//			
+//			System.out.println("  iter " + iter + " obj_val = " + min_obj_val);
 
 			//we can also be done if we hit our upper limit of iterations
 			if (max_iters != null && max_iters == iter){

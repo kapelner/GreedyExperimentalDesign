@@ -17,7 +17,8 @@ complete_randomization_with_forced_balanced(n, r, form = "one_zero")
 a matrix where each column is one of the \code{r} designs
 }
 \description{
-Implements forced balanced randomization
+For debugging, you can use \code{set.seed}
+to be assured of deterministic output.
 }
 \author{
 Adam Kapelner

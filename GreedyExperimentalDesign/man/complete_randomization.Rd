@@ -17,7 +17,8 @@ complete_randomization(n, r, form = "one_zero")
 a matrix where each column is one of the \code{r} designs
 }
 \description{
-Implements complete randomization (without forced balance)
+For debugging, you can use \code{set.seed}
+to be assured of deterministic output.
 }
 \author{
 Adam Kapelner

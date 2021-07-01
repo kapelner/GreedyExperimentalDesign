@@ -2,7 +2,7 @@
 % Please edit documentation in R/binary_match_search.R
 \name{resultsBinaryMatchSearch}
 \alias{resultsBinaryMatchSearch}
-\title{Returns unique allocation vectors that are binary matched}
+\title{Binary Matched vectors}
 \usage{
 resultsBinaryMatchSearch(
   obj,
@@ -22,7 +22,8 @@ If non-null, it needs to either be "mahal_dist" or "abs_sum_diff".}
 \item{form}{Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's.}
 }
 \description{
-Returns unique allocation vectors that are binary matched
+Returns unique allocation vectors that are binary matched. For debugging, you can use \code{set.seed}
+to be assured of deterministic output.
 }
 \author{
 Adam Kapelner

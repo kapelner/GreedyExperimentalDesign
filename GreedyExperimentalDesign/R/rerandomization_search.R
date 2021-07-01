@@ -1,7 +1,8 @@
 #' Begin a Rerandomization Search
 #' 
 #' This method creates an object of type rerandomization_experimental_design and will immediately initiate
-#' a search through $1_{T}$ space for forced-balance designs.
+#' a search through $1_{T}$ space for forced-balance designs. For debugging, you can use set the \code{seed}
+#' parameter and \code{num_cores = 1} to be assured of deterministic output.
 #' 
 #' @param X							The design matrix with $n$ rows (one for each subject) and $p$ columns 
 #' 									(one for each measurement on the subject). This is the design matrix you wish 
@@ -20,6 +21,8 @@
 #' 									default is \code{FALSE}.
 #' @param start						Should we start searching immediately (default is \code{TRUE}).
 #' @param num_cores 				The number of CPU cores you wish to use during the search. The default is \code{1}.
+#' @param seed						The set to set for deterministic output. This should only be set if \code{num_cores = 1} otherwise
+#' 									the output will not be deterministic. Default is \code{NULL} for no seed set.
 #' @return							An object of type \code{rerandomization_experimental_design_search} which can be further operated upon.
 #' 
 #' @author Adam Kapelner
@@ -32,7 +35,8 @@ initRerandomizationExperimentalDesignObject = function(
 		Kgram = NULL,
 		wait = FALSE, 
 		start = TRUE,
-		num_cores = 1){
+		num_cores = 1,
+		seed = NULL){
 	
 	verify_objective_function(objective, Kgram, n)
 	
@@ -69,7 +73,13 @@ initRerandomizationExperimentalDesignObject = function(
 	if (!is.null(obj_val_cutoff_to_include)){
 		.jcall(java_obj, "V", "setObjValCutoffToInclude", as.numeric(obj_val_cutoff_to_include))
 	}
-	.jcall(java_obj, "V", "setNumCores", as.integer(num_cores))
+	.jcall(java_obj, "V", "setNumCores", as.integer(num_cores))	
+	if (!is.null(seed)){
+		.jcall(java_obj, "V", "setSeed", as.integer(seed))
+		if (num_cores != 1){
+			warning("Setting the seed with multiple cores does not guarantee deterministic output.")
+		}		
+	}
 	.jcall(java_obj, "V", "setN", as.integer(n))
 	if (objective != "kernel"){
 		p = ncol(X)

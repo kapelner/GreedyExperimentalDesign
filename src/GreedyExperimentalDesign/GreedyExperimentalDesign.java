@@ -44,6 +44,7 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 	//data inputed from the user's datas
 	private Integer max_iters;
 	private int[][] starting_indicTs;
+	private int[][] legal_pairs;
 	
 	//output
 	private ArrayList<ArrayList<int[]>> switched_pairs;
@@ -114,6 +115,7 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 					new GreedySearch(
 							X, 
 							Sinv, 
+							legal_pairs,
 							Kgram,
 							starting_indicTs[d0], 
 							ending_indicTs[d0], 
@@ -141,7 +143,8 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 //		System.out.println("afterBeginSearch num_completed: " + num_completed);
 		
 	}
-	
+
+
 	public int progress(){
 		return num_completed.get();
 	}
@@ -202,6 +205,11 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 			starting_indicTs[i] = this.starting_indicTs[indicies[i]];
 		}
 		return starting_indicTs;
+	}
+	
+	
+	public void set_legal_pairs(int[][] legal_pairs) {
+		this.legal_pairs = legal_pairs;
 	}
 	
 	public void setDiagnostics(){

@@ -2,7 +2,8 @@
 #' 
 #' This method creates an object of type optimal_experimental_design and will immediately initiate
 #' a search through $1_{T}$ space. Since this search takes exponential time, for most machines, 
-#' this method is futile beyond 28 samples. You've been warned!
+#' this method is futile beyond 28 samples. You've been warned! For debugging, you can use set 
+#' \code{num_cores = 1} to be assured of deterministic output.
 #' 
 #' @param X					The design matrix with $n$ rows (one for each subject) and $p$ columns 
 #' 							(one for each measurement on the subject). This is the design matrix you wish 

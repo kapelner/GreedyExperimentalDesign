@@ -1,4 +1,4 @@
-#' A tool to find a priori experimental designs with good balance greedily
+#' A tool to find many types of a priori experimental designs
 #'
 #' @name 		GreedyExperimentalDesign
 #' @docType 	package
@@ -10,6 +10,8 @@
 #' @importFrom  checkmate assertChoice assertTRUE assertSetEqual assertCount assertLogical assertNumeric assertClass vname makeAssertion
 #' @importFrom 	nbpMatching distancematrix nonbimatch
 #' @importFrom  Rcpp sourceCpp evalCpp
+#' @importFrom  stringr str_detect
+#' @importFrom  stringi stri_replace_first_regex
 #' @useDynLib 	GreedyExperimentalDesign
 ##### Run "library(roxygen2); roxygenise("GreedyExperimentalDesign", clean = TRUE)" to regenerate all Rd files and NAMESPACE and DESCRIPTION file
 ##### but make sure you are in the root directory of the project. Make sure to add these two to namespace afterwards:

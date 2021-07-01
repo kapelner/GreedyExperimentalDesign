@@ -10,13 +10,15 @@
 #' 								to search for a more optimal design.
 #' @param compute_dist_matrix	The function that computes the distance matrix between every two observations in \code{X}, 
 #' 								its only argument. The default is \code{NULL} signifying euclidean squared distance optimized in C++.
+#' @param multiple_kernel		If \code{TRUE}, uses the greedy_multiple_kernel_experimental_design otherwise uses the
+#' 								greedy_experimental_design. Default is \code{FALSE}.
 #' @param ...					Arguments passed to \code{initGreedyExperimentalDesignObject}. It is recommended to set
 #' 								\code{max_designs} otherwise it will default to 10,000.
 #' @return						An object of type \code{binary_experimental_design} which can be further operated upon.
 #' 
 #' @author Adam Kapelner
 #' @export
-binaryMatchFollowedByGreedyExperimentalDesignSearch = function(X, compute_dist_matrix = NULL, ...){
+binaryMatchFollowedByGreedyExperimentalDesignSearch = function(X, compute_dist_matrix = NULL, multiple_kernel = FALSE, ...){
 	n = nrow(X)
 	p = ncol(X)
 	
@@ -35,7 +37,12 @@ binaryMatchFollowedByGreedyExperimentalDesignSearch = function(X, compute_dist_m
 	binary_then_greedy_experimental_design$n = n
 	binary_then_greedy_experimental_design$p = p
 	binary_then_greedy_experimental_design$binary_match_design = binary_match_design
-	binary_then_greedy_experimental_design$greedy_design = initGreedyExperimentalDesignObject(Xdiffs, ...)
+	if (multiple_kernel){
+		binary_then_greedy_experimental_design$greedy_design = initGreedyMultipleKernelExperimentalDesignObject(Xdiffs, ...)
+	} else {
+		binary_then_greedy_experimental_design$greedy_design = initGreedyExperimentalDesignObject(Xdiffs, ...)
+	}
+	
 	class(binary_then_greedy_experimental_design) = "binary_then_greedy_experimental_design"
 	binary_then_greedy_experimental_design
 }
@@ -125,5 +132,5 @@ print.binary_then_greedy_experimental_design = function(x, ...){
 #' @method summary binary_then_greedy_experimental_design
 #' @export
 summary.binary_then_greedy_experimental_design = function(object, ...){
-	print(object, ...)
+	print(object$greedy_design, ...)
 }

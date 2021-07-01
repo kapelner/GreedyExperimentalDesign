@@ -17,6 +17,7 @@ public abstract class ObjectiveFunction {
 	
 	protected double[] XTbar;
 	protected double[] XCbar;
+	protected double wTKw;
 
 	public abstract double calc(boolean debug_mode);
 	

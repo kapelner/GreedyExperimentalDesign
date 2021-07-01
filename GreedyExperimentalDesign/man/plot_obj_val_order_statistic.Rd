@@ -13,7 +13,7 @@ plot_obj_val_order_statistic(
 )
 }
 \arguments{
-\item{obj}{The \code{greedy_experimental_design_search} object whose search history is to be visualized}
+\item{obj}{The greedy search object object whose search history is to be visualized}
 
 \item{order_stat}{The order statistic that you wish to plot. The default is \code{1} for the minimum.}
 

@@ -1,8 +1,8 @@
 Package: GreedyExperimentalDesign
 Type: Package
 Title: Greedy Experimental Design Construction
-Version: 1.4
-Date: 2020-12-07
+Version: 1.5
+Date: 2021-08-01
 Author: Adam Kapelner, David Azriel and Abba M. Krieger
 Maintainer: Adam Kapelner <kapelner@qc.cuny.edu>
 Description: Computes experimental designs for a
@@ -24,6 +24,7 @@ Description: Computes experimental designs for a
     (7) Binary pair matching plus (1) to further optimize balance
     (8) Binary pair matching plus (3) to further optimize balance
     (9) Hadamard designs
+    (10) Simultaneous Multiple Kernels 
     We also allow for three objective functions:
     Mahalanobis distance,
     Sum of absolute differences standardized and
@@ -40,8 +41,10 @@ Imports:
     checkmate,
 	nbpMatching,
 	survey,
+	stringr,
+	stringi,
     kernlab,
 	graphics, 
 	grDevices, 
 	stats
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1

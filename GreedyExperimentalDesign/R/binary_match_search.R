@@ -55,7 +55,10 @@ binaryMatchExperimentalDesignSearch = function(X, compute_dist_matrix = NULL){
 	binary_experimental_design
 }
 
-#' Returns unique allocation vectors that are binary matched
+#' Binary Matched vectors
+#' 
+#' Returns unique allocation vectors that are binary matched. For debugging, you can use \code{set.seed}
+#' to be assured of deterministic output.
 #' 
 #' @param obj 				The \code{binary_experimental_design} object where the pairs are computed.
 #' @param num_vectors		How many random allocation vectors you wish to return. The default is 1000.

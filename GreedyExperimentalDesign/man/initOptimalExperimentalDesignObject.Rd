@@ -37,7 +37,8 @@ An object of type \code{optimal_experimental_design_search} which can be further
 \description{
 This method creates an object of type optimal_experimental_design and will immediately initiate
 a search through $1_{T}$ space. Since this search takes exponential time, for most machines, 
-this method is futile beyond 28 samples. You've been warned!
+this method is futile beyond 28 samples. You've been warned! For debugging, you can use set 
+\code{num_cores = 1} to be assured of deterministic output.
 }
 \author{
 Adam Kapelner

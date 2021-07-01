@@ -1,7 +1,8 @@
 #' Begin A Greedy Pair Switching Search
 #' 
 #' This method creates an object of type greedy_experimental_design and will immediately initiate
-#' a search through $1_{T}$ space for forced balance designs.
+#' a search through $1_{T}$ space for forced balance designs. For debugging, you can use set the \code{seed}
+#' parameter and \code{num_cores = 1} to be assured of deterministic output.
 #' 
 #' @param X					The design matrix with $n$ rows (one for each subject) and $p$ columns 
 #' 							(one for each measurement on the subject). This is the design matrix you wish 
@@ -23,9 +24,11 @@
 #' @param max_iters			Should we impose a maximum number of greedy switches? The default is \code{Inf} which a flag 
 #' 							for ``no limit.''
 #' @param diagnostics		Returns diagnostic information about the iterations including (a) the initial starting
-#' 							vectors, the switches at every iteration and information about the objective function
-#' 							at every iteration (default is \code{FALSE} due to speed concerns).
+#' 							vectors, (b) the switches at every iteration and (c) information about the objective function
+#' 							at every iteration (default is \code{FALSE} to decrease the algorithm's run time).
 #' @param num_cores 		The number of CPU cores you wish to use during the search. The default is \code{1}.
+#' @param seed				The set to set for deterministic output. This should only be set if \code{num_cores = 1} otherwise
+#' 							the output will not be deterministic. Default is \code{NULL} for no seed set.
 #' @return					An object of type \code{greedy_experimental_design_search} which can be further operated upon
 #' 
 #' @author Adam Kapelner
@@ -53,12 +56,8 @@ initGreedyExperimentalDesignObject = function(
 		max_iters = Inf,
 		semigreedy = FALSE, 
 		diagnostics = FALSE,
-		num_cores = 1){
-	
-	
-	if (diagnostics && objective != "abs_sum_diff"){
-		stop("Diagnostic output only available with objective type \"abs_sum_diff\".")
-	}
+		num_cores = 1,
+		seed = NULL){
 	
 	if (!is.null(Kgram)){
 		n = nrow(Kgram)
@@ -91,7 +90,13 @@ initGreedyExperimentalDesignObject = function(
 	#now go ahead and create the Java object and set its information
 	java_obj = .jnew("GreedyExperimentalDesign.GreedyExperimentalDesign")
 	.jcall(java_obj, "V", "setMaxDesigns", as.integer(max_designs))
-	.jcall(java_obj, "V", "setNumCores", as.integer(num_cores))
+	.jcall(java_obj, "V", "setNumCores", as.integer(num_cores))	
+	if (!is.null(seed)){
+		.jcall(java_obj, "V", "setSeed", as.integer(seed))
+		if (num_cores != 1){
+			warning("Setting the seed with multiple cores does not guarantee deterministic output.")
+		}		
+	}
 	.jcall(java_obj, "V", "setN", as.integer(n))
 	if (objective != "kernel"){
 		p = ncol(X)
@@ -193,9 +198,9 @@ summary.greedy_experimental_design_search = function(object, ...){
 	print(object, ...)
 }
 
-#' Plots a summary of a \code{greedy_experimental_design_search} object
+#' Plots a summary of a greedy search object object
 #' 
-#' @param x			The \code{greedy_experimental_design_search} object to be summarized in the plot
+#' @param x			The greedy search object object to be summarized in the plot
 #' @param ...		Other parameters to pass to the default plot function
 #' @return			An array of order statistics from \link{plot_obj_val_order_statistic} as a list element
 #' 
@@ -240,7 +245,7 @@ plot_obj_val_by_iter = function(res, runs = NULL){
 
 #' Plots an order statistic of the object value as a function of number of searches
 #' 
-#' @param obj			The \code{greedy_experimental_design_search} object whose search history is to be visualized
+#' @param obj			The greedy search object object whose search history is to be visualized
 #' @param order_stat 	The order statistic that you wish to plot. The default is \code{1} for the minimum.
 #' @param skip_every	Plot every nth point. This makes the plot generate much more quickly. The default is \code{5}.
 #' @param type			The type parameter for plot.
@@ -353,15 +358,3 @@ resultsGreedySearch = function(obj, max_vectors = 9, form = "one_zero"){
 	#return the final object
 	greedy_experimental_design_search_results
 }
-
-##' Plots a summary of a \code{greedy_experimental_design_search_results} object
-##' 
-##' @param x			The \code{greedy_experimental_design_search_results} object to be summarized in the plot
-##' @param ...		Other parameters to pass to the default plot function
-##' 
-##' @author 			Adam Kapelner
-##' @method 			plot greedy_experimental_design_search
-##' @export
-#plot.greedy_experimental_design_search_results = function(x, ...){
-#	
-#}

@@ -122,6 +122,7 @@ public abstract class AllExperimentalDesigns extends FileLoggedClass {
 		for (int j = 0; j < n; j++){
 			Kgram[i0][j] = kgram_i[j];
 		}
+//		System.out.println("setKgramRow " + i0 + " " + Tools.StringJoin(Kgram[i0]));
 	}
 	
 	public void setDataRow(int i0, double[] x_i){

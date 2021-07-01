@@ -2,12 +2,12 @@
 % Please edit documentation in R/greedy_search.R
 \name{plot.greedy_experimental_design_search}
 \alias{plot.greedy_experimental_design_search}
-\title{Plots a summary of a \code{greedy_experimental_design_search} object}
+\title{Plots a summary of a greedy search object object}
 \usage{
 \method{plot}{greedy_experimental_design_search}(x, ...)
 }
 \arguments{
-\item{x}{The \code{greedy_experimental_design_search} object to be summarized in the plot}
+\item{x}{The greedy search object object to be summarized in the plot}
 
 \item{...}{Other parameters to pass to the default plot function}
 }
@@ -15,7 +15,7 @@
 An array of order statistics from \link{plot_obj_val_order_statistic} as a list element
 }
 \description{
-Plots a summary of a \code{greedy_experimental_design_search} object
+Plots a summary of a greedy search object object
 }
 \author{
 Adam Kapelner

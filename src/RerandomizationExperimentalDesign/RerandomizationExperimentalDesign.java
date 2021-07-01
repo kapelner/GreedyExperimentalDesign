@@ -84,7 +84,7 @@ public class RerandomizationExperimentalDesign extends MultipleSearchExperimenta
 //					System.out.println("indicT " + Tools.StringJoin(indicT));
 						
 					if (objective.equals(ObjectiveFunction.KER)){
-						((KernelObjective)fin_obj_fun).setIndicT(indicT);							
+						((KernelObjective)fin_obj_fun).setW(indicT);							
 					} else {
 						int[] i_Ts = Tools.findIndicies(indicT, n / 2, 1);
 						int[] i_Cs = Tools.findIndicies(indicT, n / 2, 0);

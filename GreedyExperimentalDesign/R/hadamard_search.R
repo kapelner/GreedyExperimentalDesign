@@ -1,6 +1,7 @@
 #' Create a Hadamard Design
 #' 
-#' This method returns unique designs according to a Hadamard matrix
+#' This method returns unique designs according to a Hadamard matrix. For debugging, you can use \code{set.seed}
+#' to be assured of deterministic output.
 #' 
 #' @param X				The design matrix with $n$ rows (one for each subject) and $p$ columns 
 #' 						(one for each measurement on the subject). The measurements aren't used to

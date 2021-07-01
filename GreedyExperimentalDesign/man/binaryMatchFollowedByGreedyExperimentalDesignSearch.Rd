@@ -7,6 +7,7 @@
 binaryMatchFollowedByGreedyExperimentalDesignSearch(
   X,
   compute_dist_matrix = NULL,
+  multiple_kernel = FALSE,
   ...
 )
 }
@@ -17,6 +18,9 @@ to search for a more optimal design.}
 
 \item{compute_dist_matrix}{The function that computes the distance matrix between every two observations in \code{X}, 
 its only argument. The default is \code{NULL} signifying euclidean squared distance optimized in C++.}
+
+\item{multiple_kernel}{If \code{TRUE}, uses the greedy_multiple_kernel_experimental_design otherwise uses the
+greedy_experimental_design. Default is \code{FALSE}.}
 
 \item{...}{Arguments passed to \code{initGreedyExperimentalDesignObject}. It is recommended to set
 \code{max_designs} otherwise it will default to 10,000.}
