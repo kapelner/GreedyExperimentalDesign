@@ -336,7 +336,6 @@ resultsGreedySearch = function(obj, max_vectors = 9, form = "one_zero"){
 			starting_indicTs = (starting_indicTs - 0.5) * 2
 		}
 		switches = .jcall(obj$java_obj, "[[[I", "getSwitchedPairs", as.integer(ordered_indices[1 : last_index] - 1), simplify = TRUE)
-		#we should make switches into a list now
 		xbarj_diffs = .jcall(obj$java_obj, "[[[D", "getXbarjDiffs", as.integer(ordered_indices[1 : last_index] - 1), simplify = TRUE)
 		obj_val_by_iters = .jcall(obj$java_obj, "[[D", "getObjValByIter", as.integer(ordered_indices[1 : last_index] - 1), simplify = TRUE)
 		
@@ -352,7 +351,8 @@ resultsGreedySearch = function(obj, max_vectors = 9, form = "one_zero"){
 		obj_val_by_iters = obj_val_by_iters,
 		pct_vec_same = pct_vec_same,
 		switches = switches,
-		xbarj_diffs = xbarj_diffs
+		xbarj_diffs = xbarj_diffs,
+		last_index = last_index
 	)
 	class(greedy_experimental_design_search_results) = "greedy_experimental_design_search_results"
 	#return the final object

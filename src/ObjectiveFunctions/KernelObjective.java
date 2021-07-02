@@ -1,9 +1,6 @@
 package ObjectiveFunctions;
 
-import java.util.HashMap;
-
 public class KernelObjective extends ObjectiveFunction {
-
 
 	private double[][] Kgram;
 //	private HashMap<Integer, HashMap<Integer, Double>> qcds;
@@ -13,6 +10,7 @@ public class KernelObjective extends ObjectiveFunction {
 	protected Double running_kernel_sum;
 	private Integer t; //the index of the new treatment
 	private Integer c; //the index of the new control
+	private double initial_obj_val;
 
 	public KernelObjective(double[][] Kgram) {
 		this.Kgram = Kgram;
@@ -23,6 +21,7 @@ public class KernelObjective extends ObjectiveFunction {
 
 	@Override
 	public double calc(boolean debug_mode) {
+
 		//we've started with a new vector so need to do the full calculation once
 		if (running_kernel_sum == null) {
 //			System.out.println("running_kernel_sum == null");
@@ -47,6 +46,7 @@ public class KernelObjective extends ObjectiveFunction {
 //		}
 //		qcds.get(t).put(c, qcd);
 		//return
+		
 		return running_kernel_sum - 4 * qcd;
 //		return running_kernel_sum - 4 * qcds[t][c];
 	}
@@ -101,6 +101,23 @@ public class KernelObjective extends ObjectiveFunction {
 		for (int i = 0; i < n; i++) {
 			this.w[i] = (indicT[i] == 1 ? 1 : -1);
 		}
+	}
+
+	public double log10_i_over_current_obj_val() {
+		double current_obj_val = calc(false);
+//		System.out.print(
+//				String.format("%.4g", current_obj_val) + 
+//				" initial_obj_val: " + 
+//				String.format("%.4g", initial_obj_val) + 
+//				" log_ratio: " + 
+//				String.format("%.4g", Math.log10(initial_obj_val / current_obj_val)) + 
+//				" t: " + t + " c: " + c);	
+		return Math.log10(initial_obj_val / current_obj_val);
+	}
+
+	public void setInitialObjVal() {
+		initial_obj_val = calc(false);
+		resetKernelSum(); //waste, yes... but cleanest way to do it
 	}
 
 }

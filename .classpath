@@ -6,9 +6,6 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="GreedyExperimentalDesignJARs/inst/java/ejml-core-0.34.jar"/>
-	<classpathentry kind="lib" path="GreedyExperimentalDesignJARs/inst/java/ejml-ddense-0.34.jar"/>
-	<classpathentry kind="lib" path="GreedyExperimentalDesignJARs/inst/java/ejml-simple-0.34.jar"/>
 	<classpathentry kind="lib" path="C:/gurobi902/win64/lib/gurobi.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

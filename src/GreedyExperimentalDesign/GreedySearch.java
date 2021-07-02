@@ -1,6 +1,7 @@
 package GreedyExperimentalDesign;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -14,24 +15,29 @@ public class GreedySearch {
 	private int nT;
 
 	public GreedySearch(double[][] Xstd, 
-			double[][] Sinvmat, 
-			int[][] legal_pairs,
-			double[][] Kgram,
-			int[] indicT, 
-			int[] ending_indicT, 
-			ArrayList<int[]> switched_pairs,
-			ArrayList<Double> min_obj_val_by_iteration,
-			ArrayList<double[]> xbardiffjs_by_iteration,
-			Double[] objective_vals, 
-			Integer[] num_iters, 
-			String objective, 
-			int d0, 
-			boolean semigreedy, //purely experimental... we didn't see any gain in this
-			boolean diagnostics, 
-			Integer max_iters, 
-			Random r, 
-			AtomicBoolean search_stopped) 
-	{
+		double[][] Sinvmat, 
+		int[][] legal_pairs,
+		double[][] Kgram,
+		int[] indicT, 
+		int[] ending_indicT, 
+		ArrayList<int[]> switched_pairs,
+		ArrayList<Double> min_obj_val_by_iteration,
+		ArrayList<double[]> xbardiffjs_by_iteration,
+		Double[] objective_vals, 
+		Integer[] num_iters, 
+		String objective, 
+		int d0, 
+		boolean semigreedy, //purely experimental... we didn't see any gain in this
+		boolean diagnostics, 
+		Integer max_iters, 
+		Random r, 
+		AtomicBoolean search_stopped, 
+		HashMap<Integer, double[][]> Kgrams, 
+		HashMap<Integer, Double> max_reduction_log_obj_vals, 
+		double[] kernel_weights, 
+		Double maximum_gain_scaling, 
+		ArrayList<double[]> kernel_obj_values
+	) {
 
 		
 //		System.out.println("GreedySearch: ready to begin " + d0);
@@ -44,15 +50,18 @@ public class GreedySearch {
 			obj_fun = new KernelObjective(Kgram);	
 			n = Kgram.length;
 			((KernelObjective)obj_fun).setW(indicT);	
-		}
-		else {
+		} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
+			obj_fun = new MultipleKernelObjectiveFunction(Kgrams, max_reduction_log_obj_vals, kernel_weights, maximum_gain_scaling, kernel_obj_values);	
+			n = Kgrams.get(0).length; 
+			((MultipleKernelObjectiveFunction)obj_fun).setW(indicT);
+			((MultipleKernelObjectiveFunction)obj_fun).setInitialObjVals();
+			System.out.println("MultipleKernelObjectiveFunction GreedySearch #" + d0 + " ready to begin");
+		} else {
 			this.Xstd = Xstd;
 			n = Xstd.length;
 			p = Xstd[0].length;		
 			
-			if (!objective.equals(ObjectiveFunction.KER)){
-				createScaledXstd();
-			}
+			createScaledXstd();
 			
 			if (objective.equals(ObjectiveFunction.MAHAL)){
 				obj_fun = new MahalObjective(Sinvmat, n);
@@ -61,7 +70,7 @@ public class GreedySearch {
 				obj_fun = new AbsSumObjectiveWithDiagnostics();	
 			}
 			else if (objective.equals(ObjectiveFunction.ABS)){
-				obj_fun = new AbsSumObjective();	
+				obj_fun = new AbsSumObjective();
 			}
 		}
 //		System.out.println("beginSearch d0:" + (d0 + 1) + " nT = " + nT + " and nC = " + (n - nT));
@@ -72,7 +81,7 @@ public class GreedySearch {
 		Double obj_val = null;		
 		
 		double min_obj_val = obj_fun.calc(false); //start at wherever we begin
-		
+			
 		if (diagnostics){
 //			System.out.println("calculating objective function for first time");
 			min_obj_val_by_iteration.add(min_obj_val);
@@ -81,7 +90,9 @@ public class GreedySearch {
 		
 		int iter = 0;
 		while (true){
-//			System.out.println("iter " + iter);
+			if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
+				System.out.println("    iter " + iter);
+			}
 			iter++;	
 //			System.out.println("iter++ " + iter);
 			
@@ -101,7 +112,7 @@ public class GreedySearch {
 			ArrayList<double[]> XC = null;
 			double[] avg_Ts = null;
 			double[] avg_Cs = null;
-			if (!objective.equals(ObjectiveFunction.KER)){
+			if (obj_fun instanceof SimpleAverageObjectiveFunction) {
 				XT = Tools.subsetMatrix(Xstd, i_Ts); 
 				XC = Tools.subsetMatrix(Xstd, i_Cs); 
 	
@@ -128,12 +139,14 @@ public class GreedySearch {
 						
 						if (objective.equals(ObjectiveFunction.KER)){	
 							((KernelObjective)obj_fun).setSwitch(i_T, i_C);						
+						} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
+							((MultipleKernelObjectiveFunction)obj_fun).setSwitch(i_T, i_C);		
 						} else {
 							updateAvgVec(avg_Ts, i_T, i_C, nT);
-							obj_fun.setXTbar(avg_Ts);
+							((SimpleAverageObjectiveFunction)obj_fun).setXTbar(avg_Ts);
 							
 							updateAvgVec(avg_Cs, i_C, i_T, n - nT);
-							obj_fun.setXCbar(avg_Cs);
+							((SimpleAverageObjectiveFunction)obj_fun).setXCbar(avg_Cs);
 						}
 
 						
@@ -168,7 +181,7 @@ public class GreedySearch {
 						}
 						
 						//reset the avg vecs
-						if (!objective.equals(ObjectiveFunction.KER)){
+						if (obj_fun instanceof SimpleAverageObjectiveFunction){
 							updateAvgVec(avg_Ts, i_C, i_T, nT);
 							updateAvgVec(avg_Cs, i_T, i_C, n - nT);	
 							
@@ -202,6 +215,11 @@ public class GreedySearch {
 				((KernelObjective)obj_fun).setW(indicT);
 				obj_fun.calc(false); //caches the current objective value
 //				((KernelObjective)obj_fun).setPermanentSwitch(switched_pair[0], switched_pair[1]);						
+			} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)){	
+				((MultipleKernelObjectiveFunction)obj_fun).resetKernelSum();
+				((MultipleKernelObjectiveFunction)obj_fun).setW(indicT);
+				obj_fun.calc(false); //caches the current objective value
+//				((KernelObjective)obj_fun).setPermanentSwitch(switched_pair[0], switched_pair[1]);						
 			}
 //			
 //			System.out.println("  iter " + iter + " obj_val = " + min_obj_val);
@@ -224,7 +242,9 @@ public class GreedySearch {
 //		System.out.println("ending_indicT " + Tools.StringJoin(ending_indicT));
 		objective_vals[d0] = min_obj_val;
 		num_iters[d0] = iter - 1;
-//		System.out.println("SEARCH DONE obj_val " + min_obj_val + " iters " + (iter - 1));
+		if (objective.equals(ObjectiveFunction.MUL_KER_PCT)){	
+			System.out.println("SEARCH DONE obj_val " + min_obj_val + " iters " + (iter - 1));
+		}
 	}
 
 	private void createScaledXstd() {

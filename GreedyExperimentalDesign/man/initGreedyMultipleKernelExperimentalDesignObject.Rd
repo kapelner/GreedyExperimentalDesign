@@ -7,10 +7,12 @@
 initGreedyMultipleKernelExperimentalDesignObject(
   X = NULL,
   max_designs = 10000,
+  objective = "added_pct_reduction",
   kernel_pre_num_designs = 2000,
   kernel_names = NULL,
   Kgrams = NULL,
   maximum_gain_scaling = 1.1,
+  kernel_weights = NULL,
   wait = FALSE,
   start = TRUE,
   max_iters = Inf,
@@ -29,6 +31,8 @@ to search for a more optimal design. We will standardize this matrix by column i
 so you can search however long you wish as the search can be stopped at any time by
 using the \code{\link{stopSearch}} method}
 
+\item{objective}{The method used to aggregate the kernel objective functions together. Default is "added_pct_reduction".}
+
 \item{kernel_pre_num_designs}{How many designs per kernel to run to explore the space of kernel objective values. Default is 2000.}
 
 \item{kernel_names}{An array with the kernels to compute with default parameters. Must have elements in the following set:
@@ -46,6 +50,9 @@ should be scaled by. The minimum is 1 which allows for designs that could potent
 improvement over original. We recommend 1.1 which means that a design that was found to be the best
 of the \code{kernel_pre_num_designs} still has 1/1.1 = 9\% room to grow making it highly unlikely that
 any design could be >= 100\%.}
+
+\item{kernel_weights}{A vector with positive weights (need not be normalized) where each element represents the weight of 
+each kernel. The default is \code{NULL} for uniform weighting.}
 
 \item{wait}{Should the \code{R} terminal hang until all \code{max_designs} vectors are found? The 
 deafult is \code{FALSE}.}

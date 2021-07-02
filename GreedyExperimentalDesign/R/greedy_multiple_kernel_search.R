@@ -10,6 +10,7 @@
 #' @param max_designs 		The maximum number of designs to be returned. Default is 10,000. Make this large 
 #' 							so you can search however long you wish as the search can be stopped at any time by
 #' 							using the \code{\link{stopSearch}} method
+#' @param objective			The method used to aggregate the kernel objective functions together. Default is "added_pct_reduction".
 #' @param kernel_pre_num_designs	How many designs per kernel to run to explore the space of kernel objective values. Default is 2000.
 #' @param kernel_names		An array with the kernels to compute with default parameters. Must have elements in the following set:
 #' 							"mahalanobis", "poly_s" where the "s" is a natural number 1 or greater,
@@ -24,6 +25,8 @@
 #' 								improvement over original. We recommend 1.1 which means that a design that was found to be the best
 #' 								of the \code{kernel_pre_num_designs} still has 1/1.1 = 9\% room to grow making it highly unlikely that
 #' 								any design could be >= 100\%.
+#' @param kernel_weights	A vector with positive weights (need not be normalized) where each element represents the weight of 
+#' 							each kernel. The default is \code{NULL} for uniform weighting.
 #' @param wait				Should the \code{R} terminal hang until all \code{max_designs} vectors are found? The 
 #' 							deafult is \code{FALSE}.
 #' @param start				Should we start searching immediately (default is \code{TRUE}).
@@ -57,10 +60,12 @@
 initGreedyMultipleKernelExperimentalDesignObject = function(
 		X = NULL, 
 		max_designs = 10000, 
+		objective = "added_pct_reduction",
 		kernel_pre_num_designs = 2000,
 		kernel_names = NULL,
 		Kgrams = NULL,
 		maximum_gain_scaling = 1.1,
+		kernel_weights = NULL,
 		wait = FALSE, 
 		start = TRUE,
 		max_iters = Inf,
@@ -70,6 +75,7 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 		seed = NULL){
 	
 	assertMatrix(X)
+	Xstd = standardize_data_matrix(X)
 	if ((is.null(kernel_names) & is.null(Kgrams)) | (!is.null(kernel_names) & !is.null(Kgrams))){
 		stop("You must specify EITHER the kernel_names or the Kgrams argument.")
 	}
@@ -86,8 +92,8 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 	assertNumeric(seed, null.ok = TRUE)
 	assertNumeric(maximum_gain_scaling, lower = 1)
 	
-	n = nrow(X)
-	p = ncol(X)
+	n = nrow(Xstd)
+	p = ncol(Xstd)
 	if (n %% 2 != 0){
 		stop("Design matrix must have even rows to have equal treatments and controls")
 	}
@@ -101,8 +107,8 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 				Kgrams[[i_k]] = matrix(NA, n, n)
 				for (i in 1 : n){
 					for (j in 1 : n){
-						xi = X[i, , drop = FALSE]
-						xj = X[j, , drop = FALSE]
+						xi = Xstd[i, , drop = FALSE]
+						xj = Xstd[j, , drop = FALSE]
 						
 						if (str_detect(kernel_names[i_k], "^poly_")){
 							s = as.integer(stri_replace_first_regex(kernel_names[i_k], "^poly_(\\d+)", "$1"))
@@ -130,37 +136,55 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 		assertMatrix(Kgrams[[i_k]], nrows = n, ncols = n)
 	}
 	
+	if (!is.null(kernel_weights)){
+		assertNumeric(kernel_weights, lower = 0, len = m)
+		#normalize here
+		kernel_weights = kernel_weights / sum(kernel_weights)
+	} else {
+		kernel_weights = rep(1 / m, m)
+	}
+	
 	#we are about to construct a GreedyExperimentalDesign java object. First, let R garbage collect
 	#to clean up previous GreedyExperimentalDesign objects that are no longer in use. This is important
 	#because R's garbage collection system does not "see" the size of Java objects. Thus,
 	#you are at risk of running out of memory without this invocation. 
 	gc() #Delete at your own risk!
 	
-	#Now we explore each kernel case-by-case
-	all_starting_vecs = list()
-	all_univariate_kernel_data = data.frame()
-	for (i_k in 1 : m){		
-		gd = suppressWarnings(initGreedyExperimentalDesignObject(X, 
-				max_designs = kernel_pre_num_designs, Kgram = Kgrams[[i_k]], objective = "kernel",
-				diagnostics = TRUE, wait = TRUE, num_cores = nC, seed = 1)) #same seed should guarantee same starting vectors
-		gd_res = resultsGreedySearch(gd, max_vectors = kernel_pre_num_designs, form = "pos_one_min_one")
-		objvalsi = array(NA, Nw)
-		for (i in 1 : Nw){
-			objvalsi[i] = gd_res$starting_indicTs[i, , drop = FALSE] %*% Kgrams[[i_k]] %*% t(gd_res$starting_indicTs[i, , drop = FALSE])
+	
+	if (objective %in% c("added_pct_reduction")){
+		#In this method, we explore each kernel case-by-case before doing a search using all of them
+		all_starting_vecs = list()
+		all_univariate_kernel_data = list()
+		if (is.null(seed)){
+			prelim_seed = sample.int(1e5, 1)
+		} else {
+			prelim_seed = seed
 		}
-		objvalsf = gd_res$obj_vals_unordered
-		
-		univariate_kernel_data = data.frame(kernel = i_k, log10objvalsi = log10(objvalsi), log10objvalsf = log10(objvalsf))
-		univariate_kernel_data$log10_i_over_f = univariate_kernel_data$log10objvalsi - univariate_kernel_data$log10objvalsf
-		univariate_kernel_data$pct_red_max = 1 - univariate_kernel_data$log10_i_over_f / 
-													(max(univariate_kernel_data$log10_i_over_f) * maximum_gain_scaling)
-		all_univariate_kernel_data = rbind(all_univariate_kernel_data, univariate_kernel_data)
-		all_starting_vecs[[i_k]] = gd_res$starting_indicTs
+		for (i_k in 1 : m){		
+			gd = suppressWarnings(initGreedyExperimentalDesignObject(Xstd, 
+							max_designs = kernel_pre_num_designs, Kgram = Kgrams[[i_k]], objective = "kernel",
+							diagnostics = TRUE, wait = TRUE, num_cores = nC, seed = prelim_seed)) #same seed should guarantee same starting vectors
+			gd_res = resultsGreedySearch(gd, max_vectors = kernel_pre_num_designs, form = "pos_one_min_one")
+			objvalsi = array(NA, kernel_pre_num_designs)
+			for (i in 1 : kernel_pre_num_designs){
+				objvalsi[i] = gd_res$starting_indicTs[i, , drop = FALSE] %*% Kgrams[[i_k]] %*% t(gd_res$starting_indicTs[i, , drop = FALSE])
+			}
+			objvalsf = gd_res$obj_vals_unordered
+			#now we want to add
+			
+			univariate_kernel_data = data.frame(kernel = i_k, log10objvalsi = log10(objvalsi), log10objvalsf = log10(objvalsf))
+			univariate_kernel_data$log10_i_over_f = univariate_kernel_data$log10objvalsi - univariate_kernel_data$log10objvalsf
+			univariate_kernel_data$pct_red_max = 1 - univariate_kernel_data$log10_i_over_f / 
+					(max(univariate_kernel_data$log10_i_over_f) * maximum_gain_scaling)
+			all_univariate_kernel_data[[i_k]] = univariate_kernel_data
+			all_starting_vecs[[i_k]] = gd_res$starting_indicTs
+		}		
 	}
+
 
 	
 	#now go ahead and create the Java object and set its information
-	java_obj = .jnew("GreedyExperimentalDesign.GreedyExperimentalDesign")
+	java_obj = .jnew("MultipleKernelGreedyExperimentalDesign.MultipleKernelGreedyExperimentalDesign")
 	.jcall(java_obj, "V", "setMaxDesigns", as.integer(max_designs))
 	.jcall(java_obj, "V", "setNumCores", as.integer(num_cores))
 	if (!is.null(seed)){
@@ -171,42 +195,36 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 	}
 	.jcall(java_obj, "V", "setN", as.integer(n))
 	.jcall(java_obj, "V", "setP", as.integer(p))
+	.jcall(java_obj, "V", "setObjective", objective)
 	if (wait){
 		.jcall(java_obj, "V", "setWait")
 	}
 	if (max_iters < Inf){
 		.jcall(java_obj, "V", "setMaxIters", as.integer(max_iters))
 	}
-	
-	
-	
-	
-	
-	
-	
-	#feed in the gram matrix if applicable
-#	if (!is.null(Kgram)){
-#		setGramMatrix(java_obj, Kgram)
-#	} else {
-#		#feed in the raw data
-#		for (i in 1 : n){	
-#			if (objective == "abs_sum_diff"){
-#				.jcall(java_obj, "V", "setDataRow", as.integer(i - 1), Xstd[i, , drop = FALSE]) #java indexes from 0...n-1
-#			} else {
-#				.jcall(java_obj, "V", "setDataRow", as.integer(i - 1), X[i, , drop = FALSE]) #java indexes from 0...n-1
-#			}
-#		}
-#		
-#		#feed in the inverse var-cov matrix
-#		if (objective == "mahal_dist"){
-#			if (p < n){
-#				for (j in 1 : p){
-#					.jcall(java_obj, "V", "setInvVarCovRow", as.integer(j - 1), SinvX[j, , drop = FALSE]) #java indexes from 0...n-1
-#				}
-#			}
-#		}
+#	#feed in the raw data
+#	for (i in 1 : n){	
+#		.jcall(java_obj, "V", "setDataRow", as.integer(i - 1), Xstd[i, , drop = FALSE]) #java indexes from 0...n-1
 #	}
+	#feed in the raw kernel data
+	for (i_k in 1 : m){
+		for (i in 1 : n){	
+			.jcall(java_obj, "V", "setSpecificKgramByRow", as.integer(i_k - 1), as.integer(i - 1), Kgrams[[i_k]][i, , drop = FALSE]) #java indexes from 0...n-1
+		}	
+	}
 	
+	if (objective %in% c("added_pct_reduction")){
+		#feed in data from each kernel in isolation
+		for (i_k in 1 : m){
+			#.jcall(java_obj, "V", "setObjValLibrary", as.integer(i_k - 1), all_univariate_kernel_data[[i_k]]$log10_i_over_f)
+			.jcall(java_obj, "V", "setMaxReductionLogObjVal", as.integer(i_k - 1), max(all_univariate_kernel_data[[i_k]]$log10_i_over_f))
+		}
+		#set magnification factor
+		.jcall(java_obj, "V", "setMaximumGainScaling", maximum_gain_scaling)
+		#feed in weights
+		.jcall(java_obj, "V", "setKernelWeights", kernel_weights)
+	}
+		
 	#do we want diagnostics? Set it...
 	if (diagnostics){
 		.jcall(java_obj, "V", "setDiagnostics")
@@ -223,6 +241,7 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 	ged$Kgrams = Kgrams
 	ged$m = m
 	ged$all_univariate_kernel_data = all_univariate_kernel_data
+	ged$kernel_weights = kernel_weights
 	ged$all_starting_vecs = all_starting_vecs
 	ged$max_designs = max_designs
 	ged$kernel_pre_num_designs = kernel_pre_num_designs
@@ -232,6 +251,7 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 	ged$wait = wait
 	ged$diagnostics = diagnostics
 	ged$X = X
+	ged$Xstd = Xstd
 	ged$n = n
 	ged$p = p
 	ged$java_obj = java_obj
@@ -244,9 +264,9 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 	ged
 }
 
-#' Returns the results (thus far) of the greedy design search
+#' Returns the results (thus far) of the greedy design search for multiple kernels
 #' 
-#' @param obj 			The \code{greedy_experimental_design} object that is currently running the search
+#' @param obj 			The \code{greedy_multiple_kernel_experimental_design} object that is currently running the search
 #' @param max_vectors	The number of design vectors you wish to return. \code{NULL} returns all of them. 
 #' 						This is not recommended as returning over 1,000 vectors is time-intensive. The default is 9. 
 #' @param form			Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's. 
@@ -260,66 +280,34 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 #' 	#first pull out the covariates
 #'  X = Boston[, 1 : 13]
 #'  #begin the greedy design search
-#' 	ged = initGreedyExperimentalDesignObject(X, 
-#' 		max_designs = 1000, num_cores = 2, objective = "abs_sum_diff")
+#' 	ged = initGreedyMultipleKernelExperimentalDesignObject(X, 
+#' 		max_designs = 1000, num_cores = 3, kernel_names = c("mahalanobis", "gaussian"))
 #' 	#wait
-#' 	res = resultsGreedySearch(ged, max_vectors = 2)
+#' 	res = resultsMultipleKernelGreedySearch(ged, max_vectors = 2)
 #' 	design = res$ending_indicTs[, 1] #ordered already by best-->worst
 #'  design
-#'  #what is the balance on this vector?
-#' 	res$obj_vals[1]
-#' 	#compute balance explicitly in R to double check
-#' 	compute_objective_val(X, design) #same as above
-#' 	#how far have we come?
+#' 	#how far have we come of the 1000 we set out to do?
 #' 	ged
 #' 	#we can cut it here
 #' 	stopSearch(ged)
 #' 	}
 #' @export
-resultsGreedySearch = function(obj, max_vectors = 9, form = "one_zero"){
-	obj_vals = .jcall(obj$java_obj, "[D", "getObjectiveVals")
-	num_iters = .jcall(obj$java_obj, "[I", "getNumIters")
-	#these two are in order, so let's order the indicTs by the final objective values
-	ordered_indices = order(obj_vals)
-	last_index = ifelse(is.null(max_vectors), obj$max_designs, min(max_vectors + 1, obj$max_designs))
-	
-	ending_indicTs = NULL
-	starting_indicTs = NULL
-	switches = NULL
-	xbarj_diffs = NULL
-	obj_val_by_iters = NULL
-	pct_vec_same = NULL
-	ending_indicTs = .jcall(obj$java_obj, "[[I", "getEndingIndicTs", as.integer(ordered_indices[1 : last_index] - 1), simplify = TRUE)
-	if (form == "pos_one_min_one"){
-		ending_indicTs = (ending_indicTs - 0.5) * 2
-	}
+resultsMultipleKernelGreedySearch = function(obj, max_vectors = 9, form = "one_zero"){
+	#get standard information
+	greedy_multiple_kernel_experimental_design_search_results = resultsGreedySearch(obj, max_vectors, form)
+	#now get information specific to this procedure
 	if (obj$diagnostics){
-		starting_indicTs = .jcall(obj$java_obj, "[[I", "getStartingIndicTs", as.integer(ordered_indices[1 : last_index] - 1), simplify = TRUE)
-		if (form == "pos_one_min_one"){
-			starting_indicTs = (starting_indicTs - 0.5) * 2
-		}
-		switches = .jcall(obj$java_obj, "[[[I", "getSwitchedPairs", as.integer(ordered_indices[1 : last_index] - 1), simplify = TRUE)
-		#we should make switches into a list now
-		xbarj_diffs = .jcall(obj$java_obj, "[[[D", "getXbarjDiffs", as.integer(ordered_indices[1 : last_index] - 1), simplify = TRUE)
-		obj_val_by_iters = .jcall(obj$java_obj, "[[D", "getObjValByIter", as.integer(ordered_indices[1 : last_index] - 1), simplify = TRUE)
-		
-		pct_vec_same = colSums(starting_indicTs == ending_indicTs) / length(starting_indicTs[, 1]) * 100
+		greedy_multiple_kernel_experimental_design_search_results$kernel_obj_vals_by_iter = 
+			.jcall(
+				obj$java_obj, 
+				"[[[D", "getObjValuesByKernel", 
+				as.integer(ordered_indices[1 : greedy_multiple_kernel_experimental_design_search_results$last_index] - 1), 
+				simplify = TRUE
+			)
 	}
-	greedy_experimental_design_search_results = list(
-			obj_vals = obj_vals[ordered_indices], 
-			obj_vals_unordered = obj_vals,
-			num_iters = num_iters[ordered_indices], 
-			orig_order = ordered_indices, 
-			ending_indicTs = ending_indicTs,
-			starting_indicTs = starting_indicTs,
-			obj_val_by_iters = obj_val_by_iters,
-			pct_vec_same = pct_vec_same,
-			switches = switches,
-			xbarj_diffs = xbarj_diffs
-	)
-	class(greedy_experimental_design_search_results) = "greedy_experimental_design_search_results"
+	class(greedy_experimental_design_search_results) = "greedy_multiple_kernel_experimental_design_search_results"
 	#return the final object
-	greedy_experimental_design_search_results
+	greedy_multiple_kernel_experimental_design_search_results
 }
 
 

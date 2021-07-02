@@ -145,8 +145,8 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 //							System.out.println("avg_Ts " + avg_Ts[0]);
 							double[] avg_Cs = Tools.colAvg(XC, p);
 //							System.out.println("avg_Cs " + Tools.StringJoin(avg_Cs));
-							obj_fun.setXTbar(avg_Ts);
-							obj_fun.setXCbar(avg_Cs);
+							((SimpleAverageObjectiveFunction)obj_fun).setXTbar(avg_Ts);
+							((SimpleAverageObjectiveFunction)obj_fun).setXCbar(avg_Cs);
 						}
 						
 						//calculate our objective function (according to the user's specification)

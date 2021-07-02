@@ -1,6 +1,6 @@
 package ObjectiveFunctions;
 
-public class MahalObjective extends ObjectiveFunction {
+public class MahalObjective extends SimpleAverageObjectiveFunction {
 
 	private double[][] Sinvmat;
 	private double prop_const;

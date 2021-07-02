@@ -9,7 +9,7 @@ n = 100
 Nw = 5000
 all_w = complete_randomization_with_forced_balanced(n, Nw, form = "pos_one_min_one")
 
-ps = c(1, 5, 10)
+ps = 5#c(1, 5, 10)
 covariate_distributions = c("uniform", "normal", "exponential")
 kernels = c("mahalanobis", "quadratic", "exponential", "gaussian")
 Nsim = 25
@@ -131,4 +131,17 @@ annotate_figure(fig1234, top = paste0("nsim = ", nsim0, ", p = ", p0, ", covaria
 # gd_res_ws[2, , drop = FALSE] %*% K %*% t(gd_res_ws[2, , drop = FALSE])
 #   
 # 
-# gd_res$obj_vals
+
+
+
+
+
+
+
+PCT = .05
+all_res_ker %>% filter(p==1 & covariate_distribution == "normal") %>%
+  mutate(pctile_exp = order(exponential) / n()) %>%
+  mutate(pctile_gau = order(gaussian) / n()) %>%
+  mutate(pctile_mah = order(mahalanobis) / n()) %>%
+  mutate(pctile_qua = order(quadratic) / n()) %>%
+  filter(pctile_gau <= PCT & pctile_mah <= PCT & pctile_qua <= PCT)

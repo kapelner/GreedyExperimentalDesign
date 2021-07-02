@@ -38,18 +38,18 @@ import ObjectiveFunctions.*;
 public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns {
 	
 	//set by user
-	private boolean diagnostics;
-	private boolean semigreedy;
+	protected boolean diagnostics;
+	protected boolean semigreedy;
 
 	//data inputed from the user's datas
-	private Integer max_iters;
-	private int[][] starting_indicTs;
-	private int[][] legal_pairs;
+	protected Integer max_iters;
+	protected int[][] starting_indicTs;
+	protected int[][] legal_pairs;
 	
 	//output
-	private ArrayList<ArrayList<int[]>> switched_pairs;
+	protected ArrayList<ArrayList<int[]>> switched_pairs;
 	private ArrayList<ArrayList<double[]>> xbardiffjs_by_iterations;
-	private ArrayList<ArrayList<Double>> min_obj_val_by_iterations;
+	protected ArrayList<ArrayList<Double>> min_obj_val_by_iterations;
 
 	
 
@@ -112,25 +112,7 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 //			}
 	    	search_thread_pool.execute(new Runnable(){
 				public void run() {
-					new GreedySearch(
-							X, 
-							Sinv, 
-							legal_pairs,
-							Kgram,
-							starting_indicTs[d0], 
-							ending_indicTs[d0], 
-							switched_pairs.get(d0),
-							min_obj_val_by_iterations.get(d0),
-							xbardiffjs_by_iterations.get(d0),
-							objective_vals, 
-							num_iters, 
-							objective, 
-							d0, 
-							semigreedy, 
-							diagnostics, 
-							max_iters, 
-							rand_obj,
-							search_stopped);
+					generateIndividualSearch(d0);
 					if (!search_stopped.get()) {
 						num_completed.getAndIncrement();
 //						System.out.println("did one num_completed: " + num_completed.get());
@@ -142,6 +124,31 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 		//System.out.println("min_obj_val_by_iterations: " + min_obj_val_by_iterations);
 //		System.out.println("afterBeginSearch num_completed: " + num_completed);
 		
+	}
+	
+	protected GreedySearch generateIndividualSearch(int d0) {
+		return new GreedySearch(
+			X, 
+			Sinv, 
+			legal_pairs,
+			Kgram,
+			starting_indicTs[d0], 
+			ending_indicTs[d0], 
+			switched_pairs.get(d0),
+			min_obj_val_by_iterations.get(d0),
+			xbardiffjs_by_iterations.get(d0),
+			objective_vals, 
+			num_iters, 
+			objective, 
+			d0, 
+			semigreedy, 
+			diagnostics, 
+			max_iters, 
+			rand_obj,
+			search_stopped,
+			//special for multiple kernels
+			null, null, null, null, null
+		);		
 	}
 
 

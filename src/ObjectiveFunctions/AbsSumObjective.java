@@ -2,7 +2,7 @@ package ObjectiveFunctions;
 
 import ExperimentalDesign.Tools;
 
-public class AbsSumObjective extends ObjectiveFunction {
+public class AbsSumObjective extends SimpleAverageObjectiveFunction {
 
 	@Override
 	public double calc(boolean debug_mode) {

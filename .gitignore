@@ -13,7 +13,7 @@ gurobi_numerical_optimization_via_R_package_Gree.log
 /src/RcppExports.*
 /src/.idea/*
 .DS_Store
-.RData
+*.RData
 .idea/*
 GreedyExperimentalDesign.iml
 gurobi.log

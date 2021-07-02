@@ -6,8 +6,7 @@
 #' @author 		Adam Kapelner \email{kapelner@@qc.cuny.edu}
 #' @references 	Kapelner, A
 #' @keywords 	design optimize
-#' @import      rJava stats graphics grDevices GreedyExperimentalDesignJARs
-#' @importFrom  checkmate assertChoice assertTRUE assertSetEqual assertCount assertLogical assertNumeric assertClass vname makeAssertion
+#' @import      rJava stats graphics grDevices
 #' @importFrom 	nbpMatching distancematrix nonbimatch
 #' @importFrom  Rcpp sourceCpp evalCpp
 #' @importFrom  stringr str_detect

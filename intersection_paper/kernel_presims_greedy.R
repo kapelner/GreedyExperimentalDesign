@@ -1,6 +1,5 @@
 options(java.parameters = c("-Xmx20000m"))
-pacman::p_load(GreedyExperimentalDesign, doParallel, tidyverse, magrittr, data.table, viridis, RColorBrewer, 
-               ggsci, lmtest, sandwich, ggpubr, microbenchmark, checkmate)
+pacman::p_load(GreedyExperimentalDesign, doParallel, tidyverse, magrittr, data.table, ggpubr, microbenchmark, checkmate)
 #R CMD INSTALL -l ~/Documents/R/win-library/3.6/ GreedyExperimentalDesign
 
 nC = 5
@@ -26,7 +25,7 @@ for (n in ns){
       for (j in 1 : n){
         xi = X[i, , drop = FALSE]
         xj = X[j, , drop = FALSE]
-        K[i, j] = exp(-sqrt(sum((xi - xj)^2))) #(1 + xi %*% t(xj) / 2)^2 #1 / sqrt(sum((xi - xj)^2) + 1) #exp(xi %*% t(xj)) #exp(-sum((xi - xj)^2))
+        K[i, j] = exp(xi %*% t(xj)) #exp(-sum((xi - xj)^2)) #exp(-sqrt(sum((xi - xj)^2))) #(1 + xi %*% t(xj) / 2)^2 #1 / sqrt(sum((xi - xj)^2) + 1) #
       }
     }
     

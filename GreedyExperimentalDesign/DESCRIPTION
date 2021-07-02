@@ -3,8 +3,11 @@ Type: Package
 Title: Greedy Experimental Design Construction
 Version: 1.5
 Date: 2021-08-01
-Author: Adam Kapelner, David Azriel and Abba M. Krieger
-Maintainer: Adam Kapelner <kapelner@qc.cuny.edu>
+Authors@R: c(
+        person("Adam", "Kapelner", email = "kapelner@qc.cuny.edu", role = c("aut", "cre"), comment = c(ORCID = "0000-0001-5985-6792")),
+        person("David", "Azriel", email = "davidazr@technion.ac.il", role = "aut"),
+        person("Abba", "Krieger", email = "krieger@wharton.upenn.edu", role = "aut")
+    )
 Description: Computes experimental designs for a
     two-arm experiment with covariates via a number of methods. 
     (0) complete randomization and randomization with forced-balance.
@@ -25,20 +28,23 @@ Description: Computes experimental designs for a
     (8) Binary pair matching plus (3) to further optimize balance
     (9) Hadamard designs
     (10) Simultaneous Multiple Kernels 
-    We also allow for three objective functions:
+    In (1-9) we allow for three objective functions:
     Mahalanobis distance,
     Sum of absolute differences standardized and
-    Kernel distances via the 'kernlab' library.
+    Kernel distances via the 'kernlab' library. This package is the result of a stream of research that can be found in 
+    Krieger, A, Azriel, D and Kapelner, A "Nearly Random Designs with Greatly Improved Balance" (2016) <arXiv:1612.02315>,
+    Krieger, A, Azriel, D and Kapelner, A "Better Experimental Design by Hybridizing Binary Matching with Imbalance Optimization" (2021) <arXiv:2012.03330> and
+    Kapelner, A and Krieger, A, "High-Performing Experimental Design for any Response Function" (2021) <arXiv:>
 License: GPL-3
+Encoding: UTF-8
 Depends:
     R (>= 3.2.0),
-    rJava (>= 0.9-6),
-    GreedyExperimentalDesignJARs (>= 1.0)
+    checkmate,
+    rJava (>= 0.9-6)
 SystemRequirements: Java (>= 7.0)
 LinkingTo: Rcpp
 Imports: 
 	Rcpp,
-    checkmate,
 	nbpMatching,
 	survey,
 	stringr,
@@ -47,4 +53,5 @@ Imports:
 	graphics, 
 	grDevices, 
 	stats
+URL: https://github.com/kapelner/GreedyExperimentalDesign
 RoxygenNote: 7.1.1

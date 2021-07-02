@@ -2,7 +2,7 @@ package ObjectiveFunctions;
 
 import ExperimentalDesign.Tools;
 
-public class AbsSumObjectiveWithDiagnostics extends ObjectiveFunction {
+public class AbsSumObjectiveWithDiagnostics extends SimpleAverageObjectiveFunction {
 
 	private double[] xbardiffjs;
 

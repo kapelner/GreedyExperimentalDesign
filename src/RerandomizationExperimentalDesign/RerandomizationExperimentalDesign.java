@@ -92,8 +92,8 @@ public class RerandomizationExperimentalDesign extends MultipleSearchExperimenta
 						ArrayList<double[]> XC = Tools.subsetMatrix(X, i_Cs);
 						double[] avg_Ts = Tools.colAvg(XT, p);
 						double[] avg_Cs = Tools.colAvg(XC, p);	
-						fin_obj_fun.setXTbar(avg_Ts);
-						fin_obj_fun.setXCbar(avg_Cs);
+						((SimpleAverageObjectiveFunction)fin_obj_fun).setXTbar(avg_Ts);
+						((SimpleAverageObjectiveFunction)fin_obj_fun).setXCbar(avg_Cs);
 					}
 					double obj_val = fin_obj_fun.calc(false);
 					

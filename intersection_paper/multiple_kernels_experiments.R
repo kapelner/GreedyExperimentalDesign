@@ -1,19 +1,19 @@
 options(java.parameters = c("-Xmx20000m"))
-pacman::p_load(GreedyExperimentalDesign, doParallel, tidyverse, magrittr, data.table, viridis, RColorBrewer, 
-               ggsci, lmtest, sandwich, ggpubr, microbenchmark, checkmate)
+pacman::p_load(GreedyExperimentalDesign, tidyverse, magrittr, data.table, ggpubr, microbenchmark, checkmate)
 #R CMD INSTALL -l ~/Documents/R/win-library/3.6/ GreedyExperimentalDesign
 
-nC = 5
+nC = 1
 covariate_distributions = c("uniform", "normal", "exponential")
-kernels = c("mahalanobis", "quadratic", "exponential", "gaussian", "laplacian", "inv_mult_quad")
+kernel_names = c("mahalanobis", "poly_2", "exponential", "gaussian", "laplacian", "inv_mult_quad")
 
-Nw = 2000
 
 
 ns = c(32, 100, 132, 300)
 ps = c(1, 2, 5, 10)
 n = 100
-p = 5
+p = 1
+Nw = 1000
+
 covariate_distribution = "uniform"
 
 if (covariate_distribution == "uniform"){
@@ -28,15 +28,27 @@ X = scale(X)
 
 
 
-ged = initGreedyMultipleKernelExperimentalDesignObject(X, 
-   max_designs = Nw, 
-   kernel_names = c("mahalanobis", "poly_2", "exponential", "gaussian", "laplacian", "inv_mult_quad"), 
-   diagnostics = TRUE, start = FALSE, wait = TRUE, num_cores = nC)
+gmked = initGreedyMultipleKernelExperimentalDesignObject(X, 
+   max_designs = Nw, kernel_pre_num_designs = Nw, seed = 1, maximum_gain_scaling = 1,
+   kernel_names = kernel_names, diagnostics = TRUE, wait = TRUE, num_cores = nC)
+# startSearch(gmked)
+gmked_res = resultsGreedySearch(gmked, max_vectors = Nw, form = "pos_one_min_one")
+# gmked_res$obj_vals %>% mean
+gmked_res$starting_indicTs
 
-ged
 
+ggplot_obj = ggplot(do.call("rbind", gmked$all_univariate_kernel_data))
+ggplot_obj +
+  geom_density(aes(x = log10objvalsf), fill = "red") +
+  facet_wrap(kernel ~ ., scales = "free")
 
+ggplot_obj +
+  geom_density(aes(x = log10_i_over_f), fill = "red") +
+  facet_wrap(kernel ~ ., scales = "free")
 
+ggplot_obj +
+  geom_density(aes(x = pct_red_max), fill = "red") +
+  facet_wrap(kernel ~ ., scales = "free")
 
 
 
@@ -46,8 +58,8 @@ ged
 
 
 all_res = data.table()
-for (i_k in 1 : length(kernels)){
-  kernel = kernels[i_k]
+for (i_k in 1 : length(kernel_names)){
+  kernel = kernel_names[i_k]
   
   if (kernel == "mahalanobis"){
     K = X %*% solve(var(X)) %*% t(X)
@@ -59,7 +71,7 @@ for (i_k in 1 : length(kernels)){
         xj = X[j, , drop = FALSE]
         #https://people.eecs.berkeley.edu/~jordan/kernels/0521813972c01_p03-24.pdf
         #http://crsouza.com/2010/03/17/kernel-functions-for-machine-learning-applications/#inverse_multiquadric
-        if (kernel == "quadratic"){
+        if (kernel == "poly_2"){
           K[i, j] = (1 + xi %*% t(xj) / 2)^2
         } else if (kernel == "exponential"){
           K[i, j] = exp(xi %*% t(xj))
@@ -76,18 +88,26 @@ for (i_k in 1 : length(kernels)){
   
   cat("kernel:", kernel, "\n")
   gd = initGreedyExperimentalDesignObject(X, 
-                                          max_designs = Nw, Kgram = K, objective = "kernel",
-                                          diagnostics = TRUE, wait = TRUE, num_cores = nC)
+          max_designs = Nw, Kgram = K, objective = "kernel",
+          diagnostics = TRUE, wait = TRUE, seed = 1, num_cores = nC)
   gd_res = resultsGreedySearch(gd, max_vectors = Nw, form = "pos_one_min_one")
   starting_obj_vals = array(NA, Nw)
   for (i in 1 : Nw){
     starting_obj_vals[i] = gd_res$starting_indicTs[i, , drop = FALSE] %*% K %*% t(gd_res$starting_indicTs[i, , drop = FALSE])
   }
+  all_res = rbind(all_res, data.table(multi = 0, kernel = kernel, s = starting_obj_vals, e = gd_res$obj_vals_unordered))
+  
+  ending_obj_vals = array(NA, Nw)
+  for (i in 1 : Nw){
+    starting_obj_vals[i] = gmked_res$starting_indicTs[i, , drop = FALSE] %*% K %*% t(gmked_res$starting_indicTs[i, , drop = FALSE])
+    ending_obj_vals[i] = gmked_res$ending_indicTs[i, , drop = FALSE] %*% K %*% t(gmked_res$ending_indicTs[i, , drop = FALSE])
+  }
   gd_res$obj_vals_unordered
-  all_res = rbind(all_res, data.table(kernel = kernel, s = starting_obj_vals, e = gd_res$obj_vals_unordered))
+  all_res = rbind(all_res, data.table(multi = 1, kernel = kernel, s = starting_obj_vals, e = ending_obj_vals))
 }
 
 all_res %<>%
+  mutate(log_s = log10(s)) %>%
   mutate(log_e = log10(e)) %>%
   mutate(log_s_e = log10(s / e)) %>%
   group_by(kernel) %>%
@@ -96,16 +116,18 @@ all_res %<>%
   ungroup
 all_res
 
-ggplot(all_res) +
-  geom_density(aes(x = log_e), fill = "red") +
-  facet_wrap(kernel ~ ., scales = "free")
+all_res_wide = all_res %>% pivot_longer(cols = c(s, e, log_s, log_e, log_s_e, pct_reduction_lacking))
+all_res_wide %<>% mutate(multi_name = paste0(name, "-", if_else(multi == 1, "multi", "solo")))
+ggplot(all_res_wide %>% filter(name %in% c("log_s", "log_e"))) +
+  geom_histogram(aes(x = value, fill = multi_name), alpha = 0.5, bins = 100) + 
+  facet_wrap(kernel ~ ., scales = "free_y") + xlim(-13, 5)
 
 ggplot(all_res) +
-  geom_density(aes(x = log_s_e), fill = "red") +
+  geom_histogram(aes(x = log_s_e, fill = factor(multi)), alpha = 0.5, bins = 100) +
   facet_grid(kernel ~ ., scales = "free_y")
 
 ggplot(all_res) +
-  geom_histogram(aes(x = pct_reduction_lacking), fill = "red", bins = 500) +
+  geom_histogram(aes(x = pct_reduction_lacking, fill = factor(multi)), bins = 100, alpha = 0.5) +
   facet_grid(kernel ~ ., scales = "free_y")
 
 
