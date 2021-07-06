@@ -342,6 +342,7 @@ resultsGreedySearch = function(obj, max_vectors = 9, form = "one_zero"){
 		pct_vec_same = colSums(starting_indicTs == ending_indicTs) / length(starting_indicTs[, 1]) * 100
 	}
 	greedy_experimental_design_search_results = list(
+		ordered_indices = ordered_indices,
 		obj_vals = obj_vals[ordered_indices], 
 		obj_vals_unordered = obj_vals,
 		num_iters = num_iters[ordered_indices], 

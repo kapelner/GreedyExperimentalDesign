@@ -53,19 +53,25 @@ public class MultipleKernelObjectiveFunction extends ObjectiveFunction {
 	@Override
 	public double calc(boolean debug_mode) {
 		double obj_val = 0;
-		double[] obj_vals = new double[m];
 		for (int i_k = 0; i_k < m; i_k++) {
-//			System.out.print("    i_k " + (i_k + 1));	
-			double obj_val_k = (kernel_weights[i_k] * pct_off_from_best(i_k));
-			obj_vals[i_k] = obj_val_k;
-			obj_val += obj_val_k;
+//			System.out.print("    i_k " + (i_k + 1));
+			obj_val += (kernel_weights[i_k] * pct_off_from_best(i_k));
 		}
 //		System.out.println("    aggregate objval: " + obj_val + "\n");
-		kernel_obj_values.add(obj_vals);
 		return obj_val;
+	}
+	
+	public void calcKernelObjDiagnostics() {
+		double[] obj_vals = new double[m];
+		for (int i_k = 0; i_k < m; i_k++) {
+			obj_vals[i_k] = pct_off_from_best(i_k);
+		}
+		kernel_obj_values.add(obj_vals);		
 	}
 
 	private double pct_off_from_best(int i_k) {
+
+//		System.out.println("in pct_off_from_best " + i_k);
 //		System.out.print(" max_reduction " + String.format("%.4g", max_reduction_log_obj_vals.get(i_k)));	
 //		kernel_ecdfs[i_k].cumulativeProbability(x);
 		double ret = 1 - kernel_objective_functions[i_k].log10_i_over_current_obj_val() / (max_reduction_log_obj_vals.get(i_k) * maximum_gain_scaling);

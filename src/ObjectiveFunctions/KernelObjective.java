@@ -21,7 +21,7 @@ public class KernelObjective extends ObjectiveFunction {
 
 	@Override
 	public double calc(boolean debug_mode) {
-
+		
 		//we've started with a new vector so need to do the full calculation once
 		if (running_kernel_sum == null) {
 //			System.out.println("running_kernel_sum == null");
@@ -104,6 +104,7 @@ public class KernelObjective extends ObjectiveFunction {
 	}
 
 	public double log10_i_over_current_obj_val() {
+//		System.out.println("in log10_i_over_current_obj_val running_kernel_sum " + running_kernel_sum + " w " + w + " t " + t + " c " + c + " Kgram " + Kgram);
 		double current_obj_val = calc(false);
 //		System.out.print(
 //				String.format("%.4g", current_obj_val) + 
@@ -117,7 +118,6 @@ public class KernelObjective extends ObjectiveFunction {
 
 	public void setInitialObjVal() {
 		initial_obj_val = calc(false);
-		resetKernelSum(); //waste, yes... but cleanest way to do it
 	}
 
 }

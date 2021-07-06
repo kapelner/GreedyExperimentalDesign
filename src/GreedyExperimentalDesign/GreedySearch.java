@@ -55,6 +55,11 @@ public class GreedySearch {
 			n = Kgrams.get(0).length; 
 			((MultipleKernelObjectiveFunction)obj_fun).setW(indicT);
 			((MultipleKernelObjectiveFunction)obj_fun).setInitialObjVals();
+			if (diagnostics) {
+				((MultipleKernelObjectiveFunction)obj_fun).resetKernelSum(); //waste, yes... but cleanest way to do it
+				((MultipleKernelObjectiveFunction)obj_fun).calcKernelObjDiagnostics();
+			}
+			((MultipleKernelObjectiveFunction)obj_fun).resetKernelSum(); //waste, yes... but cleanest way to do it
 			System.out.println("MultipleKernelObjectiveFunction GreedySearch #" + d0 + " ready to begin");
 		} else {
 			this.Xstd = Xstd;
@@ -216,6 +221,9 @@ public class GreedySearch {
 				obj_fun.calc(false); //caches the current objective value
 //				((KernelObjective)obj_fun).setPermanentSwitch(switched_pair[0], switched_pair[1]);						
 			} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)){	
+				if (diagnostics) {
+					((MultipleKernelObjectiveFunction)obj_fun).calcKernelObjDiagnostics();
+				}
 				((MultipleKernelObjectiveFunction)obj_fun).resetKernelSum();
 				((MultipleKernelObjectiveFunction)obj_fun).setW(indicT);
 				obj_fun.calc(false); //caches the current objective value

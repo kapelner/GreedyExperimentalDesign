@@ -169,11 +169,19 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 			for (i in 1 : kernel_pre_num_designs){
 				objvalsi[i] = gd_res$starting_indicTs[i, , drop = FALSE] %*% Kgrams[[i_k]] %*% t(gd_res$starting_indicTs[i, , drop = FALSE])
 			}
-			objvalsf = gd_res$obj_vals_unordered
+			obj_val_by_iters = gd_res$obj_val_by_iters
+			
 			#now we want to add
 			
-			univariate_kernel_data = data.frame(kernel = i_k, log10objvalsi = log10(objvalsi), log10objvalsf = log10(objvalsf))
+			univariate_kernel_data = data.frame(
+				kernel = i_k, 
+				log10objvalsi = log10(rep(objvalsi, gd_res$num_iters + 1)), 
+				log10objvalsf = log10(unlist(gd_res$obj_val_by_iters))
+			)
+			#we want to eliminate
+			univariate_kernel_data = subset(univariate_kernel_data, abs(log10objvalsi - log10objvalsf) > 1e-9)
 			univariate_kernel_data$log10_i_over_f = univariate_kernel_data$log10objvalsi - univariate_kernel_data$log10objvalsf
+			univariate_kernel_data = univariate_kernel_data[]
 			univariate_kernel_data$pct_red_max = 1 - univariate_kernel_data$log10_i_over_f / 
 					(max(univariate_kernel_data$log10_i_over_f) * maximum_gain_scaling)
 			all_univariate_kernel_data[[i_k]] = univariate_kernel_data
@@ -295,17 +303,14 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 resultsMultipleKernelGreedySearch = function(obj, max_vectors = 9, form = "one_zero"){
 	#get standard information
 	greedy_multiple_kernel_experimental_design_search_results = resultsGreedySearch(obj, max_vectors, form)
+	last_index = greedy_multiple_kernel_experimental_design_search_results$last_index
+	ordered_indices = greedy_multiple_kernel_experimental_design_search_results$ordered_indices
 	#now get information specific to this procedure
 	if (obj$diagnostics){
 		greedy_multiple_kernel_experimental_design_search_results$kernel_obj_vals_by_iter = 
-			.jcall(
-				obj$java_obj, 
-				"[[[D", "getObjValuesByKernel", 
-				as.integer(ordered_indices[1 : greedy_multiple_kernel_experimental_design_search_results$last_index] - 1), 
-				simplify = TRUE
-			)
+			.jcall(obj$java_obj, "[[[D", "getObjValuesByKernel", as.integer(ordered_indices[1 : last_index] - 1), simplify = TRUE)
 	}
-	class(greedy_experimental_design_search_results) = "greedy_multiple_kernel_experimental_design_search_results"
+	class(greedy_multiple_kernel_experimental_design_search_results) = "greedy_multiple_kernel_experimental_design_search_results"
 	#return the final object
 	greedy_multiple_kernel_experimental_design_search_results
 }

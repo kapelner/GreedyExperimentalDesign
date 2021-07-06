@@ -35,7 +35,7 @@ for (n in ns){
             max_designs = Nw, Kgram = K, objective = "kernel",
             diagnostics = FALSE, wait = TRUE, num_cores = nC)
     gd_res = resultsGreedySearch(gd, max_vectors = Nw, form = "pos_one_min_one")
-    
+    unlist(gd_res$obj_val_by_iters)
     all_res = rbind(all_res,
       data.table(obj_vals = gd_res$obj_vals_unordered / n^2, s = gd_res$num_iters, n = n, p = p)
     )
@@ -171,7 +171,8 @@ for (i_p in 1 : length(ps)){
         # }
         
         
-        gd = initGreedyExperimentalDesignObject(X, max_designs = Nw, Kgram = K, objective = "kernel", diagnostics = TRUE, wait = TRUE, num_cores = nC)
+        gd = initGreedyExperimentalDesignObject(X, 
+                max_designs = Nw, Kgram = K, objective = "kernel", diagnostics = TRUE, wait = TRUE, num_cores = nC)
         gd_res = resultsGreedySearch(gd, max_vectors = Nw, form = "pos_one_min_one")
         gd_res_ws = gd_res$ending_indicTs
         gd_res_ws[1, , drop = FALSE] %*% K %*% t(gd_res_ws[1, , drop = FALSE])
