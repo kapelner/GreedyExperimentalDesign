@@ -25,6 +25,7 @@
 package GreedyExperimentalDesign;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import ExperimentalDesign.*;
 import ObjectiveFunctions.*;
@@ -44,7 +45,8 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 	//data inputed from the user's datas
 	protected Integer max_iters;
 	protected int[][] starting_indicTs;
-	protected int[][] legal_pairs;
+	protected HashMap<Integer, int[]> legal_pairs;
+//	protected HashMap<Integer, Integer> legal_pairs_rev;
 	
 	//output
 	protected ArrayList<ArrayList<int[]>> switched_pairs;
@@ -160,7 +162,21 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 	private void initializeStartingIndicTs() {
 		starting_indicTs = new int[max_designs][n];
 		for (int d = 0; d < max_designs; d++){
-			starting_indicTs[d] = Tools.fisherYatesShuffle(Tools.newBalancedBlankDesign(n), rand_obj);
+			if (legal_pairs == null) {
+				starting_indicTs[d] = Tools.fisherYatesShuffle(Tools.newBalancedBlankDesign(n), rand_obj);
+			} else {
+				for (int r : legal_pairs.keySet()) {
+					int[] s = legal_pairs.get(r);
+					if (rand_obj.nextDouble() < 0.5) {
+						starting_indicTs[d][r] = 1;
+						starting_indicTs[d][s[0]] = 0;
+					} else {
+						starting_indicTs[d][r] = 0;
+						starting_indicTs[d][s[0]] = 1;						
+					}
+				}
+			}
+			
 		}
 	}	
 	
@@ -215,8 +231,12 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 	}
 	
 	
-	public void set_legal_pairs(int[][] legal_pairs) {
-		this.legal_pairs = legal_pairs;
+	public void setLegalPair(int[] legal_pair, int i) {
+		if (legal_pairs == null) {
+			legal_pairs = new HashMap<Integer, int[]>(n / 2);
+		}
+		int[] a = {legal_pair[1]};
+		legal_pairs.put(legal_pair[0], a);	
 	}
 	
 	public void setDiagnostics(){

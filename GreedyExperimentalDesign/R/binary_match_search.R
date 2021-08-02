@@ -13,7 +13,7 @@
 #' 
 #' @author Adam Kapelner
 #' @export
-binaryMatchExperimentalDesignSearch = function(X, compute_dist_matrix = NULL){
+initBinaryMatchExperimentalDesignSearch = function(X, compute_dist_matrix = NULL){
 	assertClass(X, "matrix")
 	assertClass(compute_dist_matrix, "function", null.ok = TRUE)
 	n = nrow(X)
@@ -24,7 +24,7 @@ binaryMatchExperimentalDesignSearch = function(X, compute_dist_matrix = NULL){
 	
 	if (is.null(compute_dist_matrix) & p == 1){
 		#we don't need to do anything except order them up
-		indices_pairs = matrix(order(X[, 1]), ncol = 2, byrow = TRUE)
+		indicies_pairs = matrix(order(X[, 1]), ncol = 2, byrow = TRUE)
 	} else {
 		if (is.null(compute_dist_matrix)) {	#default is C++-optimized sqd euclidean distance function		
 			D = compute_distance_matrix_cpp(X)
@@ -35,12 +35,12 @@ binaryMatchExperimentalDesignSearch = function(X, compute_dist_matrix = NULL){
 		diag(D) = .Machine$double.xmax
 		
 		#get the matching solution using the heuristic
-		indices_pairs = as.matrix(nbpMatching::nonbimatch(nbpMatching::distancematrix(D))$matches[, c("Group1.Row", "Group2.Row")])
+		indicies_pairs = as.matrix(nbpMatching::nonbimatch(nbpMatching::distancematrix(D))$matches[, c("Group1.Row", "Group2.Row")])
 		
 		for (i in 1 : n){
-			indices_pairs[i, ] = sort(indices_pairs[i, ])
+			indicies_pairs[i, ] = sort(indicies_pairs[i, ])
 		}	
-		indices_pairs = unique(indices_pairs)
+		indicies_pairs = unique(indicies_pairs)
 	}
 
 	#now return information as an object (just a list)
@@ -50,7 +50,7 @@ binaryMatchExperimentalDesignSearch = function(X, compute_dist_matrix = NULL){
 	binary_experimental_design$p = p
 	binary_experimental_design$compute_dist_matrix = compute_dist_matrix
 	binary_experimental_design$D = D
-	binary_experimental_design$indices_pairs = indices_pairs
+	binary_experimental_design$indicies_pairs = indicies_pairs
 	class(binary_experimental_design) = "binary_experimental_design"
 	binary_experimental_design
 }
@@ -75,7 +75,7 @@ resultsBinaryMatchSearch = function(obj, num_vectors = 1000, objective = NULL, f
 	if (!is.null(objective)){
 		verify_objective_function(objective)
 	}	
-	
+		
 	#now that we have the pairs, we can randomize for as many vectors as we wish
 	n = obj$n
 	if (2^(n / 2) < num_vectors){
@@ -86,6 +86,7 @@ resultsBinaryMatchSearch = function(obj, num_vectors = 1000, objective = NULL, f
 	
 	indicTs = matrix(NA, nrow = 0, ncol = n)
 	batch_size = ceiling(num_vectors / 16) * 4 #needs to be divisible by 4 because when divided by two, it must be even
+	
 	repeat {
 		indicTs_batch = matrix(NA, nrow = batch_size, ncol = n)
 		one_minus_one = matrix(
@@ -96,7 +97,7 @@ resultsBinaryMatchSearch = function(obj, num_vectors = 1000, objective = NULL, f
 				nrow = batch_size)
 		for (r in 1 : batch_size){
 			for (i in 1 : (n / 2)){
-				indicTs_batch[r, obj$indices_pairs[i, ]] = minus_half_plus_half * one_minus_one[r, i] + 0.5
+				indicTs_batch[r, obj$indicies_pairs[i, ]] = minus_half_plus_half * one_minus_one[r, i] + 0.5
 			}
 		}
 		indicTs = rbind(indicTs, indicTs_batch)
@@ -105,6 +106,7 @@ resultsBinaryMatchSearch = function(obj, num_vectors = 1000, objective = NULL, f
 			indicTs = indicTs[1 : num_vectors, , drop = FALSE]
 			break
 		}
+#		cat("      nrow(indicTs): ", nrow(indicTs), "\n")
 	}
 	
 	obj_vals = NULL

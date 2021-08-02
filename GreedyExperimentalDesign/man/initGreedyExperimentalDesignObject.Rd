@@ -8,6 +8,7 @@ initGreedyExperimentalDesignObject(
   X = NULL,
   max_designs = 10000,
   objective = "mahal_dist",
+  indicies_pairs = NULL,
   Kgram = NULL,
   wait = FALSE,
   start = TRUE,
@@ -31,6 +32,9 @@ using the \code{\link{stopSearch}} method}
 
 \item{objective}{The objective function to use when searching design space. This is a string
 with valid values "\code{mahal_dist}" (the default), "\code{abs_sum_diff}" or "\code{kernel}".}
+
+\item{indicies_pairs}{A matrix of size $n/2$ times 2 whose rows are indicies pairs. The values of the entire matrix 
+must enumerate all indicies $1, ..., n$. The default is \code{NULL} meaning to use all possible pairs.}
 
 \item{Kgram}{If the \code{objective = kernel}, this argument is required to be an \code{n x n} matrix whose
 entries are the evaluation of the kernel function between subject i and subject j. Default is \code{NULL}.}

@@ -10,13 +10,14 @@ import ObjectiveFunctions.*;
 
 public class GreedySearch {
 
-	private double[][] Xstdscaled;
-	private double[][] Xstd;
+	private double[][] Xscaled;
+	private double[][] X;
 	private int nT;
 
-	public GreedySearch(double[][] Xstd, 
+	public GreedySearch(
+		double[][] X, 
 		double[][] Sinvmat, 
-		int[][] legal_pairs,
+		HashMap<Integer, int[]> legal_pairs,
 		double[][] Kgram,
 		int[] indicT, 
 		int[] ending_indicT, 
@@ -62,9 +63,9 @@ public class GreedySearch {
 			((MultipleKernelObjectiveFunction)obj_fun).resetKernelSum(); //waste, yes... but cleanest way to do it
 			System.out.println("MultipleKernelObjectiveFunction GreedySearch #" + d0 + " ready to begin");
 		} else {
-			this.Xstd = Xstd;
-			n = Xstd.length;
-			p = Xstd[0].length;		
+			this.X = X;
+			n = X.length;
+			p = X[0].length;		
 			
 			createScaledXstd();
 			
@@ -85,6 +86,24 @@ public class GreedySearch {
 		
 		Double obj_val = null;		
 		
+		
+		int[] i_Ts = Tools.findIndicies(indicT, nT, 1);
+//		System.out.println("i_Ts " + Tools.StringJoin(i_Ts));
+		int[] i_Cs = Tools.findIndicies(indicT, n - nT, 0);
+		
+		ArrayList<double[]> XT = null;
+		ArrayList<double[]> XC = null;
+		double[] avg_Ts = null;
+		double[] avg_Cs = null;
+		
+		if (obj_fun instanceof SimpleAverageObjectiveFunction) {
+			XT = Tools.subsetMatrix(X, i_Ts); 
+			XC = Tools.subsetMatrix(X, i_Cs);
+			avg_Ts = Tools.colAvg(XT, p);
+			avg_Cs = Tools.colAvg(XC, p);			
+			((SimpleAverageObjectiveFunction)obj_fun).setXTbar(avg_Ts);
+			((SimpleAverageObjectiveFunction)obj_fun).setXCbar(avg_Cs);
+		}
 		double min_obj_val = obj_fun.calc(false); //start at wherever we begin
 			
 		if (diagnostics){
@@ -98,28 +117,28 @@ public class GreedySearch {
 			if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
 				System.out.println("    iter " + iter);
 			}
-			iter++;	
+			iter++;
 //			System.out.println("iter++ " + iter);
 			
 			int[] indicTmin = null;
 			double[] xbardiffjs = null;
 //			System.out.println("indicTmin " + indicTmin);
-			int[] i_Ts = Tools.findIndicies(indicT, nT, 1);
+			
+			
+			
+			i_Ts = Tools.findIndicies(indicT, nT, 1);
 //			System.out.println("i_Ts " + Tools.StringJoin(i_Ts));
-			int[] i_Cs = Tools.findIndicies(indicT, n - nT, 0);
+			i_Cs = Tools.findIndicies(indicT, n - nT, 0);
 //			System.out.println("i_Cs " + Tools.StringJoin(i_Cs));
 			if (semigreedy){ //gotta randomize otherwise inefficient
 				i_Ts = Tools.fisherYatesShuffle(i_Ts, r);
 				i_Cs = Tools.fisherYatesShuffle(i_Cs, r);
 			}
 			//build the first avg vectors for speed
-			ArrayList<double[]> XT = null;
-			ArrayList<double[]> XC = null;
-			double[] avg_Ts = null;
-			double[] avg_Cs = null;
+
 			if (obj_fun instanceof SimpleAverageObjectiveFunction) {
-				XT = Tools.subsetMatrix(Xstd, i_Ts); 
-				XC = Tools.subsetMatrix(Xstd, i_Cs); 
+				XT = Tools.subsetMatrix(X, i_Ts); 
+				XC = Tools.subsetMatrix(X, i_Cs); 
 	
 				avg_Ts = Tools.colAvg(XT, p);
 				avg_Cs = Tools.colAvg(XC, p);
@@ -128,14 +147,18 @@ public class GreedySearch {
 //			System.out.println("INIT XCbar: " + Tools.StringJoin(avg_Cs, ","));
 			int[] switched_pair = new int[2];
 			
-			if (legal_pairs == null) {
-				
-			}
-			
+
+						
 //			System.out.println("iter " + iter + " #i_Ts: " + i_Ts.length + " #i_Cs: " + i_Cs.length);
+			HashMap<Integer, int[]> Ts_to_Cs = setupIndicies(legal_pairs, i_Ts, i_Cs);
+			
 			indices_loop: {
-				for (int i_T : i_Ts){
-					for (int i_C : i_Cs){
+				for (int i_T : Ts_to_Cs.keySet()){
+					for (int i_C : Ts_to_Cs.get(i_T)){
+//						System.out.println("   i_T " + i_T + " i_C " + i_C);
+						
+						
+
 						
 						int[] indicT_proposal = indicT.clone();
 						//make the single switch
@@ -147,11 +170,13 @@ public class GreedySearch {
 						} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
 							((MultipleKernelObjectiveFunction)obj_fun).setSwitch(i_T, i_C);		
 						} else {
+//							System.out.println("   updateAvgVec");
 							updateAvgVec(avg_Ts, i_T, i_C, nT);
 							((SimpleAverageObjectiveFunction)obj_fun).setXTbar(avg_Ts);
 							
 							updateAvgVec(avg_Cs, i_C, i_T, n - nT);
 							((SimpleAverageObjectiveFunction)obj_fun).setXCbar(avg_Cs);
+//							System.out.println("set XTbar and XCbar");
 						}
 
 						
@@ -255,22 +280,34 @@ public class GreedySearch {
 		}
 	}
 
+	private HashMap<Integer, int[]> setupIndicies(HashMap<Integer, int[]> legal_pairs, int[] i_Ts, int[] i_Cs) {
+		HashMap<Integer, int[]> Ts_to_Cs = new HashMap<Integer, int[]>();
+		if (legal_pairs == null) {
+			for (int i_T : i_Ts){
+				Ts_to_Cs.put(i_T, i_Cs);
+			}
+		} else {
+			Ts_to_Cs = legal_pairs;
+		}
+		return Ts_to_Cs;
+	}
+
 	private void createScaledXstd() {
-		Xstdscaled = new double[Xstd.length][];
-		int p = Xstd[0].length;
-		for (int i = 0; i < Xstd.length; i++){
+		Xscaled = new double[X.length][];
+		int p = X[0].length;
+		for (int i = 0; i < X.length; i++){
 			for (int j = 0; j < p; j++){
-				if (Xstdscaled[i] == null){
-					Xstdscaled[i] = new double[p];
+				if (Xscaled[i] == null){
+					Xscaled[i] = new double[p];
 				}
-				Xstdscaled[i][j] = Xstd[i][j] / nT;
+				Xscaled[i][j] = X[i][j] / nT;
 			}			
 		}
 	}
 
 	private void updateAvgVec(double[] avg_vec, int i_remove, int i_add, int nT) {
-		double[] obs_to_remove = Xstdscaled[i_remove];
-		double[] obs_to_add = Xstdscaled[i_add];
+		double[] obs_to_remove = Xscaled[i_remove];
+		double[] obs_to_add = Xscaled[i_add];
 		
 		for (int j = 0; j < obs_to_add.length; j++){
 			avg_vec[j] = avg_vec[j] - obs_to_remove[j] + obs_to_add[j];

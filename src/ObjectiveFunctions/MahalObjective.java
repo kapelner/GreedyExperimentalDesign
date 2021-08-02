@@ -12,9 +12,10 @@ public class MahalObjective extends SimpleAverageObjectiveFunction {
 
 	@Override
 	public double calc(boolean debug_mode) {
+//		System.out.println("MahalObjective.calc XTbar " + XTbar + " XCbar " + XCbar + " Sinvmat " + Sinvmat);
 		//as.numeric(t(X_T_bar_minus_X_C_bar) %*% inv_cov_X %*% X_T_bar_minus_X_C_bar)
 		int p = XTbar.length;
-//		System.out.println("p = " + p);
+//		System.out.println("MahalObjective.calc p = " + p);
 		double[] X_T_bar_minus_X_C_bar = new double[p];
 //		System.out.println("X_T_bar_minus_X_C_bar.toString() = " + X_T_bar_minus_X_C_bar.toString());
 		for (int j = 0; j < p; j++){

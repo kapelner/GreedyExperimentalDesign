@@ -14,6 +14,8 @@
 #' 							using the \code{\link{stopSearch}} method 
 #' @param objective			The objective function to use when searching design space. This is a string
 #' 							with valid values "\code{mahal_dist}" (the default), "\code{abs_sum_diff}" or "\code{kernel}".
+#' @param indicies_pairs	A matrix of size $n/2$ times 2 whose rows are indicies pairs. The values of the entire matrix 
+#' 							must enumerate all indicies $1, ..., n$. The default is \code{NULL} meaning to use all possible pairs.
 #' @param Kgram				If the \code{objective = kernel}, this argument is required to be an \code{n x n} matrix whose
 #' 							entries are the evaluation of the kernel function between subject i and subject j. Default is \code{NULL}.
 #' @param wait				Should the \code{R} terminal hang until all \code{max_designs} vectors are found? The 
@@ -50,6 +52,7 @@ initGreedyExperimentalDesignObject = function(
 		X = NULL, 
 		max_designs = 10000, 
 		objective = "mahal_dist", 
+		indicies_pairs = NULL,
 		Kgram = NULL,
 		wait = FALSE, 
 		start = TRUE,
@@ -71,6 +74,11 @@ initGreedyExperimentalDesignObject = function(
 	}
 	verify_objective_function(objective, Kgram, n)
 	
+	if (!is.null(indicies_pairs)){
+		if (!(all.equal(sort(c(indicies_pairs)), 1 : n))){
+			stop("indicies_pairs must cover all indicies 1, 2, ..., n once each.")
+		}
+	}
 	if (objective == "abs_sum_diff"){
 		#standardize it -- much faster here
 		Xstd = standardize_data_matrix(X)
@@ -110,6 +118,12 @@ initGreedyExperimentalDesignObject = function(
 	if (max_iters <= 0){stop("max_iters must be positive")}
 	if (max_iters < Inf){
 		.jcall(java_obj, "V", "setMaxIters", as.integer(max_iters))
+	}
+	
+	if (!is.null(indicies_pairs)){
+		for (i in 1 : (n / 2)){	
+			.jcall(java_obj, "V", "setLegalPair", as.integer(indicies_pairs[i, ] - 1), as.integer(i - 1)) #java indexes from 0...n-1
+		}
 	}
 	
 	#feed in the gram matrix if applicable

@@ -5,14 +5,14 @@ pacman::p_load(GreedyExperimentalDesign, doParallel, tidyverse, magrittr, data.t
 
 
 
-n = 16
+n = 18
 opt_exp_des = initOptimalExperimentalDesignObject(matrix(rnorm(n), ncol = 1), wait = TRUE)
 all_w = resultsOptimalSearch(opt_exp_des, num_vectors = Inf)$indicTs
 all_w = all_w[all_w[, 1] == 1, ]
 all_w[all_w == 0] = -1
-all_w
+#all_w
 
-ps = c(1, 5, 10)
+ps = c(1, 2, 5, 10)
 covariate_distributions = c("uniform", "normal", "exponential")
 kernels = c("mahalanobis", "quadratic", "exponential", "gaussian")
 Nsim = 25
@@ -72,7 +72,9 @@ for (i_p in 1 : length(ps)){
 }
 save(all_res, file = "kernel_small_n_sims.RData")
 all_res[, seq_var := 1 : .N, by = kernel]
-all_res_ker = dcast(all_res, seq_var + nsim + p + covariate_distribution ~ kernel, value.var = c("obj_vals"))
+all_res[, q := percent_rank(obj_vals), by = c("nsim", "p", "kernel", "covariate_distribution")]
+all_res[, best := if_else(q < 0.05, "yes", "no")]
+all_res_ker = dcast(all_res, seq_var + nsim + p + covariate_distribution ~ kernel, value.var = c("obj_vals", "q", "best"))
 
 all_corr_matrices = list()
 for (p0 in ps){
@@ -89,6 +91,7 @@ for (p0 in ps){
 }
 all_corr_matrices
 
+
 ###viz
 ggplot(all_res[nsim == 1 & p == 1 & covariate_distribution == "normal"]) + 
   geom_histogram(aes(x = log10(obj_vals), fill = kernel), alpha = 0.5, adjust = 10)
@@ -104,12 +107,14 @@ ggplot(all_res[nsim <= 25]) +
         axis.ticks.y = element_blank())
 
 
+
+
 ##
-p0 = 10
+p0 = 5
 nsim0 = 1
 covariate_distribution0 = "uniform"
 fig1 = ggplot(all_res_ker[nsim == nsim0 & p == p0 & covariate_distribution == covariate_distribution0]) +
-  geom_point(aes(x = exponential, y = gaussian)) +
+  geom_point(aes(x = obj_vals_exponential, y = obj_vals_gaussian, color = best_mahalanobis)) +
   scale_x_log10() + scale_y_log10()
 
 fig2 = ggplot(all_res_ker[nsim == nsim0 & p == p0 & covariate_distribution == covariate_distribution0]) +
@@ -135,3 +140,4 @@ annotate_figure(fig1234, top = paste0("nsim = ", nsim0, ", p = ", p0, ", covaria
 #   
 # 
 # gd_res$obj_vals
+

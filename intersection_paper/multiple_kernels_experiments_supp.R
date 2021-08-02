@@ -1,18 +1,66 @@
-options(java.parameters = c("-Xmx20000m"))
-pacman::p_load(GreedyExperimentalDesign, doParallel, tidyverse, magrittr, data.table, viridis, RColorBrewer, 
-               ggsci, lmtest, sandwich, ggpubr)
-#R CMD INSTALL -l ~/Documents/R/win-library/3.6/ GreedyExperimentalDesign
+
+ggplot(data.frame(s = starting_obj_vals, e = gd_res$obj_vals_unordered)) + 
+  geom_point(aes(x = s, y = log10(e)))
+
+gd = initGreedyExperimentalDesignObject(X, 
+                                        max_designs = Nw, Kgram = K, objective = "kernel",
+                                        diagnostics = TRUE, wait = TRUE, num_cores = nC)
+gd_res = resultsGreedySearch(gd, max_vectors = Nw, form = "pos_one_min_one")
+gd_res_ws = gd_res$ending_indicTs
+starting_obj_vals = array(NA, Nw)
+ending_obj_vals = array(NA, Nw)
+for (i in 1 : Nw){
+  starting_obj_vals[i] = gd_res$starting_indicTs[i, , drop = FALSE] %*% K %*% t(gd_res$starting_indicTs[i, , drop = FALSE])
+  ending_obj_vals[i] = gd_res_ws[i, , drop = FALSE] %*% K %*% t(gd_res_ws[i, , drop = FALSE])
+}
+obj_vals_0 = starting_obj_vals[order(ending_obj_vals)]
+obj_vals_f = as.numeric(ending_obj_vals[order(ending_obj_vals)])
+gd_res$obj_vals
+all.equal(obj_vals_f, gd_res$obj_vals)
+
+hist(obj_vals_0, breaks = 50)
+hist(obj_vals_f, breaks = 50)
+hist(log10(obj_vals_0 / obj_vals_f), breaks = 50)
+
+# gd_res$obj_val_by_iters
+# gd_res$num_iters
+
+# obj_val_by_iters = list()
+# for (i in 1 : Nw){
+#   switches = gd_res$switches[[i]] + 1
+#   obj_val_by_iters[[i]] = array(NA, nrow(switches))
+#   w = gd_res$starting_indicTs[i, , drop = FALSE]
+#   obj_val_by_iters[[i]][1] = w %*% K %*% t(w)
+#   for (s in 1 : nrow(switches)){
+#     temp_wl = w[switches[s, 1]]
+#     w[switches[s, 1]] = w[switches[s, 2]]
+#     w[switches[s, 2]] = -w[switches[s, 1]]
+#     assert(sum(w) == 0)
+#     obj_val_by_iters[[i]][s + 1] = w %*% K %*% t(w) #eval_quad_form(K, w)
+#   }
+# }
+# obj_val_by_iters
+# gd_res$obj_val_by_iters
+
+
+# eval_quad_form = function(A, x){
+#   tot = 0
+#   for (i in 1 : nrow(A)){
+#     for (j in 1 : ncol(A)){
+#       tot = tot + A[i, j] * x[i] * x[j]
+#     }
+#   }
+#   tot
+# }
 
 
 
-n = 100
-Nw = 5000
-all_w = complete_randomization_with_forced_balanced(n, Nw, form = "pos_one_min_one")
 
-ps = c(1, 5, 10)
-covariate_distributions = c("uniform", "normal", "exponential")
-kernels = c("mahalanobis", "quadratic", "exponential", "gaussian")
-Nsim = 25
+
+
+
+
+
 
 all_res = data.table()
 
@@ -43,16 +91,41 @@ for (i_p in 1 : length(ps)){
             for (j in 1 : n){
               xi = X[i, , drop = FALSE]
               xj = X[j, , drop = FALSE]
+              #https://people.eecs.berkeley.edu/~jordan/kernels/
+              #http://crsouza.com/2010/03/17/kernel-functions-for-machine-learning-applications/#inverse_multiquadric
               if (kernel == "quadratic"){
                 K[i, j] = (1 + xi %*% t(xj) / 2)^2
               } else if (kernel == "exponential"){
                 K[i, j] = exp(xi %*% t(xj))
               } else if (kernel == "gaussian"){
                 K[i, j] = exp(-sum((xi - xj)^2))
-              }  
+              } else if (kernel == "laplacian"){
+                K[i, j] = exp(-sqrt(sum((xi - xj)^2)))
+              } else if (kernel == "inv_mult_quad"){
+                K[i, j] = 1 / sqrt(sum((xi - xj)^2) + 1)
+              }
             }
           }       
         }
+        
+        # Nw = 1000
+        # microbenchmark::microbenchmark(
+        #   init = {initGreedyExperimentalDesignObject(X, max_designs = Nw, Kgram = K, objective = "kernel", diagnostics = FALSE, wait = TRUE, num_cores = nC)},
+        #   times = 2
+        # )
+        # for (i in 1 : 100){
+        #   gd = initGreedyExperimentalDesignObject(X, max_designs = Nw, Kgram = K, objective = "kernel", diagnostics = FALSE, wait = TRUE, num_cores = nC)
+        # }
+        
+        
+        gd = initGreedyExperimentalDesignObject(X, max_designs = Nw, Kgram = K, objective = "kernel", diagnostics = TRUE, wait = TRUE, num_cores = nC)
+        gd_res = resultsGreedySearch(gd, max_vectors = Nw, form = "pos_one_min_one")
+        gd_res_ws = gd_res$ending_indicTs
+        gd_res_ws[1, , drop = FALSE] %*% K %*% t(gd_res_ws[1, , drop = FALSE])
+        gd_res_ws[2, , drop = FALSE] %*% K %*% t(gd_res_ws[2, , drop = FALSE])
+        
+        
+        gd_res$obj_vals
         
         ####now run the simulation!
         obj_vals = array(NA, nrow(all_w))
@@ -79,7 +152,7 @@ for (p0 in ps){
     for (nsim0 in 1 : Nsim){
       corr_matrix = corr_matrix +
         cor(as.matrix(all_res_ker[nsim == nsim0 & covariate_distribution == covariate_distribution0 & p == p0, 
-                           .(exponential,  gaussian, mahalanobis, quadratic)]))      
+                                  .(exponential,  gaussian, mahalanobis, quadratic)]))      
     }
     all_corr_matrices[[as.character(p0)]][[covariate_distribution0]] = corr_matrix / Nsim
   }
@@ -91,11 +164,11 @@ ggplot(all_res[nsim == 1 & p == 1 & covariate_distribution == "normal"]) +
   geom_histogram(aes(x = log10(obj_vals), fill = kernel), alpha = 0.5, bins = 1000)
 ggplot(all_res[nsim <= 25]) + 
   geom_histogram(aes(x = log10(obj_vals), 
-    fill = covariate_distribution), 
-    alpha = 0.5, 
-    bins = 100) + 
+                     fill = covariate_distribution), 
+                 alpha = 0.5, 
+                 bins = 100) + 
   facet_wrap(p ~ kernel, scales = "free",
-    labeller = label_wrap_gen(multi_line=FALSE)) + #labeller(p = label_both, model = label_both)) +
+             labeller = label_wrap_gen(multi_line=FALSE)) + #labeller(p = label_both, model = label_both)) +
   theme(axis.title.y = element_blank(),
         axis.text.y = element_blank(),
         axis.ticks.y = element_blank())
@@ -124,24 +197,3 @@ fig4 = ggplot(all_res_ker[nsim == nsim0 & p == p0 & covariate_distribution == co
 fig1234 = ggarrange(fig1, fig2, fig3, fig4, nrow = 2, ncol = 2)
 annotate_figure(fig1234, top = paste0("nsim = ", nsim0, ", p = ", p0, ", covariate_distribution = ", covariate_distribution0))
 
-# gd = initGreedyExperimentalDesignObject(X, max_designs = w_max, Kgram = K, objective = "kernel", diagnostics = TRUE)
-# gd_res = resultsGreedySearch(gd, max_vectors = w_max)
-# gd_res_ws = gd_res$ending_indicTs
-# gd_res_ws[1, , drop = FALSE] %*% K %*% t(gd_res_ws[1, , drop = FALSE])
-# gd_res_ws[2, , drop = FALSE] %*% K %*% t(gd_res_ws[2, , drop = FALSE])
-#   
-# 
-
-
-
-
-
-
-
-PCT = .05
-all_res_ker %>% filter(p==1 & covariate_distribution == "normal") %>%
-  mutate(pctile_exp = order(exponential) / n()) %>%
-  mutate(pctile_gau = order(gaussian) / n()) %>%
-  mutate(pctile_mah = order(mahalanobis) / n()) %>%
-  mutate(pctile_qua = order(quadratic) / n()) %>%
-  filter(pctile_gau <= PCT & pctile_mah <= PCT & pctile_qua <= PCT)

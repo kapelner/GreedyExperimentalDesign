@@ -15,8 +15,8 @@ mean(colSums(abs(t(X) %*% t(WBCRD) / (n / 2))))
 
 bin_exp_des = binaryMatchExperimentalDesignSearch(X)
 # bin_exp_des$indices_pairs
-X1 = X[bin_exp_des$indices_pairs[, 1], , drop = FALSE]
-X2 = X[bin_exp_des$indices_pairs[, 2], , drop = FALSE]
+X1 = X[bin_exp_des$indicies_pairs[, 1], , drop = FALSE]
+X2 = X[bin_exp_des$indicies_pairs[, 2], , drop = FALSE]
 # x_pairs = cbind(, )
 colavg1 = colMeans(X1)
 colavg2 = colMeans(X2)
