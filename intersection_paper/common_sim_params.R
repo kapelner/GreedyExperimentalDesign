@@ -75,6 +75,13 @@ all_betas_and_correlations$purely_nonlinear_plus_hetero_tx_effect = list(
   beta_x2_T = 1
 )
 all_betas_and_correlations$purely_nonlinear_sin = list(
-  beta_x1_x_2_sin = 1
+  beta_x1_sin = 10, #to make lots of wiggles
+  beta_x2_sin = 10, #to make lots of wiggles
+  beta_x1_x_2_sin = 5 #to make lots of wiggles
+)
+all_betas_and_correlations$crazy_exponential = list(
+  beta_x1_exp = 1,
+  beta_x2_exp = 1,
+  beta_x1_x_2_exp = 1
 )
 

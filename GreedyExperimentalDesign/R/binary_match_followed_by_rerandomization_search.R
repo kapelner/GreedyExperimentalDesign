@@ -16,7 +16,7 @@
 #' 
 #' @author Adam Kapelner
 #' @export
-binaryMatchFollowedByRerandomizationDesignSearch = function(X, compute_dist_matrix = NULL, ...){
+initBinaryMatchFollowedByRerandomizationDesignSearch = function(X, compute_dist_matrix = NULL, ...){
 	n = nrow(X)
 	p = ncol(X)
 	

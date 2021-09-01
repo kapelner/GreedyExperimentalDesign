@@ -45,7 +45,7 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 	//data inputed from the user's datas
 	protected Integer max_iters;
 	protected int[][] starting_indicTs;
-	protected HashMap<Integer, int[]> legal_pairs;
+	protected ArrayList<int[]> legal_pairs;
 //	protected HashMap<Integer, Integer> legal_pairs_rev;
 	
 	//output
@@ -165,14 +165,13 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 			if (legal_pairs == null) {
 				starting_indicTs[d] = Tools.fisherYatesShuffle(Tools.newBalancedBlankDesign(n), rand_obj);
 			} else {
-				for (int r : legal_pairs.keySet()) {
-					int[] s = legal_pairs.get(r);
+				for (int[] s : legal_pairs) {
 					if (rand_obj.nextDouble() < 0.5) {
-						starting_indicTs[d][r] = 1;
-						starting_indicTs[d][s[0]] = 0;
+						starting_indicTs[d][s[0]] = 1;
+						starting_indicTs[d][s[1]] = 0;
 					} else {
-						starting_indicTs[d][r] = 0;
-						starting_indicTs[d][s[0]] = 1;						
+						starting_indicTs[d][s[0]] = 0;
+						starting_indicTs[d][s[1]] = 1;						
 					}
 				}
 			}
@@ -233,10 +232,9 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 	
 	public void setLegalPair(int[] legal_pair, int i) {
 		if (legal_pairs == null) {
-			legal_pairs = new HashMap<Integer, int[]>(n / 2);
+			legal_pairs = new ArrayList<int[]>(n / 2);
 		}
-		int[] a = {legal_pair[1]};
-		legal_pairs.put(legal_pair[0], a);	
+		legal_pairs.add(i, legal_pair);
 	}
 	
 	public void setDiagnostics(){

@@ -6,6 +6,7 @@
 \usage{
 initBinaryMatchFollowedByGreedyExperimentalDesignSearch(
   X,
+  diff_method = FALSE,
   compute_dist_matrix = NULL,
   ...
 )
@@ -14,6 +15,10 @@ initBinaryMatchFollowedByGreedyExperimentalDesignSearch(
 \item{X}{The design matrix with $n$ rows (one for each subject) and $p$ columns 
 (one for each measurement on the subject). This is the design matrix you wish 
 to search for a more optimal design.}
+
+\item{diff_method}{Once the subjects (i.e. row vectors) are paired, do we create a set of $n$/2 difference
+vectors and feed that into greedy? If \code{TRUE}, this technically breaks the objective
+function, but it is shown to have better performance. The default is thus \code{FALSE}.}
 
 \item{compute_dist_matrix}{The function that computes the distance matrix between every two observations in \code{X}, 
 its only argument. The default is \code{NULL} signifying euclidean squared distance optimized in C++.}

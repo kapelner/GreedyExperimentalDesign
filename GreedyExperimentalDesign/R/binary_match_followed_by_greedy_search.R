@@ -8,6 +8,9 @@
 #' @param X						The design matrix with $n$ rows (one for each subject) and $p$ columns 
 #' 								(one for each measurement on the subject). This is the design matrix you wish 
 #' 								to search for a more optimal design.
+#' @param diff_method			Once the subjects (i.e. row vectors) are paired, do we create a set of $n$/2 difference
+#' 								vectors and feed that into greedy? If \code{TRUE}, this technically breaks the objective
+#' 								function, but it is shown to have better performance. The default is thus \code{FALSE}.
 #' @param compute_dist_matrix	The function that computes the distance matrix between every two observations in \code{X}, 
 #' 								its only argument. The default is \code{NULL} signifying euclidean squared distance optimized in C++.
 #' @param multiple_kernel		If \code{TRUE}, uses the greedy_multiple_kernel_experimental_design otherwise uses the
@@ -18,7 +21,7 @@
 #' 
 #' @author Adam Kapelner
 #' @export
-initBinaryMatchFollowedByGreedyExperimentalDesignSearch = function(X, compute_dist_matrix = NULL, ...){
+initBinaryMatchFollowedByGreedyExperimentalDesignSearch = function(X, diff_method = FALSE, compute_dist_matrix = NULL, ...){
 	n = nrow(X)
 	p = ncol(X)
 	
@@ -26,20 +29,25 @@ initBinaryMatchFollowedByGreedyExperimentalDesignSearch = function(X, compute_di
 		stop("Design matrix must have number of rows divisible by four for this type of design.")
 	}
 	binary_match_design = initBinaryMatchExperimentalDesignSearch(X, compute_dist_matrix)
-	#now we create a reduced matrix X by diffing the pairs
-#	Xdiffs = matrix(NA, nrow = nrow(X) / 2, ncol = ncol(X))
-#	for (i in 1 : (nrow(X) / 2)){		
-#		Xdiffs[i, ] = X[binary_match_design$indices_pairs[i, 1], ] - X[binary_match_design$indices_pairs[i, 2], ]
-#	}
+
 	
 	binary_then_greedy_experimental_design = list()
 	binary_then_greedy_experimental_design$X = X
 	binary_then_greedy_experimental_design$n = n
 	binary_then_greedy_experimental_design$p = p
 	binary_then_greedy_experimental_design$binary_match_design = binary_match_design
-#	binary_then_greedy_experimental_design$greedy_design = initGreedyExperimentalDesignObject(Xdiffs, ...)
-	binary_then_greedy_experimental_design$greedy_design = initGreedyExperimentalDesignObject(X, indicies_pairs = binary_match_design$indicies_pairs, ...)
-	
+	binary_then_greedy_experimental_design$diff_method = diff_method
+	if (diff_method){
+		#we create a reduced matrix X by diffing the pairs
+		Xdiffs = matrix(NA, nrow = nrow(X) / 2, ncol = ncol(X))
+		for (i in 1 : (nrow(X) / 2)){		
+			Xdiffs[i, ] = X[binary_match_design$indices_pairs[i, 1], ] - X[binary_match_design$indices_pairs[i, 2], ]
+		}
+		#now we pass these differences into greedy as-is (note: there is no need to pass in the set of pairs atop)
+		binary_then_greedy_experimental_design$greedy_design = initGreedyExperimentalDesignObject(Xdiffs, ...)
+	} else {
+		binary_then_greedy_experimental_design$greedy_design = initGreedyExperimentalDesignObject(X, indicies_pairs = binary_match_design$indicies_pairs, ...)
+	}
 	class(binary_then_greedy_experimental_design) = "binary_then_greedy_experimental_design"
 	binary_then_greedy_experimental_design
 }
@@ -68,26 +76,30 @@ resultsBinaryMatchThenGreedySearch = function(obj, num_vectors = NULL, compute_o
 	assertChoice(form, c("zero_one", "pos_one_min_one"))
 	
 	ged_res = resultsGreedySearch(obj$greedy_design, num_vectors, "zero_one")
-	#the allocation vectors returned here have entries = 1 if the pair is left unswitched and = 0 if we should switch the pair
 	
-#	indicTs = matrix(NA, nrow = num_vectors, ncol = obj$n)
-#	for (r in 1 : num_vectors){
-#		#first we copy the binary indices starting point
-#		pair_matrix_copy = obj$binary_match_design$indices_pairs
-#		#now we pull out a w_diff
-#		w_diff = ged_res$ending_indicTs[r, ]
-#		
-#		#split the pair matrix based on the greedy vector
-#		pair_matrix_T_is_first = pair_matrix_copy[w_diff == 1, ] #"zero_one" form was forced above
-#		pair_matrix_C_is_first = pair_matrix_copy[w_diff == 0, ] #"zero_one" form was forced above
-#		#now set all the entries as T if T is first and it's in the first column and 0 if second column
-#		indicTs[r, pair_matrix_T_is_first[, 1]] = 1
-#		indicTs[r, pair_matrix_T_is_first[, 2]] = 0
-#		#vice versa if C is first
-#		indicTs[r, pair_matrix_C_is_first[, 1]] = 0
-#		indicTs[r, pair_matrix_C_is_first[, 2]] = 1		
-#	}	
-	indicTs = ged_res$ending_indicTs
+	if (obj$diff_method){
+		#the allocation vectors returned here have entries = 1 if the pair is left unswitched and = 0 if we should switch the pair
+		
+		indicTs = matrix(NA, nrow = num_vectors, ncol = obj$n)
+		for (r in 1 : num_vectors){
+			#first we copy the binary indices starting point
+			pair_matrix_copy = obj$binary_match_design$indices_pairs
+			#now we pull out a w_diff
+			w_diff = ged_res$ending_indicTs[r, ]
+			
+			#split the pair matrix based on the greedy vector
+			pair_matrix_T_is_first = pair_matrix_copy[w_diff == 1, ] #"zero_one" form was forced above
+			pair_matrix_C_is_first = pair_matrix_copy[w_diff == 0, ] #"zero_one" form was forced above
+			#now set all the entries as T if T is first and it's in the first column and 0 if second column
+			indicTs[r, pair_matrix_T_is_first[, 1]] = 1
+			indicTs[r, pair_matrix_T_is_first[, 2]] = 0
+			#vice versa if C is first
+			indicTs[r, pair_matrix_C_is_first[, 1]] = 0
+			indicTs[r, pair_matrix_C_is_first[, 2]] = 1		
+		}		
+	} else {
+		indicTs = ged_res$ending_indicTs
+	}
 	
 	obj_vals = NULL
 	if (compute_obj_vals){

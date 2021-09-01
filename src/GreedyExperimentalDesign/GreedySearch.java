@@ -17,7 +17,7 @@ public class GreedySearch {
 	public GreedySearch(
 		double[][] X, 
 		double[][] Sinvmat, 
-		HashMap<Integer, int[]> legal_pairs,
+		ArrayList<int[]> legal_pairs,
 		double[][] Kgram,
 		int[] indicT, 
 		int[] ending_indicT, 
@@ -145,86 +145,183 @@ public class GreedySearch {
 			}
 //			System.out.println("INIT XTbar: " + Tools.StringJoin(avg_Ts, ","));
 //			System.out.println("INIT XCbar: " + Tools.StringJoin(avg_Cs, ","));
-			int[] switched_pair = new int[2];
+			int[] switched_pair_1 = new int[2];
+			int[] switched_pair_2 = new int[2];
 			
 
-						
-//			System.out.println("iter " + iter + " #i_Ts: " + i_Ts.length + " #i_Cs: " + i_Cs.length);
-			HashMap<Integer, int[]> Ts_to_Cs = setupIndicies(legal_pairs, i_Ts, i_Cs);
 			
-			indices_loop: {
-				for (int i_T : Ts_to_Cs.keySet()){
-					for (int i_C : Ts_to_Cs.get(i_T)){
-//						System.out.println("   i_T " + i_T + " i_C " + i_C);
-						
-						
-
-						
-						int[] indicT_proposal = indicT.clone();
-						//make the single switch
-						indicT_proposal[i_T] = 0; //i_T is the new control
-						indicT_proposal[i_C] = 1; //i_C is the new treatment
-						
-						if (objective.equals(ObjectiveFunction.KER)){	
-							((KernelObjective)obj_fun).setSwitch(i_T, i_C);						
-						} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
-							((MultipleKernelObjectiveFunction)obj_fun).setSwitch(i_T, i_C);		
-						} else {
-//							System.out.println("   updateAvgVec");
-							updateAvgVec(avg_Ts, i_T, i_C, nT);
-							((SimpleAverageObjectiveFunction)obj_fun).setXTbar(avg_Ts);
+			
+			//This is dirty... but almost no choice
+			if (legal_pairs == null) {
+				indices_loop: {
+					for (int i_T : i_Ts){
+						for (int i_C : i_Cs){
+	//						System.out.println("   i_T " + i_T + " i_C " + i_C);
 							
-							updateAvgVec(avg_Cs, i_C, i_T, n - nT);
-							((SimpleAverageObjectiveFunction)obj_fun).setXCbar(avg_Cs);
-//							System.out.println("set XTbar and XCbar");
-						}
-
-						
-						//calculate our objective function (according to the user's specification)
-//						System.out.println("calculating objective function for iter " + iter + " i_T = " + i_T + " i_C = " + i_C);
-						obj_val = obj_fun.calc(false);
-						
-
-//						System.out.println("  i_T = " + i_T + " i_C = " + i_C + " obj_val = " + obj_val);
-						
-						if (obj_val < min_obj_val){
-							indicTmin = indicT_proposal;
-//							System.out.println("best indicT so far " + Tools.StringJoin(indicTmin));
-							min_obj_val = obj_val;
-//							System.out.println("switched i_T " + i_T + " and i_C " + i_C);							
-//							System.out.println("min_obj_val " + min_obj_val + " for iter " + iter);
+							int[] indicT_proposal = indicT.clone();
+							//make the single switch
+							indicT_proposal[i_T] = 0; //i_T is the new control
+							indicT_proposal[i_C] = 1; //i_C is the new treatment
 							
+							if (objective.equals(ObjectiveFunction.KER)){	
+								((KernelObjective)obj_fun).setSwitch(i_T, i_C);						
+							} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
+								((MultipleKernelObjectiveFunction)obj_fun).setSwitch(i_T, i_C);		
+							} else {
+	//							System.out.println("   updateAvgVec");
+								updateAvgVec(avg_Ts, i_T, i_C, nT);
+								((SimpleAverageObjectiveFunction)obj_fun).setXTbar(avg_Ts);
+								
+								updateAvgVec(avg_Cs, i_C, i_T, n - nT);
+								((SimpleAverageObjectiveFunction)obj_fun).setXCbar(avg_Cs);
+	//							System.out.println("set XTbar and XCbar");
+							}
+	
 							
-
-
-							if (diagnostics){
-								switched_pair[0] = i_T;
-								switched_pair[1] = i_C;
-								if (objective.equals(ObjectiveFunction.ABS)){
-									xbardiffjs = ((AbsSumObjectiveWithDiagnostics)obj_fun).getXbardiffjs().clone();
+							//calculate our objective function (according to the user's specification)
+	//						System.out.println("calculating objective function for iter " + iter + " i_T = " + i_T + " i_C = " + i_C);
+							obj_val = obj_fun.calc(false);
+							
+	
+	//						System.out.println("  i_T = " + i_T + " i_C = " + i_C + " obj_val = " + obj_val);
+							
+							if (obj_val < min_obj_val){
+								indicTmin = indicT_proposal;
+	//							System.out.println("best indicT so far " + Tools.StringJoin(indicTmin));
+								min_obj_val = obj_val;
+	//							System.out.println("switched i_T " + i_T + " and i_C " + i_C);							
+	//							System.out.println("min_obj_val " + min_obj_val + " for iter " + iter);
+								
+								if (diagnostics){
+									switched_pair_1[0] = i_T;
+									switched_pair_1[1] = i_C;
+									if (objective.equals(ObjectiveFunction.ABS)){
+										xbardiffjs = ((AbsSumObjectiveWithDiagnostics)obj_fun).getXbardiffjs().clone();
+									}
 								}
+								
+								if (semigreedy){ //semigreedy means as soon as we find improvement, we ditch
+									break indices_loop;
+								}							
 							}
 							
-							if (semigreedy){ //semigreedy means as soon as we find improvement, we ditch
-								break indices_loop;
-							}							
-						}
-						
-						//reset the avg vecs
-						if (obj_fun instanceof SimpleAverageObjectiveFunction){
-							updateAvgVec(avg_Ts, i_C, i_T, nT);
-							updateAvgVec(avg_Cs, i_T, i_C, n - nT);	
+							//reset the avg vecs
+							if (obj_fun instanceof SimpleAverageObjectiveFunction){
+								updateAvgVec(avg_Ts, i_C, i_T, nT);
+								updateAvgVec(avg_Cs, i_T, i_C, n - nT);	
+								
+							}
+						}	
+					}
+				}			
+			} else {
+				indices_loop: {
+					for (int m1 = 0; m1 < (legal_pairs.size() - 1); m1++){
+						for (int m2 = m1; m2 < legal_pairs.size(); m2++){
+	//						System.out.println("   i_T " + i_T + " i_C " + i_C);
 							
-						}
-					}	
-				}
+							//identify the two switches
+							int[] pair1 = legal_pairs.get(m1);
+							int[] pair2 = legal_pairs.get(m2);
+							
+							int i_T_1 = Integer.MIN_VALUE;
+							int i_C_1 = Integer.MIN_VALUE;
+							int i_T_2 = Integer.MIN_VALUE;
+							int i_C_2 = Integer.MIN_VALUE;
+							if (indicT[pair1[0]] == 1) {
+								i_T_1 = pair1[0];
+								i_C_1 = pair1[1];
+							} else {
+								i_T_1 = pair1[1];
+								i_C_1 = pair1[0];
+							}
+							if (indicT[pair2[0]] == 1) {
+								i_T_2 = pair1[1];
+								i_C_2 = pair1[0];
+							} else {
+								i_T_2 = pair1[0];
+								i_C_2 = pair1[1];
+							}
+							//make the two switches
+							int[] indicT_proposal = indicT.clone();
+							indicT_proposal[i_T_1] = 0;
+							indicT_proposal[i_C_1] = 1;
+							indicT_proposal[i_T_2] = 0;
+							indicT_proposal[i_C_2] = 1;
+							
+							if (objective.equals(ObjectiveFunction.KER)){	
+								((KernelObjective)obj_fun).setSwitch(i_T_1, i_C_1);	
+								((KernelObjective)obj_fun).setSwitch(i_T_2, i_C_2);						
+							} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
+								((MultipleKernelObjectiveFunction)obj_fun).setSwitch(i_T_1, i_C_1);	
+								((MultipleKernelObjectiveFunction)obj_fun).setSwitch(i_T_2, i_C_2);		
+							} else {
+	//							System.out.println("   updateAvgVec");
+								updateAvgVec(avg_Ts, i_T_1, i_C_1, nT);
+								updateAvgVec(avg_Ts, i_T_2, i_C_2, nT);
+								((SimpleAverageObjectiveFunction)obj_fun).setXTbar(avg_Ts);
+								
+								updateAvgVec(avg_Cs, i_C_1, i_T_1, n - nT);
+								updateAvgVec(avg_Cs, i_C_2, i_T_2, n - nT);
+								((SimpleAverageObjectiveFunction)obj_fun).setXCbar(avg_Cs);
+	//							System.out.println("set XTbar and XCbar");
+							}
+	
+							
+							//calculate our objective function (according to the user's specification)
+	//						System.out.println("calculating objective function for iter " + iter + " i_T = " + i_T + " i_C = " + i_C);
+							obj_val = obj_fun.calc(false);
+							
+	
+	//						System.out.println("  i_T = " + i_T + " i_C = " + i_C + " obj_val = " + obj_val);
+							
+							if (obj_val < min_obj_val){
+								indicTmin = indicT_proposal;
+	//							System.out.println("best indicT so far " + Tools.StringJoin(indicTmin));
+								min_obj_val = obj_val;
+	//							System.out.println("switched i_T " + i_T + " and i_C " + i_C);							
+	//							System.out.println("min_obj_val " + min_obj_val + " for iter " + iter);
+								
+								
+	
+	
+								if (diagnostics){
+									switched_pair_1[0] = i_T_1;
+									switched_pair_1[1] = i_C_1;
+									switched_pair_2[0] = i_T_2;
+									switched_pair_2[1] = i_C_2;
+									if (objective.equals(ObjectiveFunction.ABS)){
+										xbardiffjs = ((AbsSumObjectiveWithDiagnostics)obj_fun).getXbardiffjs().clone();
+									}
+								}
+								
+								if (semigreedy){ //semigreedy means as soon as we find improvement, we ditch
+									break indices_loop;
+								}							
+							}
+							
+							//reset the avg vecs
+							if (obj_fun instanceof SimpleAverageObjectiveFunction){
+								updateAvgVec(avg_Ts, i_C_1, i_T_1, nT);
+								updateAvgVec(avg_Ts, i_C_2, i_T_2, nT);
+								updateAvgVec(avg_Cs, i_T_1, i_C_1, n - nT);	
+								updateAvgVec(avg_Cs, i_T_2, i_C_2, n - nT);	
+								
+							}
+						}	
+					}
+				}					
 			}
+
 //			System.out.println("after indices loop");
 			
 			//we've finished one iteration by checking every possible switch
 			//record this switch only if it is a real switch
 			if (diagnostics && indicTmin != null){
-				switched_pairs.add(switched_pair);
+				switched_pairs.add(switched_pair_1);
+				if (legal_pairs != null) {
+					switched_pairs.add(switched_pair_2);
+				}
 				min_obj_val_by_iteration.add(min_obj_val);
 				if (objective.equals(ObjectiveFunction.ABS)){
 					xbardiffjs_by_iteration.add(xbardiffjs);
@@ -280,17 +377,17 @@ public class GreedySearch {
 		}
 	}
 
-	private HashMap<Integer, int[]> setupIndicies(HashMap<Integer, int[]> legal_pairs, int[] i_Ts, int[] i_Cs) {
-		HashMap<Integer, int[]> Ts_to_Cs = new HashMap<Integer, int[]>();
-		if (legal_pairs == null) {
-			for (int i_T : i_Ts){
-				Ts_to_Cs.put(i_T, i_Cs);
-			}
-		} else {
-			Ts_to_Cs = legal_pairs;
-		}
-		return Ts_to_Cs;
-	}
+//	private HashMap<Integer, int[]> setupIndicies(HashMap<Integer, int[]> legal_pairs, int[] i_Ts, int[] i_Cs) {
+//		HashMap<Integer, int[]> Ts_to_Cs = new HashMap<Integer, int[]>();
+//		if (legal_pairs == null) {
+//			for (int i_T : i_Ts){
+//				Ts_to_Cs.put(i_T, i_Cs);
+//			}
+//		} else {
+//			Ts_to_Cs = legal_pairs;
+//		}
+//		return Ts_to_Cs;
+//	}
 
 	private void createScaledXstd() {
 		Xscaled = new double[X.length][];

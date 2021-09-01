@@ -1,6 +1,4 @@
-options(java.parameters = c("-Xmx20000m"))
-pacman::p_load(GreedyExperimentalDesign, doParallel, tidyverse, magrittr, data.table, viridis, RColorBrewer, ggsci, lmtest, sandwich)
-#R CMD INSTALL -l ~/Documents/R/win-library/3.6/ GreedyExperimentalDesign
+
 
 cl = makeCluster(nC)
 registerDoParallel(cl)
@@ -9,10 +7,11 @@ clusterExport(cl, list(
   "exp_settings", "all_betas_and_correlations", "Xalls", "betaT", "nR"
 ), envir = environment())
 
-res = data.table(n = factor(), p = factor(), nx = factor(), neps = factor(), nsim = factor(), model = factor(), design = factor(), squared_error = numeric())
+res = data.table(n = factor(), p = factor(), nx = factor(), neps = factor(), nsim = factor(), model = factor(), design = factor(), estimator = factor(), squared_error = numeric())
 
 
 res = foreach(n_setting = 1 : nrow(exp_settings), .inorder = FALSE, .combine = rbind, .packages = "GreedyExperimentalDesign") %dopar% {
+# for (n_setting in 1 : nrow(exp_settings)){
   cat("n_setting: ", n_setting, "/", nrow(exp_settings), " ", paste(exp_settings[n_setting, ], collapse = "-"), "\n")
   
   inner_res = data.frame()
@@ -85,8 +84,14 @@ res = foreach(n_setting = 1 : nrow(exp_settings), .inorder = FALSE, .combine = r
       K = Ks[[kernel_objective_function]]
     } else if (kernel_objective_function == "mahalanobis_plus_gaussian"){
       K = Ks[["mahalanobis"]] + Ks[["gaussian"]]
-    } else if (kernel_objective_function == "mahalanobis_times_gaussian"){
-      K = Ks[["mahalanobis"]] %*% Ks[["gaussian"]]
+    } else if (kernel_objective_function == "mahalanobis_plus_exponential"){
+      K = Ks[["mahalanobis"]] + Ks[["exponential"]]
+    } else if (kernel_objective_function == "mahalanobis_plus_laplacian"){
+      K = Ks[["mahalanobis"]] + Ks[["laplacian"]]
+    } else if (kernel_objective_function == "mahalanobis_plus_inv_mult_quad"){
+      K = Ks[["mahalanobis"]] + Ks[["inv_mult_quad"]]
+    } else if (kernel_objective_function == "mahalanobis_plus_gaussian_plus_inv_mult_quad"){
+      K = Ks[["mahalanobis"]] + Ks[["gaussian"]] + Ks[["inv_mult_quad"]]
     }
     
     cat("  greedy ", kernel_objective_function, "...")
@@ -106,7 +111,7 @@ res = foreach(n_setting = 1 : nrow(exp_settings), .inorder = FALSE, .combine = r
   }
   
   for (nsim in 1 : nR){
-    if (nsim %% 100 == 0){
+    if (nsim %% 100 == 0 || nsim == 1){
       cat("    recording results for ", nsim, "/", nR, "\n")
     }
     
@@ -118,7 +123,12 @@ res = foreach(n_setting = 1 : nrow(exp_settings), .inorder = FALSE, .combine = r
         ifelse(is.null(params$beta_x1sq), 0, params$beta_x1sq) * X[, 1]^2 + 
         ifelse(is.null(params$beta_x2sq), 0, params$beta_x2sq) * X[, 2]^2 + 
         ifelse(is.null(params$beta_x1_x2), 0, params$beta_x1_x2) * X[, 1] * X[, 2] + 
+        sin(ifelse(is.null(params$beta_x1_sin), 0, params$beta_x1_sin) * X[, 1]) +
+        sin(ifelse(is.null(params$beta_x_2_sin), 0, params$beta_x_2_sin) * X[, 2]) +
         sin(ifelse(is.null(params$beta_x1_x_2_sin), 0, params$beta_x1_x_2_sin) * X[, 1] * X[, 2]) +
+        ifelse(is.null(params$beta_x1_exp), 0, params$beta_x1_exp) * exp(X[, 1]) + 
+        ifelse(is.null(params$beta_x2_exp), 0, params$beta_x2_exp) * exp(X[, 2]) + 
+        ifelse(is.null(params$beta_x1_x_2_exp), 0, params$beta_x1_x_2_exp) * exp(X[, 1] * X[, 2]) + 
         epsilons
       
       add_effect_of_w_to_y = function(y, w){
@@ -131,14 +141,27 @@ res = foreach(n_setting = 1 : nrow(exp_settings), .inorder = FALSE, .combine = r
       w = bcrds[nsim, ]
       y_bcrd = add_effect_of_w_to_y(y, w)
       betaT_hat_bcrd = mean(y_bcrd[w == 1]) - mean(y_bcrd[w == 0])
+      betaT_hat_bcrd_ols = lm.fit(cbind(1, w, X), y_bcrd)$coefficients[2]
+      
       #rerand
       w = rerands[nsim, ]
       y_rerand = add_effect_of_w_to_y(y, w)
-      betaT_hat_rerand = mean(y_rerand[w == 1]) - mean(y_rerand[w == 0])        
+      betaT_hat_rerand = mean(y_rerand[w == 1]) - mean(y_rerand[w == 0])
+      betaT_hat_rerand_ols = lm.fit(cbind(1, w, X), y_rerand)$coefficients[2]
+      
       #matching
       w = bmeds_res$indicTs[nsim,]
       y_matching = add_effect_of_w_to_y(y, w)
       betaT_hat_matching = mean(y_matching[w == 1]) - mean(y_matching[w == 0])
+      pairs = bmeds$indicies_pairs
+      iCs = which(w == 0)
+      pairs_to_flip = intersect(iCs, pairs[, 1])
+      flip_encoding = rep(1, n / 2)
+      flip_encoding[match(pairs_to_flip, pairs[, 1])] = -1
+      XDelta = (X[pairs[, 1], ] - X[pairs[, 2], ]) * flip_encoding
+      yDelta = (y_matching[pairs[, 1]] - y_matching[pairs[, 2]]) * flip_encoding
+      betaT_hat_matching_ols = lm.fit(cbind(1, XDelta), yDelta)$coefficients[1]
+      
       #matching then rerand
       # w = matching_then_rerands[nsim,]
       # y_matching_then_rerand = add_effect_of_w_to_y(y, w)
@@ -146,27 +169,43 @@ res = foreach(n_setting = 1 : nrow(exp_settings), .inorder = FALSE, .combine = r
       
       inner_res = rbind(
         inner_res,
-        data.frame(design = "B",   kernel = "",    squared_error = (betaT_hat_bcrd - betaT)^2,                 covariate_distribution = covariate_distribution, n = n, p = p, nx = nx, neps = neps, nsim = nsim, model = model_name),
-        data.frame(design = "R",   kernel = "",    squared_error = (betaT_hat_rerand - betaT)^2,               covariate_distribution = covariate_distribution, n = n, p = p, nx = nx, neps = neps, nsim = nsim, model = model_name),
-        data.frame(design = "M",   kernel = "",    squared_error = (betaT_hat_matching - betaT)^2,             covariate_distribution = covariate_distribution, n = n, p = p, nx = nx, neps = neps, nsim = nsim, model = model_name)
+        data.frame(design = "B",   kernel = "",    squared_error = (betaT_hat_bcrd - betaT)^2,         estimator = "naive", covariate_distribution = covariate_distribution, n = n, p = p, nx = nx, neps = neps, nsim = nsim, model = model_name),
+        data.frame(design = "R",   kernel = "",    squared_error = (betaT_hat_rerand - betaT)^2,       estimator = "naive", covariate_distribution = covariate_distribution, n = n, p = p, nx = nx, neps = neps, nsim = nsim, model = model_name),
+        data.frame(design = "M",   kernel = "",    squared_error = (betaT_hat_matching - betaT)^2,     estimator = "naive", covariate_distribution = covariate_distribution, n = n, p = p, nx = nx, neps = neps, nsim = nsim, model = model_name),
+        data.frame(design = "B",   kernel = "",    squared_error = (betaT_hat_bcrd_ols - betaT)^2,     estimator = "ols",   covariate_distribution = covariate_distribution, n = n, p = p, nx = nx, neps = neps, nsim = nsim, model = model_name),
+        data.frame(design = "R",   kernel = "",    squared_error = (betaT_hat_rerand_ols - betaT)^2,   estimator = "ols",   covariate_distribution = covariate_distribution, n = n, p = p, nx = nx, neps = neps, nsim = nsim, model = model_name),
+        data.frame(design = "M",   kernel = "",    squared_error = (betaT_hat_matching_ols - betaT)^2, estimator = "ols",   covariate_distribution = covariate_distribution, n = n, p = p, nx = nx, neps = neps, nsim = nsim, model = model_name)
       )
       
       
       for (kernel_objective_function in kernel_objective_functions){
         #just greedy
-        w = ged_ress[[kernel_objective_function]]$ending_indicTs[nsim,]
+        w = ged_ress[[kernel_objective_function]]$ending_indicTs[nsim, ]
         y_greedy = add_effect_of_w_to_y(y, w)
-        betaT_greedy = mean(y_greedy[w == 1]) - mean(y_greedy[w == 0])  
+        betaT_greedy = mean(y_greedy[w == 1]) - mean(y_greedy[w == 0])
+        betaT_greedy_ols = lm.fit(cbind(1, w, X), y_greedy)$coefficients[2]  
         
         #matching then greedy
-        w = bmfged_ress[[kernel_objective_function]]$indicTs[nsim,]
+        w = bmfged_ress[[kernel_objective_function]]$indicTs[nsim, ]
         y_matching_then_greedy = add_effect_of_w_to_y(y, w)
         betaT_hat_matching_then_greedy = mean(y_matching_then_greedy[w == 1]) - mean(y_matching_then_greedy[w == 0])
+        pairs = bmfged$binary_match_design$indicies_pairs
+        #we need the first col of pairs to be all T indicies and the second col of pairs to be all C indicies
+        #to do so, we flip the indicies that correspond to C's in the first col
+        iCs = which(w == 0)
+        pairs_to_flip = intersect(iCs, pairs[, 1])
+        flip_encoding = rep(1, n / 2)
+        flip_encoding[match(pairs_to_flip, pairs[, 1])] = -1
+        XDelta = (X[pairs[, 1], ] - X[pairs[, 2], ]) * flip_encoding
+        yDelta = (y_matching_then_greedy[pairs[, 1]] - y_matching_then_greedy[pairs[, 2]]) * flip_encoding
+        betaT_hat_matching_then_greedy_ols = lm.fit(cbind(1, XDelta), yDelta)$coefficients[1]
         
         inner_res = rbind(
           inner_res,
-          data.frame(design = "G",    kernel = kernel_objective_function,  squared_error = (betaT_greedy - betaT)^2,                   covariate_distribution = covariate_distribution, n = n, p = p, nx = nx, neps = neps, nsim = nsim, model = model_name),
-          data.frame(design = "MG",   kernel = kernel_objective_function,  squared_error = (betaT_hat_matching_then_greedy - betaT)^2, covariate_distribution = covariate_distribution, n = n, p = p, nx = nx, neps = neps, nsim = nsim, model = model_name)
+          data.frame(design = "G",    kernel = kernel_objective_function,  squared_error = (betaT_greedy - betaT)^2,                       estimator = "naive", covariate_distribution = covariate_distribution, n = n, p = p, nx = nx, neps = neps, nsim = nsim, model = model_name),
+          data.frame(design = "MG",   kernel = kernel_objective_function,  squared_error = (betaT_hat_matching_then_greedy - betaT)^2,     estimator = "naive", covariate_distribution = covariate_distribution, n = n, p = p, nx = nx, neps = neps, nsim = nsim, model = model_name),
+          data.frame(design = "G",    kernel = kernel_objective_function,  squared_error = (betaT_greedy_ols - betaT)^2,                   estimator = "ols",   covariate_distribution = covariate_distribution, n = n, p = p, nx = nx, neps = neps, nsim = nsim, model = model_name),
+          data.frame(design = "MG",   kernel = kernel_objective_function,  squared_error = (betaT_hat_matching_then_greedy_ols - betaT)^2, estimator = "ols",   covariate_distribution = covariate_distribution, n = n, p = p, nx = nx, neps = neps, nsim = nsim, model = model_name)
         )
       }
     }
