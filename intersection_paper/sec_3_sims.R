@@ -71,3 +71,10 @@ res_summary = res %>%
   mutate(mult_of_best = ase / first(ase)) %>%
   mutate(prop_of_worst = ase / last(ase))
 write_csv(res_summary, file = "basic_results.csv")
+
+
+
+#redo simulation with nX larger, neps larger
+#run MGDX i.e. MG from last paper using DeltaX
+#calc mahal dist for each run
+#debug MG

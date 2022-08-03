@@ -38,7 +38,7 @@ Description: Computes experimental designs for a
 License: GPL-3
 Encoding: UTF-8
 Depends:
-    R (>= 3.2.0),
+    R (>= 4.1.0),
     checkmate,
     rJava (>= 0.9-6)
 SystemRequirements: Java (>= 7.0)

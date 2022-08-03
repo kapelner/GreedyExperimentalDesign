@@ -153,7 +153,7 @@ summary.optimal_experimental_design_search = function(object, ...){
 #' 
 #' @author Adam Kapelner
 #' @export
-resultsOptimalSearch = function(obj, num_vectors = 1, form = "one_zero"){
+resultsOptimalSearch = function(obj, num_vectors = 2, form = "one_zero"){
 	obj_vals = .jcall(obj$java_obj, "[D", "getAllObjectiveVals", simplify = TRUE)
 	ordered_indices = order(obj_vals)
 	

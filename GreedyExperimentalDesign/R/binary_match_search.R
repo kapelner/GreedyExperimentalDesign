@@ -65,16 +65,18 @@ initBinaryMatchExperimentalDesignSearch = function(X, compute_dist_matrix = NULL
 #' @param objective			Should we compute all the objective values for each allocation? Default is \code{NULL} for "no".
 #' 							If non-null, it needs to either be "mahal_dist" or "abs_sum_diff".
 #' @param form				Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's. 
+#' @param prop_flips		Proportion of flips. Default is all. Lower for more correlated assignments (useful for research only).
 #' 
 #' @author Adam Kapelner
 #' @export
-resultsBinaryMatchSearch = function(obj, num_vectors = 1000, objective = NULL, form = "zero_one"){
+resultsBinaryMatchSearch = function(obj, num_vectors = 1000, objective = NULL, form = "zero_one", prop_flips = 1){
 	assertClass(obj, "binary_experimental_design")
 	assertCount(num_vectors, positive = TRUE)
 	assertChoice(form, c("zero_one", "pos_one_min_one"))
 	if (!is.null(objective)){
 		verify_objective_function(objective)
 	}	
+	assertNumeric(prop_flips, lower = 0, upper = 1)
 		
 	#now that we have the pairs, we can randomize for as many vectors as we wish
 	n = obj$n
@@ -91,8 +93,8 @@ resultsBinaryMatchSearch = function(obj, num_vectors = 1000, objective = NULL, f
 		indicTs_batch = matrix(NA, nrow = batch_size, ncol = n)
 		one_minus_one = matrix(
 				sample(c(
-					rep(1, batch_size / 2 * n / 2), 
-					rep(-1, batch_size / 2 * n / 2)
+					rep(1, batch_size / 2 * n * prop_flips / 2), 
+					rep(-1, batch_size / 2 * n * (1 - prop_flips / 2))
 				)), 
 				nrow = batch_size)
 		for (r in 1 : batch_size){
