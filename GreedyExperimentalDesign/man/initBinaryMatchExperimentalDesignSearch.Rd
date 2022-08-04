@@ -4,7 +4,7 @@
 \alias{initBinaryMatchExperimentalDesignSearch}
 \title{Begin a Search for Binary Matching Designs}
 \usage{
-initBinaryMatchExperimentalDesignSearch(X, compute_dist_matrix = NULL)
+initBinaryMatchExperimentalDesignSearch(X, compute_dist_matrix = NULL, D = NULL)
 }
 \arguments{
 \item{X}{The design matrix with $n$ rows (one for each subject) and $p$ columns 
@@ -13,6 +13,8 @@ to search for a more optimal design.}
 
 \item{compute_dist_matrix}{The function that computes the distance matrix between every two observations in \code{X}, 
 its only argument. The default is \code{NULL} signifying euclidean squared distance optimized in C++.}
+
+\item{D}{A distance matrix precomputed. The default is \code{NULL} indicating the distance matrix should be computed.}
 }
 \value{
 An object of type \code{binary_experimental_design} which can be further operated upon.
