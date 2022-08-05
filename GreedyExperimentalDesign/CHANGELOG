@@ -2,6 +2,7 @@ version 1.5
 
 * Greedy Design on Multiple Kernels simultaneously
 * You can pass distance matrices to binary match design initialization
+* You can create binary match designs based on Mahalanobis distances between units using a flag in the design initialization
 
 version 1.4
 

@@ -8,7 +8,8 @@ resultsBinaryMatchSearch(
   obj,
   num_vectors = 1000,
   objective = NULL,
-  form = "zero_one"
+  form = "zero_one",
+  prop_flips = 1
 )
 }
 \arguments{
@@ -20,6 +21,8 @@ resultsBinaryMatchSearch(
 If non-null, it needs to either be "mahal_dist" or "abs_sum_diff".}
 
 \item{form}{Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's.}
+
+\item{prop_flips}{Proportion of flips. Default is all. Lower for more correlated assignments (useful for research only).}
 }
 \description{
 Returns unique allocation vectors that are binary matched. For debugging, you can use \code{set.seed}

@@ -4,7 +4,7 @@
 \alias{resultsOptimalSearch}
 \title{Returns the results (thus far) of the optimal design search}
 \usage{
-resultsOptimalSearch(obj, num_vectors = 1, form = "one_zero")
+resultsOptimalSearch(obj, num_vectors = 2, form = "one_zero")
 }
 \arguments{
 \item{obj}{The \code{optimal_experimental_design} object that is currently running the search}

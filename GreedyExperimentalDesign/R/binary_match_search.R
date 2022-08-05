@@ -9,12 +9,13 @@
 #' 								to search for a more optimal design.
 #' @param compute_dist_matrix	The function that computes the distance matrix between every two observations in \code{X}, 
 #' 								its only argument. The default is \code{NULL} signifying euclidean squared distance optimized in C++.
+#' @param mahal_match			Match using Mahalanobis distance. Default is \code{FALSE}.
 #' @param D						A distance matrix precomputed. The default is \code{NULL} indicating the distance matrix should be computed.
 #' @return						An object of type \code{binary_experimental_design} which can be further operated upon.
 #' 
 #' @author Adam Kapelner
 #' @export
-initBinaryMatchExperimentalDesignSearch = function(X, compute_dist_matrix = NULL, D = NULL){
+initBinaryMatchExperimentalDesignSearch = function(X, mahal_match = FALSE, compute_dist_matrix = NULL, D = NULL){
 	assertClass(X, "matrix")
 	assertClass(compute_dist_matrix, "function", null.ok = TRUE)
 	n = nrow(X)
@@ -38,8 +39,21 @@ initBinaryMatchExperimentalDesignSearch = function(X, compute_dist_matrix = NULL
 		#we don't need to do anything except order them up
 		indicies_pairs = matrix(order(X[, 1]), ncol = 2, byrow = TRUE)
 	} else {
-		if (is.null(compute_dist_matrix) & is.null(D)) {	#default is C++-optimized sqd euclidean distance function		
-			D = compute_distance_matrix_cpp(X)
+		if (is.null(compute_dist_matrix) & is.null(D)) {	
+			if (mahal_match){
+				#C++-optimize one day please!
+				S_X_inv = solve(var(X))
+				D = matrix(NA, nrow = n, ncol = n)
+				for (i in 1 : (n - 1)){ #ensure symmetric
+					for (j in (i + 1) : n){
+						xdiff = X[i, ] - X[j, ]
+						D[i, j] = D[j, i] = xdiff %*% (S_X_inv %*% xdiff)
+					}
+				}
+			} else {
+				#default is C++-optimized sqd euclidean distance function		
+				D = compute_distance_matrix_cpp(X)				
+			}
 		} else if (is.null(D)){
 			D = compute_dist_matrix(X)
 		}
