@@ -1,6 +1,7 @@
 version 1.5
 
 * Greedy Design on Multiple Kernels simultaneously
+* You can pass distance matrices to binary match design initialization
 
 version 1.4
 

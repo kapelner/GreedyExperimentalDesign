@@ -2,7 +2,7 @@ Package: GreedyExperimentalDesign
 Type: Package
 Title: Greedy Experimental Design Construction
 Version: 1.5
-Date: 2021-08-01
+Date: 2022-08-04
 Authors@R: c(
         person("Adam", "Kapelner", email = "kapelner@qc.cuny.edu", role = c("aut", "cre"), comment = c(ORCID = "0000-0001-5985-6792")),
         person("David", "Azriel", email = "davidazr@technion.ac.il", role = "aut"),
@@ -24,8 +24,8 @@ Description: Computes experimental designs for a
     (5) exhaustive enumeration to find the 
     optimal solution (only for small sample sizes)
     (6) Binary pair matching using the 'nbpMatching' library
-    (7) Binary pair matching plus (1) to further optimize balance
-    (8) Binary pair matching plus (3) to further optimize balance
+    (7) Binary pair matching plus design number (1) to further optimize balance
+    (8) Binary pair matching plus design number (3) to further optimize balance
     (9) Hadamard designs
     (10) Simultaneous Multiple Kernels 
     In (1-9) we allow for three objective functions:
