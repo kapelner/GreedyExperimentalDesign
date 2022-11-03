@@ -116,7 +116,7 @@ verify_objective_function = function(objective, Kgram = NULL, n = NULL){
 		if (is.null(Kgram) || is.null(n)){
 			stop("You must specify a gram matrix \"Kgram\" and \"n\".\n")
 		}
-		if (class(Kgram) != "kernelMatrix" && class(Kgram) != "matrix"){
+		if (!inherits(Kgram, "kernelMatrix") && !inherits(Kgram, "matrix")){
 			stop("The gram matrix must be type kernelMatrix or type matrix.\n")
 		}
 		if (!all.equal(dim(Kgram), c(n, n))){

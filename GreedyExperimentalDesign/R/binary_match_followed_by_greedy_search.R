@@ -13,8 +13,6 @@
 #' 								function, but it is shown to have better performance. The default is thus \code{FALSE}.
 #' @param compute_dist_matrix	The function that computes the distance matrix between every two observations in \code{X}, 
 #' 								its only argument. The default is \code{NULL} signifying euclidean squared distance optimized in C++.
-#' @param multiple_kernel		If \code{TRUE}, uses the greedy_multiple_kernel_experimental_design otherwise uses the
-#' 								greedy_experimental_design. Default is \code{FALSE}.
 #' @param ...					Arguments passed to \code{initGreedyExperimentalDesignObject}. It is recommended to set
 #' 								\code{max_designs} otherwise it will default to 10,000.
 #' @return						An object of type \code{binary_experimental_design} which can be further operated upon.

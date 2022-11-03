@@ -4,7 +4,7 @@
 \alias{plot.greedy_multiple_kernel_experimental_design}
 \title{Plots a summary of a \code{greedy_multiple_kernel_experimental_design} object}
 \usage{
-\method{plot}{greedy_experimental_design_search}(x, ...)
+\method{plot}{greedy_multiple_kernel_experimental_design}(x, ...)
 }
 \arguments{
 \item{x}{The \code{greedy_multiple_kernel_experimental_design} object to be summarized in the plot}

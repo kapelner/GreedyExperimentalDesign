@@ -163,7 +163,7 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 		for (i_k in 1 : m){		
 			gd = suppressWarnings(initGreedyExperimentalDesignObject(Xstd, 
 							max_designs = kernel_pre_num_designs, Kgram = Kgrams[[i_k]], objective = "kernel",
-							diagnostics = TRUE, wait = TRUE, num_cores = nC, seed = prelim_seed)) #same seed should guarantee same starting vectors
+							diagnostics = TRUE, wait = TRUE, num_cores = num_cores, seed = prelim_seed)) #same seed should guarantee same starting vectors
 			gd_res = resultsGreedySearch(gd, max_vectors = kernel_pre_num_designs, form = "pos_one_min_one")
 			objvalsi = array(NA, kernel_pre_num_designs)
 			for (i in 1 : kernel_pre_num_designs){
@@ -179,7 +179,7 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 				log10objvalsf = log10(unlist(gd_res$obj_val_by_iters))
 			)
 			#we want to eliminate
-			univariate_kernel_data = subset(univariate_kernel_data, abs(log10objvalsi - log10objvalsf) > 1e-9)
+			univariate_kernel_data = subset(univariate_kernel_data, abs(univariate_kernel_data$log10objvalsi - univariate_kernel_data$log10objvalsf) > 1e-9)
 			univariate_kernel_data$log10_i_over_f = univariate_kernel_data$log10objvalsi - univariate_kernel_data$log10objvalsf
 			univariate_kernel_data = univariate_kernel_data[]
 			univariate_kernel_data$pct_red_max = 1 - univariate_kernel_data$log10_i_over_f / 
@@ -347,7 +347,7 @@ summary.greedy_multiple_kernel_experimental_design = function(object, ...){
 #' @return			An array of order statistics from \link{plot_obj_val_order_statistic} as a list element
 #' 
 #' @author 			Adam Kapelner
-#' @method plot greedy_experimental_design_search
+#' @method plot greedy_multiple_kernel_experimental_design
 #' @export
 plot.greedy_multiple_kernel_experimental_design = function(x, ...){
 	plot.greedy_experimental_design_search(x, ...)
