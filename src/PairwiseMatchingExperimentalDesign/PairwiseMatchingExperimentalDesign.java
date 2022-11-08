@@ -2,7 +2,6 @@ package PairwiseMatchingExperimentalDesign;
 
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 
 import ExperimentalDesign.MultipleSearchExperimentalDesigns;
@@ -27,9 +26,11 @@ public class PairwiseMatchingExperimentalDesign extends MultipleSearchExperiment
 					while (true) {
 						int[] w = generateAllocation();
 						Integer h = Arrays.hashCode(w);
-						if (unique_allocations.get(h) == null) {
-							unique_allocations.put(h, w);
-							break;
+						synchronized(unique_allocations) { //ensure the algorithm is threadsafe
+							if (unique_allocations.get(h) == null) {
+								unique_allocations.put(h, w);
+								break;
+							}						
 						}
 					}
 					
