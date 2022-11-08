@@ -26,25 +26,25 @@ initBinaryMatchFollowedByGreedyExperimentalDesignSearch = function(X, diff_metho
 	if (n %% 4 != 0){
 		stop("Design matrix must have number of rows divisible by four for this type of design.")
 	}
-	binary_match_design = initBinaryMatchExperimentalDesignSearch(X, compute_dist_matrix)
+	binary_match_structure = computeBinaryMatchStructure(X, compute_dist_matrix)
 
 	
 	binary_then_greedy_experimental_design = list()
 	binary_then_greedy_experimental_design$X = X
 	binary_then_greedy_experimental_design$n = n
 	binary_then_greedy_experimental_design$p = p
-	binary_then_greedy_experimental_design$binary_match_design = binary_match_design
+	binary_then_greedy_experimental_design$binary_match_structure = binary_match_structure
 	binary_then_greedy_experimental_design$diff_method = diff_method
 	if (diff_method){
 		#we create a reduced matrix X by diffing the pairs
 		Xdiffs = matrix(NA, nrow = nrow(X) / 2, ncol = ncol(X))
 		for (i in 1 : (nrow(X) / 2)){		
-			Xdiffs[i, ] = X[binary_match_design$indices_pairs[i, 1], ] - X[binary_match_design$indices_pairs[i, 2], ]
+			Xdiffs[i, ] = X[binary_match_structure$indices_pairs[i, 1], ] - X[binary_match_structure$indices_pairs[i, 2], ]
 		}
 		#now we pass these differences into greedy as-is (note: there is no need to pass in the set of pairs atop)
 		binary_then_greedy_experimental_design$greedy_design = initGreedyExperimentalDesignObject(Xdiffs, ...)
 	} else {
-		binary_then_greedy_experimental_design$greedy_design = initGreedyExperimentalDesignObject(X, indicies_pairs = binary_match_design$indicies_pairs, ...)
+		binary_then_greedy_experimental_design$greedy_design = initGreedyExperimentalDesignObject(X, indicies_pairs = binary_match_structure$indicies_pairs, ...)
 	}
 	class(binary_then_greedy_experimental_design) = "binary_then_greedy_experimental_design"
 	binary_then_greedy_experimental_design
@@ -81,7 +81,7 @@ resultsBinaryMatchThenGreedySearch = function(obj, num_vectors = NULL, compute_o
 		indicTs = matrix(NA, nrow = num_vectors, ncol = obj$n)
 		for (r in 1 : num_vectors){
 			#first we copy the binary indices starting point
-			pair_matrix_copy = obj$binary_match_design$indices_pairs
+			pair_matrix_copy = obj$binary_match_structure$indices_pairs
 			#now we pull out a w_diff
 			w_diff = ged_res$ending_indicTs[r, ]
 			

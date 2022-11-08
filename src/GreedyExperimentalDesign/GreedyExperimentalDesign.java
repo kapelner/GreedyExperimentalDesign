@@ -25,7 +25,6 @@
 package GreedyExperimentalDesign;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import ExperimentalDesign.*;
 import ObjectiveFunctions.*;
@@ -154,9 +153,6 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 	}
 
 
-	public int progress(){
-		return num_completed.get();
-	}
 
 
 	private void initializeStartingIndicTs() {

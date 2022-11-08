@@ -1,3 +1,7 @@
+version 1.55
+
+* Speedier implementation of binary pairwise matching designs using Java and Hash functions to check uniqueness
+
 version 1.5
 
 * Greedy Design on Multiple Kernels simultaneously

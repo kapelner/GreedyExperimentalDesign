@@ -2,34 +2,41 @@
 % Please edit documentation in R/binary_match_search.R
 \name{initBinaryMatchExperimentalDesignSearch}
 \alias{initBinaryMatchExperimentalDesignSearch}
-\title{Begin a Search for Binary Matching Designs}
+\title{Begin a Binary Match Search}
 \usage{
 initBinaryMatchExperimentalDesignSearch(
-  X,
-  mahal_match = FALSE,
-  compute_dist_matrix = NULL,
-  D = NULL
+  binary_match_structure,
+  max_designs = 1000,
+  wait = FALSE,
+  start = TRUE,
+  num_cores = 1,
+  seed = NULL,
+  prop_flips = 1
 )
 }
 \arguments{
-\item{X}{The design matrix with $n$ rows (one for each subject) and $p$ columns 
-(one for each measurement on the subject). This is the design matrix you wish 
-to search for a more optimal design.}
+\item{max_designs}{How many random allocation vectors you wish to return. The default is 1000.}
 
-\item{mahal_match}{Match using Mahalanobis distance. Default is \code{FALSE}.}
+\item{wait}{Should the \code{R} terminal hang until all \code{max_designs} vectors are found? The 
+default is \code{FALSE}.}
 
-\item{compute_dist_matrix}{The function that computes the distance matrix between every two observations in \code{X}, 
-its only argument. The default is \code{NULL} signifying euclidean squared distance optimized in C++.}
+\item{start}{Should we start searching immediately (default is \code{TRUE}).}
 
-\item{D}{A distance matrix precomputed. The default is \code{NULL} indicating the distance matrix should be computed.}
-}
-\value{
-An object of type \code{binary_experimental_design} which can be further operated upon.
+\item{num_cores}{The number of CPU cores you wish to use during the search. The default is \code{1}.}
+
+\item{seed}{The set to set for deterministic output. This should only be set if \code{num_cores = 1} otherwise
+the output will not be deterministic. Default is \code{NULL} for no seed set.}
+
+\item{prop_flips}{Proportion of flips. Default is all. Lower for more correlated assignments (useful for research only).}
+
+\item{obj}{The \code{binary_experimental_design} object where the pairs are computed.}
+
+\item{form}{Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's.}
 }
 \description{
-This method creates an object of type binary_experimental_design and will find pairs. You can then
-use the function \code{resultsBinaryMatchSearch} to create randomized allocation vectors. For one column
-in X, we just sort to find the pairs trivially.
+This method creates an object of type pairwise_matching_experimental_design_search and will immediately initiate
+a search through $1_{T}$ space for pairwise match designs based on the structure computed in the function \code{computeBinaryMatchStructure}. 
+For debugging, you can use set the \code{seed} parameter and \code{num_cores = 1} to be assured of deterministic output.
 }
 \author{
 Adam Kapelner

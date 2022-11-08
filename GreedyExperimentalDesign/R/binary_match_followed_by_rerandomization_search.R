@@ -23,18 +23,18 @@ initBinaryMatchFollowedByRerandomizationDesignSearch = function(X, compute_dist_
 	if (n %% 4 != 0){
 		stop("Design matrix must have number of rows divisible by four for this type of design.")
 	}
-	binary_match_design = initBinaryMatchExperimentalDesignSearch(X, compute_dist_matrix)
+	binary_match_structure = computeBinaryMatchStructure(X, compute_dist_matrix)
 	#now we create a reduced matrix X by diffing the pairs
 	Xdiffs = matrix(NA, nrow = nrow(X) / 2, ncol = ncol(X))
 	for (i in 1 : (nrow(X) / 2)){		
-		Xdiffs[i, ] = X[binary_match_design$indicies_pairs[i, 1], ] - X[binary_match_design$indicies_pairs[i, 2], ]
+		Xdiffs[i, ] = X[binary_match_structure$indicies_pairs[i, 1], ] - X[binary_match_structure$indicies_pairs[i, 2], ]
 	}
 	
 	binary_then_rerandomization_experimental_design = list()
 	binary_then_rerandomization_experimental_design$X = X
 	binary_then_rerandomization_experimental_design$n = n
 	binary_then_rerandomization_experimental_design$p = p
-	binary_then_rerandomization_experimental_design$binary_match_design = binary_match_design
+	binary_then_rerandomization_experimental_design$binary_match_structure = binary_match_structure
 	binary_then_rerandomization_experimental_design$rerandomization_design = initRerandomizationExperimentalDesignObject(Xdiffs, ...)
 	class(binary_then_rerandomization_experimental_design) = "binary_then_rerandomization_experimental_design"
 	binary_then_rerandomization_experimental_design
@@ -55,7 +55,7 @@ resultsBinaryMatchThenRerandomizationSearch = function(obj, num_vectors = NULL, 
 	if (is.null(num_vectors)){
 		num_vectors = obj$rerandomization_design$max_designs
 	}
-	num_vectors_completed = rerandomizationSearchCurrentProgress(obj$rerandomization_design)
+	num_vectors_completed = .jcall(obj$rerandomization_design, "I", "progress")
 	if (num_vectors > num_vectors_completed){
 		warning("You requested ", num_vectors, " but only ", num_vectors_completed, " are available.")
 		num_vectors = num_vectors_completed
@@ -69,7 +69,7 @@ resultsBinaryMatchThenRerandomizationSearch = function(obj, num_vectors = NULL, 
 	indicTs = matrix(NA, nrow = num_vectors, ncol = obj$n)
 	for (r in 1 : num_vectors){
 		#first we copy the binary indices starting point
-		pair_matrix_copy = obj$binary_match_design$indicies_pairs
+		pair_matrix_copy = obj$binary_match_structure$indicies_pairs
 		#now we pull out a w_diff
 		w_diff = rerand_res$ending_indicTs[r, ]
 		

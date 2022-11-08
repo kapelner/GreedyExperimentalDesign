@@ -1,8 +1,8 @@
-#' Begin a Search for Binary Matching Designs
+#' Compute Binary Matching Strcuture
 #' 
-#' This method creates an object of type binary_experimental_design and will find pairs. You can then
-#' use the function \code{resultsBinaryMatchSearch} to create randomized allocation vectors. For one column
-#' in X, we just sort to find the pairs trivially.
+#' This method creates an object of type binary_match_structure and will compute pairs. You can then
+#' use the functions \code{initBinaryMatchExperimentalDesignSearch} and \code{resultsBinaryMatchSearch} 
+#' to create randomized allocation vectors. For one column in X, we just sort to find the pairs trivially.
 #' 
 #' @param X						The design matrix with $n$ rows (one for each subject) and $p$ columns 
 #' 								(one for each measurement on the subject). This is the design matrix you wish 
@@ -15,7 +15,7 @@
 #' 
 #' @author Adam Kapelner
 #' @export
-initBinaryMatchExperimentalDesignSearch = function(X, mahal_match = FALSE, compute_dist_matrix = NULL, D = NULL){
+computeBinaryMatchStructure = function(X, mahal_match = FALSE, compute_dist_matrix = NULL, D = NULL){
 	assertClass(X, "matrix")
 	assertClass(compute_dist_matrix, "function", null.ok = TRUE)
 	n = nrow(X)
@@ -70,114 +70,177 @@ initBinaryMatchExperimentalDesignSearch = function(X, mahal_match = FALSE, compu
 	}
 
 	#now return information as an object (just a list)
-	binary_experimental_design = list()
-	binary_experimental_design$X = X
-	binary_experimental_design$n = n
-	binary_experimental_design$p = p
-	binary_experimental_design$compute_dist_matrix = compute_dist_matrix
-	binary_experimental_design$D = D
-	binary_experimental_design$indicies_pairs = indicies_pairs
-	class(binary_experimental_design) = "binary_experimental_design"
-	binary_experimental_design
+	binary_match_structure = list()
+	binary_match_structure$X = X
+	binary_match_structure$n = n
+	binary_match_structure$p = p
+	binary_match_structure$compute_dist_matrix = compute_dist_matrix
+	binary_match_structure$D = D
+	binary_match_structure$indicies_pairs = indicies_pairs
+	class(binary_match_structure) = "binary_match_structure"
+	binary_match_structure
 }
 
-#' Binary Matched vectors
+#' Begin a Binary Match Search
 #' 
-#' Returns unique allocation vectors that are binary matched. For debugging, you can use \code{set.seed}
-#' to be assured of deterministic output.
+#' This method creates an object of type pairwise_matching_experimental_design_search and will immediately initiate
+#' a search through $1_{T}$ space for pairwise match designs based on the structure computed in the function \code{computeBinaryMatchStructure}. 
+#' For debugging, you can use set the \code{seed} parameter and \code{num_cores = 1} to be assured of deterministic output.
 #' 
 #' @param obj 				The \code{binary_experimental_design} object where the pairs are computed.
-#' @param num_vectors		How many random allocation vectors you wish to return. The default is 1000.
-#' @param objective			Should we compute all the objective values for each allocation? Default is \code{NULL} for "no".
-#' 							If non-null, it needs to either be "mahal_dist" or "abs_sum_diff".
-#' @param form				Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's. 
+#' @param max_designs		How many random allocation vectors you wish to return. The default is 1000.
+#' @param wait				Should the \code{R} terminal hang until all \code{max_designs} vectors are found? The 
+#' 							default is \code{FALSE}.
+#' @param start				Should we start searching immediately (default is \code{TRUE}).
+#' @param num_cores			The number of CPU cores you wish to use during the search. The default is \code{1}.
+#' @param form				Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's.
+#' @param seed				The set to set for deterministic output. This should only be set if \code{num_cores = 1} otherwise
+#' 							the output will not be deterministic. Default is \code{NULL} for no seed set. 
 #' @param prop_flips		Proportion of flips. Default is all. Lower for more correlated assignments (useful for research only).
 #' 
 #' @author Adam Kapelner
 #' @export
-resultsBinaryMatchSearch = function(obj, num_vectors = 1000, objective = NULL, form = "zero_one", prop_flips = 1){
-	assertClass(obj, "binary_experimental_design")
-	assertCount(num_vectors, positive = TRUE)
-	assertChoice(form, c("zero_one", "pos_one_min_one"))
-	if (!is.null(objective)){
-		verify_objective_function(objective)
-	}	
+initBinaryMatchExperimentalDesignSearch = function(binary_match_structure, 
+		max_designs = 1000, 
+		wait = FALSE, 
+		start = TRUE,
+		num_cores = 1,
+		seed = NULL,
+		prop_flips = 1){
+	assertClass(binary_match_structure, "binary_match_structure")
+	assertCount(max_designs, positive = TRUE)
 	assertNumeric(prop_flips, lower = 0, upper = 1)
+	
+	if (prop_flips < 1){
+		warning("prop_flips feature is not implemented yet")
+	}
 		
-	#now that we have the pairs, we can randomize for as many vectors as we wish
-	n = obj$n
-	if (2^(n / 2) < num_vectors){
-		stop(paste("The total number of unique vectors is", 2^(n / 2), "which is less than the", num_vectors, "you requested."))
-	}
-
-	minus_half_plus_half = c(-.5, .5)
-	
-	indicTs = matrix(NA, nrow = 0, ncol = n)
-	batch_size = ceiling(num_vectors / 16) * 4 #needs to be divisible by 4 because when divided by two, it must be even
-	
-	repeat {
-		indicTs_batch = matrix(NA, nrow = batch_size, ncol = n)
-		one_minus_one = matrix(
-				sample(c(
-					rep(1, batch_size / 2 * n * prop_flips / 2), 
-					rep(-1, batch_size / 2 * n * (1 - prop_flips / 2))
-				)), 
-				nrow = batch_size)
-		for (r in 1 : batch_size){
-			for (i in 1 : (n / 2)){
-				indicTs_batch[r, obj$indicies_pairs[i, ]] = minus_half_plus_half * one_minus_one[r, i] + 0.5
-			}
-		}
-		indicTs = rbind(indicTs, indicTs_batch)
-		indicTs = unique(indicTs)
-		if (nrow(indicTs) >= num_vectors){
-			indicTs = indicTs[1 : num_vectors, , drop = FALSE]
-			break
-		}
-#		cat("      nrow(indicTs): ", nrow(indicTs), "\n")
+	n = binary_match_structure$n
+	if (2^(n / 2) < max_designs){
+		stop(paste("The total number of unique pairwise matching vectors is only", 2^(n / 2), "which is less than the", max_designs, "you requested."))
 	}
 	
-	obj_vals = NULL
-	if (!is.null(objective)){
-		verify_objective_function(objective)
-		if (objective == "mahal_dist"){
-			SinvX = solve(var(obj$X))
-			obj_vals = apply(indicTs, 1, FUN = function(w){compute_objective_val(obj$X, w, objective = "mahal_dist", SinvX)})
-		} else {
-			obj_vals = apply(indicTs, 1, FUN = function(w){compute_objective_val(obj$X, w, objective = "abs_sum_diff")})	
-		}	
+	if (max_designs > 2^(n / 2) / 2){
+		warning(paste("The total number of unique pairwise matching vectors is only", 2^(n / 2), "which is less than double the", max_designs, "you requested.\nThis can be very slow as the space of designs gets crowded quickly and it is difficult to find new ones."))
 	}
-
-	if (form == "pos_one_min_one"){
-		indicTs = (indicTs - 0.5) * 2
+		
+	#we are about to construct a PairwiseMatchingExperimentalDesign java object. First, let R garbage collect
+	#to clean up previous java design objects that are no longer in use. This is important
+	#because R's garbage collection system does not "see" the size of Java objects. Thus,
+	#you are at risk of running out of memory without this invocation. 
+	gc() #Delete at your own risk!	
+	
+	#now go ahead and create the Java object and set its information
+	java_obj = .jnew("PairwiseMatchingExperimentalDesign.PairwiseMatchingExperimentalDesign")
+	.jcall(java_obj, "V", "setMaxDesigns", as.integer(max_designs))
+	.jcall(java_obj, "V", "setNumCores", as.integer(num_cores))	
+	if (!is.null(seed)){
+		.jcall(java_obj, "V", "setSeed", as.integer(seed))
+		if (num_cores != 1){
+			warning("Setting the seed with multiple cores does not guarantee deterministic output.")
+		}		
 	}
-	list(
-		obj_vals_unordered = obj_vals,
-		indicTs = indicTs,
-		form = form
-	)
+	.jcall(java_obj, "V", "setN", as.integer(n))
+	if (wait){
+		.jcall(java_obj, "V", "setWait")
+	}
+	
+	#now upload the structure to the java object
+	for (i in 1 : (n / 2)){
+		.jcall(java_obj, "V", "setMatchPairIndicies", 
+			as.integer(i - 1), 
+			as.integer(binary_match_structure$indicies_pairs[i, ] - 1))		
+	}
+	
+	#now return information as an object (just a list)
+	pairwise_matching_experimental_design_search = list()
+	pairwise_matching_experimental_design_search$binary_match_structure = binary_match_structure
+	pairwise_matching_experimental_design_search$max_designs = max_designs
+	pairwise_matching_experimental_design_search$start = start
+	pairwise_matching_experimental_design_search$wait = wait
+	pairwise_matching_experimental_design_search$num_cores = num_cores
+	pairwise_matching_experimental_design_search$java_obj = java_obj
+	class(pairwise_matching_experimental_design_search) = "pairwise_matching_experimental_design_search"
+	#if the user wants to run it immediately...
+	if (start){
+		startSearch(pairwise_matching_experimental_design_search)
+	}
+	#return the final object
+	pairwise_matching_experimental_design_search
 }
 
-#' Prints a summary of a \code{binary_experimental_design} object
+#' Binary Pair Match Search
 #' 
-#' @param x			The \code{binary_experimental_design} object to be summarized in the console
+#' Returns the results (thus far) of the binary pair match design search
+#' 
+#' @param obj 					The \code{pairwise_matching_experimental_design_search} object that is currently running the search
+#' @param form					Which form should the assignments be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's. 
+#' 
+#' @author Adam Kapelner
+#' @export
+resultsBinaryMatchSearch = function(obj, form = "one_zero"){
+	assertClass(obj, "pairwise_matching_experimental_design_search")
+	assertChoice(form, c("zero_one", "pos_one_min_one"))
+	
+	ending_indicTs = .jcall(obj$java_obj, "[[I", "getEndingIndicTs", simplify = TRUE)	
+	if (form == "pos_one_min_one"){
+		ending_indicTs = (ending_indicTs - 0.5) * 2
+	}	
+	ending_indicTs
+}
+
+#' Prints a summary of a \code{pairwise_matching_experimental_design_search} object
+#' 
+#' @param x			The \code{pairwise_matching_experimental_design_search} object to be summarized in the console
 #' @param ...		Other parameters to pass to the default print function
 #' 
 #' @author 			Adam Kapelner
-#' @method print binary_experimental_design
+#' @method print 	pairwise_matching_experimental_design_search
 #' @export
-print.binary_experimental_design = function(x, ...){
-	cat("The pairs have been computed. Now use the resultsBinaryMatchSearch to make allocations.\n")
+print.pairwise_matching_experimental_design_search = function(x, ...){
+	progress = .jcall(x$java_obj, "I", "progress")
+	time_elapsed = searchTimeElapsed(x)
+	if (progress == 0){
+		cat("No progress on the PairwiseMatchingExperimentalDesign. Did you run \"startSearch?\"\n")
+	} else if (progress == x$max_designs){
+		cat("The search completed in", time_elapsed, "seconds.", progress, "vectors have been found.\n")
+	} else {
+		cat("The search has found ", progress, " vectors thus far (", round(progress / x$max_designs * 100), "%) in ", time_elapsed," seconds.\n", sep = "")
+	}
 }
 
-#' Prints a summary of a \code{binary_experimental_design} object
+#' Prints a summary of a \code{pairwise_matching_experimental_design_search} object
 #' 
-#' @param object		The \code{binary_experimental_design} object to be summarized in the console
+#' @param object		The \code{pairwise_matching_experimental_design_search} object to be summarized in the console
 #' @param ...			Other parameters to pass to the default summary function
 #' 
 #' @author 				Adam Kapelner
-#' @method summary binary_experimental_design
+#' @method summary pairwise_matching_experimental_design_search
 #' @export
-summary.binary_experimental_design = function(object, ...){
+summary.pairwise_matching_experimental_design_search = function(object, ...){
+	print(object, ...)
+}
+
+#' Prints a summary of a \code{binary_match_structure} object
+#' 
+#' @param x			The \code{binary_match_structure} object to be summarized in the console
+#' @param ...		Other parameters to pass to the default print function
+#' 
+#' @author 			Adam Kapelner
+#' @method print binary_match_structure
+#' @export
+print.binary_match_structure = function(x, ...){
+	cat("The pairs have been computed. Now use the initBinaryMatchExperimentalDesignSearch function to create allocations.\n")
+}
+
+#' Prints a summary of a \code{binary_match_structure} object
+#' 
+#' @param object		The \code{binary_match_structure} object to be summarized in the console
+#' @param ...			Other parameters to pass to the default summary function
+#' 
+#' @author 				Adam Kapelner
+#' @method summary binary_match_structure
+#' @export
+summary.binary_match_structure = function(object, ...){
 	print(object, ...)
 }

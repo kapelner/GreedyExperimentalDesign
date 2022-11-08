@@ -2,31 +2,17 @@
 % Please edit documentation in R/binary_match_search.R
 \name{resultsBinaryMatchSearch}
 \alias{resultsBinaryMatchSearch}
-\title{Binary Matched vectors}
+\title{Binary Pair Match Search}
 \usage{
-resultsBinaryMatchSearch(
-  obj,
-  num_vectors = 1000,
-  objective = NULL,
-  form = "zero_one",
-  prop_flips = 1
-)
+resultsBinaryMatchSearch(obj, form = "one_zero")
 }
 \arguments{
-\item{obj}{The \code{binary_experimental_design} object where the pairs are computed.}
+\item{obj}{The \code{pairwise_matching_experimental_design_search} object that is currently running the search}
 
-\item{num_vectors}{How many random allocation vectors you wish to return. The default is 1000.}
-
-\item{objective}{Should we compute all the objective values for each allocation? Default is \code{NULL} for "no".
-If non-null, it needs to either be "mahal_dist" or "abs_sum_diff".}
-
-\item{form}{Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's.}
-
-\item{prop_flips}{Proportion of flips. Default is all. Lower for more correlated assignments (useful for research only).}
+\item{form}{Which form should the assignments be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's.}
 }
 \description{
-Returns unique allocation vectors that are binary matched. For debugging, you can use \code{set.seed}
-to be assured of deterministic output.
+Returns the results (thus far) of the binary pair match design search
 }
 \author{
 Adam Kapelner

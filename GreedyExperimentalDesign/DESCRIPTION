@@ -1,7 +1,7 @@
 Package: GreedyExperimentalDesign
 Type: Package
 Title: Greedy Experimental Design Construction
-Version: 1.5
+Version: 1.55
 Date: 2022-11-03
 Authors@R: c(
         person("Adam", "Kapelner", email = "kapelner@qc.cuny.edu", role = c("aut", "cre"), comment = c(ORCID = "0000-0001-5985-6792")),
@@ -33,8 +33,8 @@ Description: Computes experimental designs for a
     Sum of absolute differences standardized and
     Kernel distances via the 'kernlab' library. This package is the result of a stream of research that can be found in 
     Krieger, A, Azriel, D and Kapelner, A "Nearly Random Designs with Greatly Improved Balance" (2016) <arXiv:1612.02315>,
-    Krieger, A, Azriel, D and Kapelner, A "Better Experimental Design by Hybridizing Binary Matching with Imbalance Optimization" (2021) <arXiv:2012.03330> and
-    Kapelner, A and Krieger, A, "High-Performing Experimental Design for any Response Function" (2021) <arXiv:>
+    Krieger, A, Azriel, D and Kapelner, A "Better Experimental Design by Hybridizing Binary Matching with Imbalance 
+    Optimization" (2021) <arXiv:2012.03330>.
 License: GPL-3
 Encoding: UTF-8
 Depends:

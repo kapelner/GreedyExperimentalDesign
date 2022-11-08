@@ -58,4 +58,9 @@ public abstract class MultipleSearchExperimentalDesigns extends AllExperimentalD
 	public int[][] getEndingIndicTs(){
 		return ending_indicTs;
 	}
+	
+	public int progress(){
+		return num_completed.get();
+	}
+
 }

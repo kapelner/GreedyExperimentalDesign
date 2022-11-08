@@ -142,7 +142,7 @@ initRerandomizationExperimentalDesignObject = function(
 #' @method print rerandomization_experimental_design_search
 #' @export
 print.rerandomization_experimental_design_search = function(x, ...){
-	progress = rerandomizationSearchCurrentProgress(x)
+	progress = .jcall(x$java_obj, "I", "progress")
 	time_elapsed = searchTimeElapsed(x)
 	if (progress == 0){
 		cat("No progress on the RerandomizationExperimentalDesign. Did you run \"startSearch?\"\n")
@@ -163,15 +163,6 @@ print.rerandomization_experimental_design_search = function(x, ...){
 #' @export
 summary.rerandomization_experimental_design_search = function(object, ...){
 	print(object, ...)
-}
-
-# Returns the number of vectors found by the rerandomization design search
-# 
-# @param obj 		The \code{rerandomization_experimental_design} object that is currently running the search
-# 
-# @author Adam Kapelner
-rerandomizationSearchCurrentProgress = function(obj){
-	.jcall(obj$java_obj, "I", "progress")
 }
 
 
