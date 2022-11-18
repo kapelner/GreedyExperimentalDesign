@@ -4,7 +4,7 @@ pacman::p_load(GreedyExperimentalDesign, doParallel, tidyverse, magrittr, data.t
 nC = 1
 n = 48
 x = 1 : n
-nR = 1e7
+nR = 3e7
 p = 20
 PM_match_structure = computeBinaryMatchStructure(as.matrix(data.frame(x = x)), mahal_match = TRUE)
 PM_match_structure = computeBinaryMatchStructure(matrix(rnorm(n * p), ncol = p, nrow = n), mahal_match = TRUE)

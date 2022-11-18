@@ -15,6 +15,8 @@ initBinaryMatchExperimentalDesignSearch(
 )
 }
 \arguments{
+\item{binary_match_structure}{The \code{binary_experimental_design} object where the pairs are computed.}
+
 \item{max_designs}{How many random allocation vectors you wish to return. The default is 1000.}
 
 \item{wait}{Should the \code{R} terminal hang until all \code{max_designs} vectors are found? The 
@@ -28,10 +30,6 @@ default is \code{FALSE}.}
 the output will not be deterministic. Default is \code{NULL} for no seed set.}
 
 \item{prop_flips}{Proportion of flips. Default is all. Lower for more correlated assignments (useful for research only).}
-
-\item{obj}{The \code{binary_experimental_design} object where the pairs are computed.}
-
-\item{form}{Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's.}
 }
 \description{
 This method creates an object of type pairwise_matching_experimental_design_search and will immediately initiate

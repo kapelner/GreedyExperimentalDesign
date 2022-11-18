@@ -87,16 +87,15 @@ computeBinaryMatchStructure = function(X, mahal_match = FALSE, compute_dist_matr
 #' a search through $1_{T}$ space for pairwise match designs based on the structure computed in the function \code{computeBinaryMatchStructure}. 
 #' For debugging, you can use set the \code{seed} parameter and \code{num_cores = 1} to be assured of deterministic output.
 #' 
-#' @param obj 				The \code{binary_experimental_design} object where the pairs are computed.
-#' @param max_designs		How many random allocation vectors you wish to return. The default is 1000.
-#' @param wait				Should the \code{R} terminal hang until all \code{max_designs} vectors are found? The 
-#' 							default is \code{FALSE}.
-#' @param start				Should we start searching immediately (default is \code{TRUE}).
-#' @param num_cores			The number of CPU cores you wish to use during the search. The default is \code{1}.
-#' @param form				Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's.
-#' @param seed				The set to set for deterministic output. This should only be set if \code{num_cores = 1} otherwise
-#' 							the output will not be deterministic. Default is \code{NULL} for no seed set. 
-#' @param prop_flips		Proportion of flips. Default is all. Lower for more correlated assignments (useful for research only).
+#' @param binary_match_structure 	The \code{binary_experimental_design} object where the pairs are computed.
+#' @param max_designs				How many random allocation vectors you wish to return. The default is 1000.
+#' @param wait						Should the \code{R} terminal hang until all \code{max_designs} vectors are found? The 
+#' 									default is \code{FALSE}.
+#' @param start						Should we start searching immediately (default is \code{TRUE}).
+#' @param num_cores					The number of CPU cores you wish to use during the search. The default is \code{1}.
+#' @param seed						The set to set for deterministic output. This should only be set if \code{num_cores = 1} otherwise
+#' 									the output will not be deterministic. Default is \code{NULL} for no seed set. 
+#' @param prop_flips				Proportion of flips. Default is all. Lower for more correlated assignments (useful for research only).
 #' 
 #' @author Adam Kapelner
 #' @export
