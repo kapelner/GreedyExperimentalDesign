@@ -38,6 +38,7 @@ import ObjectiveFunctions.*;
 public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns {
 	
 	//set by user
+	private int nT;
 	protected boolean diagnostics;
 	protected boolean semigreedy;
 
@@ -129,6 +130,7 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 	
 	protected GreedySearch generateIndividualSearch(int d0) {
 		return new GreedySearch(
+			nT,
 			X, 
 			Sinv, 
 			legal_pairs,
@@ -243,5 +245,9 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 	
 	public void setMaxIters(int max_iters){
 		this.max_iters = max_iters;
+	}
+	
+	public void setNumTreatments(int nT){
+		this.nT = nT;
 	}
 }

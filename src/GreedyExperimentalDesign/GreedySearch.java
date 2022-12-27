@@ -15,6 +15,7 @@ public class GreedySearch {
 	private int nT;
 
 	public GreedySearch(
+		int nT,
 		double[][] X, 
 		double[][] Sinvmat, 
 		ArrayList<int[]> legal_pairs,
@@ -42,7 +43,7 @@ public class GreedySearch {
 
 		
 //		System.out.println("GreedySearch: ready to begin " + d0);
-		nT = Tools.count(indicT, 1);
+		this.nT = nT;
 		
 		ObjectiveFunction obj_fun = null;
 		int p = 0;
