@@ -103,14 +103,10 @@ public abstract class AllExperimentalDesigns extends FileLoggedClass {
 		this.num_cores = num_cores;
 	}	
 	
-	public void setN(int n) throws Exception{
-		if (n % 2 != 0){
-			throw new Exception("n must be even");
-		}
+	public void setN(int n) {
 		this.n = n;
 	}	
-	
-	
+		
 	public void setP(int p){
 		this.p = p;
 	}	

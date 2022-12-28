@@ -80,7 +80,7 @@ public class RerandomizationExperimentalDesign extends MultipleSearchExperimenta
 						break;
 					}
 					
-					int[] indicT = Tools.fisherYatesShuffle(Tools.newBalancedBlankDesign(n), rand_obj);
+					int[] indicT = Tools.fisherYatesShuffle(Tools.newBlankDesign(n, n / 2), rand_obj);
 //					System.out.println("indicT " + Tools.StringJoin(indicT));
 						
 					if (objective.equals(ObjectiveFunction.KER)){

@@ -33,6 +33,7 @@ public class MultipleKernelGreedyExperimentalDesign extends GreedyExperimentalDe
 	
 	protected GreedySearch generateIndividualSearch(int d0) {
 		return new GreedySearch(
+			nT,
 			X,
 			Sinv, 
 			legal_pairs,

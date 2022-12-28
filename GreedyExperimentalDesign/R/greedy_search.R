@@ -9,6 +9,8 @@
 #' 							to search for a more optimal design. This parameter must be specified unless you
 #' 							choose objective type \code{"kernel"} in which case, the \code{Kgram} parameter must
 #' 							be specified.
+#' @param nT				The number of treatments to assign. Default is \code{NULL} which is for forced balance allocation
+#' 							i.e. nT = nC = n / 2 where n is the number of rows in X (or Kgram if X is unspecified).
 #' @param max_designs 		The maximum number of designs to be returned. Default is 10,000. Make this large 
 #' 							so you can search however long you wish as the search can be stopped at any time by
 #' 							using the \code{\link{stopSearch}} method 
@@ -50,6 +52,7 @@
 #' @export
 initGreedyExperimentalDesignObject = function(
 		X = NULL, 
+		nT = NULL,
 		max_designs = 10000, 
 		objective = "mahal_dist", 
 		indicies_pairs = NULL,
@@ -69,10 +72,16 @@ initGreedyExperimentalDesignObject = function(
 		n = nrow(X)
 		p = ncol(X)
 	}
-	if (n %% 2 != 0){
-		stop("Design matrix must have even rows to have equal treatments and controls")
+	if (is.null(nT)){
+		nT = n / 2
 	}
 	verify_objective_function(objective, Kgram, n)
+	
+	checkCount(nT, positive = TRUE, null.ok = FALSE)
+	
+	if (nT != n / 2 & !is.null(indicies_pairs)){
+		stop("indicies_pairs cannot be specified if nT is not half of n")
+	}
 	
 	if (!is.null(indicies_pairs)){
 		if (!(all.equal(sort(c(indicies_pairs)), 1 : n))){

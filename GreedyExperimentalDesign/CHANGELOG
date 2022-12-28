@@ -1,5 +1,6 @@
 version 1.5.6
 * Method that calculates asymmetric cost allocation
+* Greedy Pair Switching algorithm that supports unequal number of treatments and controls
 
 version 1.5.5
 

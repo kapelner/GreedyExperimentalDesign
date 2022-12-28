@@ -62,7 +62,7 @@ public class GreedySearch {
 				((MultipleKernelObjectiveFunction)obj_fun).calcKernelObjDiagnostics();
 			}
 			((MultipleKernelObjectiveFunction)obj_fun).resetKernelSum(); //waste, yes... but cleanest way to do it
-			System.out.println("MultipleKernelObjectiveFunction GreedySearch #" + d0 + " ready to begin");
+//			System.out.println("MultipleKernelObjectiveFunction GreedySearch #" + d0 + " ready to begin");
 		} else {
 			this.X = X;
 			n = X.length;
@@ -87,7 +87,7 @@ public class GreedySearch {
 		
 		Double obj_val = null;		
 		
-		
+//		System.out.println("indicT " + Tools.StringJoin(indicT));
 		int[] i_Ts = Tools.findIndicies(indicT, nT, 1);
 //		System.out.println("i_Ts " + Tools.StringJoin(i_Ts));
 		int[] i_Cs = Tools.findIndicies(indicT, n - nT, 0);
@@ -116,7 +116,7 @@ public class GreedySearch {
 		int iter = 0;
 		while (true){
 			if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
-				System.out.println("    iter " + iter);
+//				System.out.println("    iter " + iter);
 			}
 			iter++;
 //			System.out.println("iter++ " + iter);
@@ -157,7 +157,7 @@ public class GreedySearch {
 				indices_loop: {
 					for (int i_T : i_Ts){
 						for (int i_C : i_Cs){
-	//						System.out.println("   i_T " + i_T + " i_C " + i_C);
+//							System.out.println("   i_T " + i_T + " i_C " + i_C);
 							
 							int[] indicT_proposal = indicT.clone();
 							//make the single switch
@@ -184,7 +184,7 @@ public class GreedySearch {
 							obj_val = obj_fun.calc(false);
 							
 	
-	//						System.out.println("  i_T = " + i_T + " i_C = " + i_C + " obj_val = " + obj_val);
+//							System.out.println("  i_T = " + i_T + " i_C = " + i_C + " obj_val = " + obj_val);
 							
 							if (obj_val < min_obj_val){
 								indicTmin = indicT_proposal;

@@ -123,18 +123,18 @@ public class Tools {
 	    return arr;
 	}
 	
-	static final HashMap<Integer, int[]> allBalancedBlankDesigns = new HashMap<Integer, int[]>();
-	public static int[] newBalancedBlankDesign(int n){
-		if (allBalancedBlankDesigns.get(n) == null) {
+	static final HashMap<Integer, int[]> allBlankDesigns = new HashMap<Integer, int[]>();
+	public static int[] newBlankDesign(int n, int nT){
+		if (allBlankDesigns.get(n) == null) {
 			int[] design = new int[n];
 			for (int i = 0; i < n; i++){
-				design[i] = i < n / 2 ? 1 : 0;
+				design[i] = i < nT ? 1 : 0;
 			}
-			allBalancedBlankDesigns.put(n, design);
+			allBlankDesigns.put(n, design);
 			return design;
 		} 
 		else {
-			return allBalancedBlankDesigns.get(n).clone();
+			return allBlankDesigns.get(n).clone();
 		}
 	}
 	

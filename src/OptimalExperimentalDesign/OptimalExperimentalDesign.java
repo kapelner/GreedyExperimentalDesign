@@ -283,7 +283,7 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 		return getIndicT(d_opt);
 	}
 	
-	public void setN(int n) throws Exception {
+	public void setN(int n) {
 		super.setN(n);
 		n_over_two = n / 2;
 	}

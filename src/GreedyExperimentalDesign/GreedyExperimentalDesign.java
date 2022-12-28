@@ -38,7 +38,7 @@ import ObjectiveFunctions.*;
 public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns {
 	
 	//set by user
-	private int nT;
+	protected int nT;
 	protected boolean diagnostics;
 	protected boolean semigreedy;
 
@@ -161,7 +161,7 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 		starting_indicTs = new int[max_designs][n];
 		for (int d = 0; d < max_designs; d++){
 			if (legal_pairs == null) {
-				starting_indicTs[d] = Tools.fisherYatesShuffle(Tools.newBalancedBlankDesign(n), rand_obj);
+				starting_indicTs[d] = Tools.fisherYatesShuffle(Tools.newBlankDesign(n, nT), rand_obj);
 			} else {
 				for (int[] s : legal_pairs) {
 					if (rand_obj.nextDouble() < 0.5) {
