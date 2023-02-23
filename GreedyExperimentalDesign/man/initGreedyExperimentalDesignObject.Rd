@@ -6,6 +6,7 @@
 \usage{
 initGreedyExperimentalDesignObject(
   X = NULL,
+  nT = NULL,
   max_designs = 10000,
   objective = "mahal_dist",
   indicies_pairs = NULL,
@@ -25,6 +26,9 @@ initGreedyExperimentalDesignObject(
 to search for a more optimal design. This parameter must be specified unless you
 choose objective type \code{"kernel"} in which case, the \code{Kgram} parameter must
 be specified.}
+
+\item{nT}{The number of treatments to assign. Default is \code{NULL} which is for forced balance allocation
+i.e. nT = nC = n / 2 where n is the number of rows in X (or Kgram if X is unspecified).}
 
 \item{max_designs}{The maximum number of designs to be returned. Default is 10,000. Make this large 
 so you can search however long you wish as the search can be stopped at any time by
