@@ -14,7 +14,7 @@ complete_randomization_with_forced_balanced = function(n, r, form = "one_zero"){
 	indicTs = matrix(NA, nrow = r, ncol = n)
 	zero_one_vec = c(rep(0, n / 2), rep(1, n / 2))
 	for (nsim in 1 : r){
-		indicTs[nsim, ] = sample(zero_one_vec)
+		indicTs[nsim, ] = shuffle_cpp(zero_one_vec)
 	}
 	if (form == "pos_one_min_one"){
 		indicTs = (indicTs - 0.5) * 2

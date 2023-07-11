@@ -233,6 +233,9 @@ summary.greedy_experimental_design_search = function(object, ...){
 #' @method plot greedy_experimental_design_search
 #' @export
 plot.greedy_experimental_design_search = function(x, ...){
+	oldpar <- par(no.readonly = TRUE)    # code line i
+	on.exit(par(oldpar))            # code line i + 1
+	
 	par(mfrow = c(1, 2))
 	
 	progress = greedySearchCurrentProgress(x)
@@ -260,6 +263,9 @@ plot_obj_val_by_iter = function(res, runs = NULL){
 		runs = 1 : min(length(res$obj_val_by_iters), 9)
 	}
 	num_to_plot = length(runs)
+	
+	oldpar <- par(no.readonly = TRUE)    # code line i
+	on.exit(par(oldpar))            # code line i + 1
 	
 	par(mfrow = c(ceiling(sqrt(num_to_plot)), ceiling(sqrt(num_to_plot))))
 	for (run in runs){

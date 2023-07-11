@@ -21,6 +21,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// shuffle_cpp
+NumericVector shuffle_cpp(NumericVector w);
+RcppExport SEXP _GreedyExperimentalDesign_shuffle_cpp(SEXP wSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type w(wSEXP);
+    rcpp_result_gen = Rcpp::wrap(shuffle_cpp(w));
+    return rcpp_result_gen;
+END_RCPP
+}
 // compute_avg_abs_rijss_left
 NumericVector compute_avg_abs_rijss_left(NumericMatrix Rij);
 RcppExport SEXP _GreedyExperimentalDesign_compute_avg_abs_rijss_left(SEXP RijSEXP) {
@@ -35,6 +46,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_GreedyExperimentalDesign_compute_distance_matrix_cpp", (DL_FUNC) &_GreedyExperimentalDesign_compute_distance_matrix_cpp, 1},
+    {"_GreedyExperimentalDesign_shuffle_cpp", (DL_FUNC) &_GreedyExperimentalDesign_shuffle_cpp, 1},
     {"_GreedyExperimentalDesign_compute_avg_abs_rijss_left", (DL_FUNC) &_GreedyExperimentalDesign_compute_avg_abs_rijss_left, 1},
     {NULL, NULL, 0}
 };

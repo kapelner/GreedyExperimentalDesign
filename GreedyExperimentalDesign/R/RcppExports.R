@@ -5,6 +5,10 @@ compute_distance_matrix_cpp <- function(X) {
     .Call('_GreedyExperimentalDesign_compute_distance_matrix_cpp', PACKAGE = 'GreedyExperimentalDesign', X)
 }
 
+shuffle_cpp <- function(w) {
+    .Call('_GreedyExperimentalDesign_shuffle_cpp', PACKAGE = 'GreedyExperimentalDesign', w)
+}
+
 compute_avg_abs_rijss_left <- function(Rij) {
     .Call('_GreedyExperimentalDesign_compute_avg_abs_rijss_left', PACKAGE = 'GreedyExperimentalDesign', Rij)
 }
