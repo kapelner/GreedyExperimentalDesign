@@ -1,8 +1,8 @@
 Package: GreedyExperimentalDesign
 Type: Package
 Title: Greedy Experimental Design Construction
-Version: 1.5.7
-Date: 2022-12-27
+Version: 1.5.6.1
+Date: 2023-07-11
 Authors@R: c(
         person("Adam", "Kapelner", email = "kapelner@qc.cuny.edu", role = c("aut", "cre"), comment = c(ORCID = "0000-0001-5985-6792")),
         person("David", "Azriel", email = "davidazr@technion.ac.il", role = "aut"),
@@ -47,6 +47,7 @@ Imports:
     checkmate,
 	nbpMatching,
 	survey,
+	rlist,
 	stringr,
 	stringi,
     kernlab,

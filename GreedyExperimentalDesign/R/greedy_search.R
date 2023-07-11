@@ -401,7 +401,7 @@ resultsGreedySearch = function(obj, max_vectors = 9, form = "one_zero"){
 #' @param c_control			The cost of a control assignment. Default is \code{NULL} for symmetric costs.
 #' @param c_total_max		The total cost constraint of any allocation. Either this or \code{n} must be specified. Default is \code{NULL}.
 #' @param n					The total cost constraint as specified by the total number of subjects. Either this or \code{c_total} must be 
-#' 							specified. Default is \code{NULL}.	
+#' 							specified. Default is \code{NULL}.
 #' 
 #' @return					A list with three keys: n, nT, nC plus specified arguments
 #' 
@@ -419,8 +419,7 @@ optimize_asymmetric_treatment_assignment = function(
 		c_treatment = NULL,
 		c_control = NULL,
 		c_total_max = NULL,
-		n = NULL,
-		round_up_nT = FALSE
+		n = NULL
 	){
 	if ((is.null(c_total_max) & is.null(n)) | (!is.null(c_total_max) & !is.null(n))){
 		stop("n xor c_total must be specified.")

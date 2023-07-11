@@ -8,8 +8,7 @@ optimize_asymmetric_treatment_assignment(
   c_treatment = NULL,
   c_control = NULL,
   c_total_max = NULL,
-  n = NULL,
-  round_up_nT = FALSE
+  n = NULL
 )
 }
 \arguments{
