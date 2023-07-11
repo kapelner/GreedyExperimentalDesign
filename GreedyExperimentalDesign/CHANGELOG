@@ -1,5 +1,5 @@
 version 1.5.7
-* Faster implementation of complete_randomization_with_forced_balanced via std::shuffle
+* Faster implementation of complete_randomization_with_forced_balanced, imbalanced_complete_randomization, and imbalanced_block_designs via std::shuffle
 * We now comply with CRAN policy to not change the user's graphical parameters
 
 version 1.5.6

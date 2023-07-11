@@ -72,7 +72,7 @@ imbalanced_complete_randomization = function(n, prop_T, r, form = "one_zero"){
 	
 	blank = c(rep(1, n_T), rep(0, n - n_T))
 	for (nsim in 1 : r){
-		indicTs[nsim, ] = sample(blank)
+		indicTs[nsim, ] = shuffle_cpp(blank)
 	}
 	if (form == "pos_one_min_one"){
 		indicTs = (indicTs - 0.5) * 2
@@ -112,7 +112,7 @@ imbalanced_block_designs = function(n, prop_T, B, r, form = "one_zero"){
 	for (b in 1 : B){
 		Ws[[b]] = matrix(NA, nrow = r, ncol = n_B)
 		for (nr in 1 : r){
-			Ws[[b]][nr, ] = sample(dummy_block)
+			Ws[[b]][nr, ] = shuffle_cpp(dummy_block)
 		}
 	}
 	indicTs = list.cbind(Ws)
