@@ -10,6 +10,20 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// generate_block_design_cpp
+List generate_block_design_cpp(int B, int nR, int n_B, NumericVector dummy_block);
+RcppExport SEXP _GreedyExperimentalDesign_generate_block_design_cpp(SEXP BSEXP, SEXP nRSEXP, SEXP n_BSEXP, SEXP dummy_blockSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type B(BSEXP);
+    Rcpp::traits::input_parameter< int >::type nR(nRSEXP);
+    Rcpp::traits::input_parameter< int >::type n_B(n_BSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type dummy_block(dummy_blockSEXP);
+    rcpp_result_gen = Rcpp::wrap(generate_block_design_cpp(B, nR, n_B, dummy_block));
+    return rcpp_result_gen;
+END_RCPP
+}
 // compute_distance_matrix_cpp
 NumericMatrix compute_distance_matrix_cpp(NumericMatrix X);
 RcppExport SEXP _GreedyExperimentalDesign_compute_distance_matrix_cpp(SEXP XSEXP) {
@@ -45,6 +59,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_GreedyExperimentalDesign_generate_block_design_cpp", (DL_FUNC) &_GreedyExperimentalDesign_generate_block_design_cpp, 4},
     {"_GreedyExperimentalDesign_compute_distance_matrix_cpp", (DL_FUNC) &_GreedyExperimentalDesign_compute_distance_matrix_cpp, 1},
     {"_GreedyExperimentalDesign_shuffle_cpp", (DL_FUNC) &_GreedyExperimentalDesign_shuffle_cpp, 1},
     {"_GreedyExperimentalDesign_compute_avg_abs_rijss_left", (DL_FUNC) &_GreedyExperimentalDesign_compute_avg_abs_rijss_left, 1},

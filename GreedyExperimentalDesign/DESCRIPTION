@@ -1,8 +1,8 @@
 Package: GreedyExperimentalDesign
 Type: Package
 Title: Greedy Experimental Design Construction
-Version: 1.5.6.1
-Date: 2023-07-11
+Version: 1.5.6.2
+Date: 2025-02-18
 Authors@R: c(
         person("Adam", "Kapelner", email = "kapelner@qc.cuny.edu", role = c("aut", "cre"), comment = c(ORCID = "0000-0001-5985-6792")),
         person("David", "Azriel", email = "davidazr@technion.ac.il", role = "aut"),
@@ -55,4 +55,4 @@ Imports:
 	grDevices, 
 	stats
 URL: https://github.com/kapelner/GreedyExperimentalDesign
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
