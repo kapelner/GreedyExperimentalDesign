@@ -4,7 +4,7 @@
 \alias{hadamardExperimentalDesign}
 \title{Create a Hadamard Design}
 \usage{
-hadamardExperimentalDesign(X, strict = TRUE, form = "zero_one")
+hadamardExperimentalDesign(X, strict = TRUE, form = "one_zero")
 }
 \arguments{
 \item{X}{The design matrix with $n$ rows (one for each subject) and $p$ columns 

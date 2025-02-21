@@ -13,7 +13,7 @@
 #' 
 #' @author Adam Kapelner
 #' @export
-hadamardExperimentalDesign = function(X, strict = TRUE, form = "zero_one"){
+hadamardExperimentalDesign = function(X, strict = TRUE, form = "one_zero"){
 	assertMatrixWithEvenNumRows(X)
 	n = nrow(X)
 	W = t(survey::hadamard(n))[-1, ] #the first row is always just 1's, so remove it

@@ -179,7 +179,7 @@ initBinaryMatchExperimentalDesignSearch = function(binary_match_structure,
 #' @export
 resultsBinaryMatchSearch = function(obj, form = "one_zero"){
 	assertClass(obj, "pairwise_matching_experimental_design_search")
-	assertChoice(form, c("zero_one", "pos_one_min_one"))
+	assertChoice(form, c("one_zero", "pos_one_min_one"))
 	
 	ending_indicTs = .jcall(obj$java_obj, "[[I", "getEndingIndicTs", simplify = TRUE)	
 	if (form == "pos_one_min_one"){

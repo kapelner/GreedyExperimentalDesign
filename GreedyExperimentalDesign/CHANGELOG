@@ -1,5 +1,6 @@
 version 1.5.6.2
 * added a C++ function that creates block design allocations rapidly
+* made standard one_zero over zero_one formats for allocation vectors
 
 version 1.5.6.1
 * Faster implementation of complete_randomization_with_forced_balanced, imbalanced_complete_randomization, and imbalanced_block_designs via std::shuffle

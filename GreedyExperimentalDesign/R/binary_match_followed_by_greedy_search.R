@@ -59,7 +59,7 @@ initBinaryMatchFollowedByGreedyExperimentalDesignSearch = function(X, diff_metho
 #' 
 #' @author Adam Kapelner
 #' @export
-resultsBinaryMatchThenGreedySearch = function(obj, num_vectors = NULL, compute_obj_vals = FALSE, form = "zero_one"){
+resultsBinaryMatchThenGreedySearch = function(obj, num_vectors = NULL, compute_obj_vals = FALSE, form = "one_zero"){
 	assertClass(obj, "binary_then_greedy_experimental_design")
 	assertCount(num_vectors, positive = TRUE, null.ok = TRUE)
 	if (is.null(num_vectors)){
@@ -71,9 +71,9 @@ resultsBinaryMatchThenGreedySearch = function(obj, num_vectors = NULL, compute_o
 		num_vectors = num_vectors_completed
 	}
 	assertLogical(compute_obj_vals)
-	assertChoice(form, c("zero_one", "pos_one_min_one"))
+	assertChoice(form, c("one_zero", "pos_one_min_one"))
 	
-	ged_res = resultsGreedySearch(obj$greedy_design, num_vectors, "zero_one")
+	ged_res = resultsGreedySearch(obj$greedy_design, num_vectors, "one_zero")
 	
 	if (obj$diff_method){
 		#the allocation vectors returned here have entries = 1 if the pair is left unswitched and = 0 if we should switch the pair
@@ -86,8 +86,8 @@ resultsBinaryMatchThenGreedySearch = function(obj, num_vectors = NULL, compute_o
 			w_diff = ged_res$ending_indicTs[r, ]
 			
 			#split the pair matrix based on the greedy vector
-			pair_matrix_T_is_first = pair_matrix_copy[w_diff == 1, ] #"zero_one" form was forced above
-			pair_matrix_C_is_first = pair_matrix_copy[w_diff == 0, ] #"zero_one" form was forced above
+			pair_matrix_T_is_first = pair_matrix_copy[w_diff == 1, ] #"one_zero" form was forced above
+			pair_matrix_C_is_first = pair_matrix_copy[w_diff == 0, ] #"one_zero" form was forced above
 			#now set all the entries as T if T is first and it's in the first column and 0 if second column
 			indicTs[r, pair_matrix_T_is_first[, 1]] = 1
 			indicTs[r, pair_matrix_T_is_first[, 2]] = 0
