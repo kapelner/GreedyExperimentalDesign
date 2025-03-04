@@ -127,3 +127,44 @@ verify_objective_function = function(objective, Kgram = NULL, n = NULL){
 		stop("If you specify a gram matrix, you must specify the \"kernel\" objective.\n")
 	}
 }
+
+
+
+
+####################C++ functions
+
+#' Generates homogeneous block design allocations rapidly
+#' 
+#' @param B 		 	The number of blocks in the design
+#' @param nR			The number of allocation vectors
+#' @param dummy_block   The subvector of allocations in each block that will be permuted
+#' @return				A matrix with rows being the nR random block allocation of sample size B x length(dummy_block).
+#' 
+#' @author Adam Kapelner
+#' @export
+generate_block_design_cpp_wrap <- function(B, nR, dummy_block) {
+    do.call(cbind, .Call('_GreedyExperimentalDesign_generate_block_design_cpp', PACKAGE = 'GreedyExperimentalDesign', B, nR, dummy_block))
+}
+
+
+#' Computes a Euclidean-squared distance matrix rapidly
+#' 
+#' @param X 		 	A numeric matrix with n rows representing each subject and p columns which are measurements on each subject
+#' @return				The n x n Euclidean distances squared
+#' 
+#' @author Adam Kapelner
+#' @export
+compute_distance_matrix_cpp_wrap <- function(X) {
+    .Call('_GreedyExperimentalDesign_compute_distance_matrix_cpp', PACKAGE = 'GreedyExperimentalDesign', X)
+}
+
+#' Shuffles a vector rapidly
+#' 
+#' @param w 		 	The vector to be shuffled
+#' @return				The vector with elements shuffled
+#' 
+#' @author Adam Kapelner
+#' @export
+shuffle_cpp_wrap <- function(w) {
+    .Call('_GreedyExperimentalDesign_shuffle_cpp', PACKAGE = 'GreedyExperimentalDesign', w)
+}

@@ -88,7 +88,7 @@ imbalanced_complete_randomization = function(n, prop_T, r, form = "one_zero"){
 #'   n_B := n / B and n_B * prop_T
 #' 
 #' @param n 		number of observations
-#' @param prop_T    the proportion of treatments needed
+#' @param prop_T    the proportion of treatments allocated
 #' @param B 		the number of blocks
 #' @param r 		number of randomized designs you would like
 #' @param form		Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's. 
@@ -120,4 +120,40 @@ imbalanced_block_designs = function(n, prop_T, B, r, form = "one_zero"){
 		indicTs = (indicTs - 0.5) * 2
 	}
 	indicTs
+}
+
+#' Computes varcov matrix for block designs
+#' 
+#' The varcov matrix for block designs consists of a block-
+#' diagonal matrix with B blocks (the number of blocks in
+#' the design) with off-diagonal entries = -1 / (n/B - 1)
+#' where n is the number of subjected in the study.
+#'
+#' @param n 		number of observations
+#' @param prop_T    the proportion of treatments allocated
+#' @param B 		the number of blocks
+#' @return 			varcov matrix for the specific block design
+#' 
+#' @author Adam Kapelner
+#' @export
+gen_var_cov_matrix_block_designs = function(n, prop_T, B){
+  assertCount(n, positive = TRUE)
+  assert_numeric(prop_T, lower = .Machine$double.eps, upper = 1 - .Machine$double.eps)
+  assertCount(B, positive = TRUE)
+  n_B = n / B
+  assertCount(n_B, positive = TRUE)
+  n_T = n * prop_T 
+  n_C = n * (1 - prop_T)
+  assertCount(n_T, positive = TRUE)
+  assertCount(n_C, positive = TRUE)
+  b = (n_T - n_C)^2 / n^2
+  block_diagonal_sub_matrix = (1 - b) * (
+    n_B / (n_B - 1) * diag(n_B) -
+      1 /   (n_B - 1) * matrix(1, n_B, n_B)
+  )
+  SigmaW = matrix(0, n, n)
+  for (i_B in seq(from = 1, to = n, by = n_B)){
+    SigmaW[i_B : (i_B + n_B - 1), i_B : (i_B + n_B - 1)] = block_diagonal_sub_matrix
+  }
+  SigmaW
 }
