@@ -21,11 +21,7 @@ complete_randomization_with_forced_balanced = function(n, r, form = "one_zero", 
 	indicTs = matrix(NA, nrow = r, ncol = n)
 	one_zero_vec = c(rep(0, n / 2), rep(1, n / 2))
 	for (nsim in 1 : r){
-<<<<<<< HEAD:GreedyExperimentalDesign/R/complete_randomization.R
-		indicTs[nsim, ] = shuffle_cpp(zero_one_vec, seed)
-=======
 		indicTs[nsim, ] = shuffle_cpp(one_zero_vec)
->>>>>>> e3cdcfd92233f6e665aa021ce45bcb43ad44ddd6:GreedyExperimentalDesign/R/complete_randomization_and_blocking.R
 	}
 	if (form == "pos_one_min_one"){
 		indicTs = (indicTs - 0.5) * 2
