@@ -6,15 +6,22 @@
 #' @param n 		number of observations
 #' @param r 		number of randomized designs you would like
 #' @param form		Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's. 
+#' @param seed		An integer which is the seed to be set within C++. Default is \code{NULL} which means the seed is set from the system clock.
 #' @return 			a matrix where each column is one of the \code{r} designs
 #' 
 #' @author Adam Kapelner
 #' @export
-complete_randomization_with_forced_balanced = function(n, r, form = "one_zero"){
+complete_randomization_with_forced_balanced = function(n, r, form = "one_zero", seed = NULL){
+	assert_count(n, positive = TRUE)
+	assert_count(r, positive = TRUE)
+	assert_count(form, c("one_zero", "pos_one_min_one"))
+	assert_count(seed, positive = TRUE, null.ok = TRUE)
+	seed = ifelse(is.null(seed), NA_integer_, as.integer(seed))
+	
 	indicTs = matrix(NA, nrow = r, ncol = n)
 	zero_one_vec = c(rep(0, n / 2), rep(1, n / 2))
 	for (nsim in 1 : r){
-		indicTs[nsim, ] = shuffle_cpp(zero_one_vec)
+		indicTs[nsim, ] = shuffle_cpp(zero_one_vec, seed)
 	}
 	if (form == "pos_one_min_one"){
 		indicTs = (indicTs - 0.5) * 2
@@ -36,6 +43,10 @@ complete_randomization_with_forced_balanced = function(n, r, form = "one_zero"){
 #' @author Adam Kapelner
 #' @export
 complete_randomization = function(n, r, form = "one_zero"){
+	assert_count(n, positive = TRUE)
+	assert_count(r, positive = TRUE)
+	assert_count(form, c("one_zero", "pos_one_min_one"))
+	
 	indicTs = matrix(NA, nrow = r, ncol = n)
 	
 	for (nsim in 1 : r){
