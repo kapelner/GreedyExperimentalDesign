@@ -57,7 +57,7 @@ computeBinaryMatchStructure = function(X, mahal_match = FALSE, compute_dist_matr
 		} else if (is.null(D)){
 			D = compute_dist_matrix(X)
 		}
-		#ensure diagonal is infinity
+		#ensure diagonal is infinity in the R language
 		diag(D) = .Machine$double.xmax
 		
 		#get the matching solution using the heuristic

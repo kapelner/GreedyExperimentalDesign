@@ -8,7 +8,7 @@ resultsBinaryMatchThenGreedySearch(
   obj,
   num_vectors = NULL,
   compute_obj_vals = FALSE,
-  form = "zero_one"
+  form = "one_zero"
 )
 }
 \arguments{

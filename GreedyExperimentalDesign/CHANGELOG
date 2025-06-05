@@ -1,3 +1,11 @@
+version 1.5.6.2
+* added a C++ function that creates block design allocations rapidly
+* exports all toolbox-style blazing-fast C++ functions (a) generate_block_design_cpp_wrap which generates homogeneous block allocation vectors
+(b) compute_distance_matrix_cpp_wrap which generates Euclidean squared distance matrices and (c) shuffle_cpp_wrap a shuffling routine that 
+is faster than base R's sample() function
+* made standard one_zero over zero_one formats for allocation vectors
+* added a function "gen_var_cov_matrix_block_designs" that generated varcov matrices for block designs
+
 version 1.5.6.1
 * Faster implementation of complete_randomization_with_forced_balanced, imbalanced_complete_randomization, and imbalanced_block_designs via std::shuffle
 * Seed for complete_randomization_with_forced_balanced, imbalanced_complete_randomization, and imbalanced_block_designs

@@ -1,7 +1,6 @@
 #' A tool to find many types of a priori experimental designs
 #'
 #' @name 		GreedyExperimentalDesign
-#' @docType 	package
 #' @title 		Greedy Experimental Design Search
 #' @author 		Adam Kapelner \email{kapelner@@qc.cuny.edu}
 #' @references 	Kapelner, A
