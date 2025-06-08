@@ -4,7 +4,7 @@
 \alias{imbalanced_complete_randomization}
 \title{Implements unequally allocated complete randomization}
 \usage{
-imbalanced_complete_randomization(n, prop_T, r, form = "one_zero")
+imbalanced_complete_randomization(n, prop_T, r, form = "one_zero", seed = NULL)
 }
 \arguments{
 \item{n}{number of observations}
@@ -14,6 +14,8 @@ imbalanced_complete_randomization(n, prop_T, r, form = "one_zero")
 \item{r}{number of randomized designs you would like}
 
 \item{form}{Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's.}
+
+\item{seed}{An integer which is the seed to be set within C++. Default is \code{NULL} which means the seed is set from the system clock.}
 }
 \value{
 a matrix where each column is one of the \code{r} designs

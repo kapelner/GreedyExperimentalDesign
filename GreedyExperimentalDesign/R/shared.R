@@ -168,3 +168,24 @@ compute_distance_matrix_cpp_wrap <- function(X) {
 shuffle_cpp_wrap <- function(w) {
     .Call('_GreedyExperimentalDesign_shuffle_cpp', PACKAGE = 'GreedyExperimentalDesign', w)
 }
+
+#' Tests if a vector has all elements the same
+#' 
+#' @param w 		 	The vector to be queried
+#' @return				A boolean if it has all same elements
+#' 
+#' @author Adam Kapelner
+#' @export
+all_elements_same_cpp_wrap <- function(w) {
+    .Call('_GreedyExperimentalDesign_all_elements_same_cpp', PACKAGE = 'GreedyExperimentalDesign', w)
+}
+
+#' Create all binary Y's convenience function using a randomized design
+#' 
+#' @return				A matrix of boolean Y's
+#' 
+#' @author Adam Kapelner
+#' @export
+create_all_ys_cpp_wrap <- function(pCs, pTs, W, two_n, nY) {
+    .Call('_GreedyExperimentalDesign_create_all_ys_cpp', PACKAGE = 'GreedyExperimentalDesign', pCs, pTs, W, two_n, nY)
+}

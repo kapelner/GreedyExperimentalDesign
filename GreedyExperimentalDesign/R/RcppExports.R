@@ -9,8 +9,16 @@ compute_distance_matrix_cpp <- function(X) {
     .Call('_GreedyExperimentalDesign_compute_distance_matrix_cpp', PACKAGE = 'GreedyExperimentalDesign', X)
 }
 
-shuffle_cpp <- function(w) {
-    .Call('_GreedyExperimentalDesign_shuffle_cpp', PACKAGE = 'GreedyExperimentalDesign', w)
+shuffle_cpp <- function(w, seed) {
+    .Call('_GreedyExperimentalDesign_shuffle_cpp', PACKAGE = 'GreedyExperimentalDesign', w, seed)
+}
+
+create_all_ys_cpp <- function(pCs, pTs, W, two_n, nY) {
+    .Call('_GreedyExperimentalDesign_create_all_ys_cpp', PACKAGE = 'GreedyExperimentalDesign', pCs, pTs, W, two_n, nY)
+}
+
+all_elements_same_cpp <- function(vec) {
+    .Call('_GreedyExperimentalDesign_all_elements_same_cpp', PACKAGE = 'GreedyExperimentalDesign', vec)
 }
 
 compute_avg_abs_rijss_left <- function(Rij) {

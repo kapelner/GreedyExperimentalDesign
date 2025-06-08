@@ -17,11 +17,12 @@ complete_randomization_with_forced_balanced = function(n, r, form = "one_zero", 
 	assert_count(form, c("one_zero", "pos_one_min_one"))
 	assert_count(seed, positive = TRUE, null.ok = TRUE)
 	seed = ifelse(is.null(seed), NA_integer_, as.integer(seed))
+	assert_integer(seed)
 	
 	indicTs = matrix(NA, nrow = r, ncol = n)
 	one_zero_vec = c(rep(0, n / 2), rep(1, n / 2))
 	for (nsim in 1 : r){
-		indicTs[nsim, ] = shuffle_cpp(one_zero_vec)
+		indicTs[nsim, ] = shuffle_cpp(one_zero_vec, seed)
 	}
 	if (form == "pos_one_min_one"){
 		indicTs = (indicTs - 0.5) * 2
@@ -67,23 +68,26 @@ complete_randomization = function(n, r, form = "one_zero"){
 #' @param prop_T    the proportion of treatments needed
 #' @param r 		number of randomized designs you would like
 #' @param form		Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's. 
+#' @param seed      An integer which is the seed to be set within C++. Default is \code{NULL} which means the seed is set from the system clock.
 #' @return 			a matrix where each column is one of the \code{r} designs
 #' 
 #' @author Adam Kapelner
 #' @export
-imbalanced_complete_randomization = function(n, prop_T, r, form = "one_zero"){
+imbalanced_complete_randomization = function(n, prop_T, r, form = "one_zero", seed = NULL){
 	assert_count(n, positive = TRUE)
 	assert_numeric(prop_T, lower = .Machine$double.eps, upper = 1 - .Machine$double.eps)
 	n_T = n * prop_T
 	assert_count(n_T, positive = TRUE)
 	assert_count(r, positive = TRUE)
 	assert_choice(form, c("one_zero", "pos_one_min_one"))
+	seed = ifelse(is.null(seed), NA_integer_, as.integer(seed))
+	assert_integer(seed)
 	
 	indicTs = matrix(NA, nrow = r, ncol = n)
 	
 	blank = c(rep(1, n_T), rep(0, n - n_T))
 	for (nsim in 1 : r){
-		indicTs[nsim, ] = shuffle_cpp(blank)
+		indicTs[nsim, ] = shuffle_cpp(blank, seed)
 	}
 	if (form == "pos_one_min_one"){
 		indicTs = (indicTs - 0.5) * 2
@@ -103,27 +107,30 @@ imbalanced_complete_randomization = function(n, prop_T, r, form = "one_zero"){
 #' @param B 		the number of blocks
 #' @param r 		number of randomized designs you would like
 #' @param form		Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's. 
+#' @param seed      An integer which is the seed to be set within C++. Default is \code{NULL} which means the seed is set from the system clock.
 #' @return 			a matrix where each column is one of the \code{r} designs
 #' 
 #' @author Adam Kapelner
 #' @export
-imbalanced_block_designs = function(n, prop_T, B, r, form = "one_zero"){
-	assertCount(n, positive = TRUE)
+imbalanced_block_designs = function(n, prop_T, B, r, form = "one_zero", seed = NULL){
+	assert_count(n, positive = TRUE)
 	assert_numeric(prop_T, lower = .Machine$double.eps, upper = 1 - .Machine$double.eps)
-	assertCount(B, positive = TRUE) 
-	assertCount(r, positive = TRUE)
+	assert_count(B, positive = TRUE) 
+	assert_count(r, positive = TRUE)
+	seed = ifelse(is.null(seed), NA_integer_, as.integer(seed))
+	assert_integer(seed)
 	
 	n_B = n / B
 	n_B_T = n_B * prop_T
-	assertCount(n_B, positive = TRUE)
-	assertCount(n_B_T, positive = TRUE)
+	assert_count(n_B, positive = TRUE)
+	assert_count(n_B_T, positive = TRUE)
 	dummy_block = c(rep(1, n_B_T), rep(0, n_B - n_B_T))
 	
 	Ws = list()
 	for (b in 1 : B){
 		Ws[[b]] = matrix(NA, nrow = r, ncol = n_B)
 		for (nr in 1 : r){
-			Ws[[b]][nr, ] = shuffle_cpp(dummy_block)
+			Ws[[b]][nr, ] = shuffle_cpp(dummy_block, seed)
 		}
 	}
 	indicTs = list.cbind(Ws)
@@ -160,7 +167,7 @@ gen_var_cov_matrix_block_designs = function(n, prop_T, B){
   b = (n_T - n_C)^2 / n^2
   block_diagonal_sub_matrix = (1 - b) * (
     n_B / (n_B - 1) * diag(n_B) -
-      1 /   (n_B - 1) * matrix(1, n_B, n_B)
+      1 / (n_B - 1) * matrix(1, n_B, n_B)
   )
   SigmaW = matrix(0, n, n)
   for (i_B in seq(from = 1, to = n, by = n_B)){
