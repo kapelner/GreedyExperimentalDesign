@@ -21,6 +21,10 @@ all_elements_same_cpp <- function(vec) {
     .Call('_GreedyExperimentalDesign_all_elements_same_cpp', PACKAGE = 'GreedyExperimentalDesign', vec)
 }
 
+gen_pm_designs_cpp <- function(indicies_pairs, n, r) {
+    .Call('_GreedyExperimentalDesign_gen_pm_designs_cpp', PACKAGE = 'GreedyExperimentalDesign', indicies_pairs, n, r)
+}
+
 compute_avg_abs_rijss_left <- function(Rij) {
     .Call('_GreedyExperimentalDesign_compute_avg_abs_rijss_left', PACKAGE = 'GreedyExperimentalDesign', Rij)
 }

@@ -189,3 +189,16 @@ all_elements_same_cpp_wrap <- function(w) {
 create_all_ys_cpp_wrap <- function(pCs, pTs, W, two_n, nY) {
     .Call('_GreedyExperimentalDesign_create_all_ys_cpp', PACKAGE = 'GreedyExperimentalDesign', pCs, pTs, W, two_n, nY)
 }
+
+#' Create PM designs
+#' 
+#' @param indicies_pairs	A matrix of n x 2 indicies where each row is a pair of subjects' indicies
+#' @param n					Half the number of subjects i.e. the number of pairs
+#' @param r					The number of assignments to generate
+#' @return					A matrix of r x 2n PM designs of +1/-1 assignments
+#' 
+#' @author Adam Kapelner
+#' @export
+gen_pm_designs_cpp_wrap <- function(indicies_pairs, n, r) {
+    .Call('_GreedyExperimentalDesign_gen_pm_designs_cpp', PACKAGE = 'GreedyExperimentalDesign', indicies_pairs, n, r)
+}

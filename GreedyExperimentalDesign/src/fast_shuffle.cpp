@@ -41,3 +41,16 @@ bool all_elements_same_cpp(NumericVector vec) {
 	}
 	return true;
 }  
+
+// [[Rcpp::export]]
+NumericMatrix gen_pm_designs_cpp(NumericMatrix indicies_pairs, int n, int r){
+	NumericMatrix W(r, n * 2);
+	for (int w = 0; w < r; w++){
+	  for (int i = 0; i < n; i++){
+	    int a = (rand() % 2) * 2 - 1;
+	    W(w, indicies_pairs(i, 0)) = a;
+	    W(w, indicies_pairs(i, 1)) = -a;
+	  }
+	}
+	return W;
+}
