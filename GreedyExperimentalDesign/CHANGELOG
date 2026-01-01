@@ -1,3 +1,6 @@
+version 1.5.6.3
+* Fixed the Java-side cache so newBlankDesign no longer reuses a design with the wrong nT when the same n is requested again, which was causing findIndicies to overrun its array (issue #3 on github)
+
 version 1.5.6.2
 * added a C++ function that creates block design allocations rapidly
 * exports all toolbox-style blazing-fast C++ functions (a) generate_block_design_cpp_wrap which generates homogeneous block allocation vectors

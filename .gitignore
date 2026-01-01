@@ -11,6 +11,10 @@ gurobi_numerical_optimization_via_R_package_Gree.log
 /src/*.o
 /src/*.dll
 /src/RcppExports.*
+/GreedyExperimentalDesign/src/*.o
+/GreedyExperimentalDesign/src/*.dll
+/GreedyExperimentalDesign/src/*.so
+/GreedyExperimentalDesign/src/RcppExports.*
 /src/.idea/*
 .DS_Store
 *.RData
