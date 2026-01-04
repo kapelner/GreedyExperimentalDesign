@@ -49,6 +49,7 @@ public class MultipleKernelGreedyExperimentalDesign extends GreedyExperimentalDe
 			d0, 
 			semigreedy, 
 			diagnostics, 
+			verbose,
 			max_iters, 
 			rand_obj,
 			search_stopped,
@@ -67,6 +68,31 @@ public class MultipleKernelGreedyExperimentalDesign extends GreedyExperimentalDe
 		}
 		for (int j = 0; j < n; j++){
 			Kgrams.get(k)[i0][j] = kgram_i[j];
+		}
+	}
+
+	public void setSpecificKgramMatrix(int k, double[] kgram_flat, int n){
+		if (Kgrams.get(k) == null){
+			Kgrams.put(k, new double[n][n]);
+		}
+		int idx = 0;
+		for (int j = 0; j < n; j++){
+			for (int i = 0; i < n; i++){
+				Kgrams.get(k)[i][j] = kgram_flat[idx++];
+			}
+		}
+	}
+
+	public void setAllKgrams(double[] kgrams_flat, int m, int n){
+		int idx = 0;
+		for (int k = 0; k < m; k++){
+			double[][] K = new double[n][n];
+			for (int j = 0; j < n; j++){
+				for (int i = 0; i < n; i++){
+					K[i][j] = kgrams_flat[idx++];
+				}
+			}
+			Kgrams.put(k, K);
 		}
 	}
 	

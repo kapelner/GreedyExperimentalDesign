@@ -5,8 +5,8 @@ import java.util.Comparator;
 
 public class KarpDesignSearcherUnbalanced extends KarpDesignSearcher {
 	
-	public KarpDesignSearcherUnbalanced(double[][] Xstd) {
-		super(Xstd);
+	public KarpDesignSearcherUnbalanced(double[][] Xstd, boolean verbose) {
+		super(Xstd, verbose);
 	}
 	
 	protected class ObsBundleCompareUnbalanced implements Comparator<ObsBundle> {

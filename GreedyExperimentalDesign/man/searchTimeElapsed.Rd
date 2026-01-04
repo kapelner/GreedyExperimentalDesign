@@ -12,6 +12,22 @@ searchTimeElapsed(obj)
 \description{
 Returns the amount of time elapsed
 }
+\examples{
+\dontrun{
+set.seed(1)
+X = matrix(rnorm(20), nrow = 10)
+ged = initGreedyExperimentalDesignObject(
+  X,
+  max_designs = 1,
+  num_cores = 1,
+  start = TRUE,
+  wait = TRUE,
+  objective = "abs_sum_diff",
+  verbose = FALSE
+)
+searchTimeElapsed(ged)
+}
+}
 \author{
 Adam Kapelner
 }

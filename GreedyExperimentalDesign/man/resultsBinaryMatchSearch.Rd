@@ -14,6 +14,24 @@ resultsBinaryMatchSearch(obj, form = "one_zero")
 \description{
 Returns the results (thus far) of the binary pair match design search
 }
+\examples{
+\dontrun{
+set.seed(1)
+X = matrix(rnorm(16), nrow = 8)
+bms = computeBinaryMatchStructure(X)
+bm = initBinaryMatchExperimentalDesignSearchObject(
+  bms,
+  max_designs = 4,
+  num_cores = 1,
+  start = TRUE,
+  wait = TRUE,
+  seed = 1,
+  verbose = FALSE
+)
+res = resultsBinaryMatchSearch(bm, form = "one_zero")
+dim(res)
+}
+}
 \author{
 Adam Kapelner
 }

@@ -19,6 +19,12 @@ A matrix of r x 2n PM designs of +1/-1 assignments
 \description{
 Create PM designs
 }
+\examples{
+\dontrun{
+indicies_pairs = matrix(c(1, 2, 3, 4), ncol = 2, byrow = TRUE)
+gen_pm_designs_cpp_wrap(indicies_pairs, n = 2, r = 3)
+}
+}
 \author{
 Adam Kapelner
 }

@@ -1,7 +1,7 @@
 #' Begin a Rerandomization Search
 #' 
 #' This method creates an object of type rerandomization_experimental_design and will immediately initiate
-#' a search through $1_{T}$ space for forced-balance designs. For debugging, you can use set the \code{seed}
+#' a search through allocation space for forced-balance designs. For debugging, you can use set the \code{seed}
 #' parameter and \code{num_cores = 1} to be assured of deterministic output.
 #' 
 #' @param X							The design matrix with $n$ rows (one for each subject) and $p$ columns 
@@ -23,9 +23,28 @@
 #' @param num_cores 				The number of CPU cores you wish to use during the search. The default is \code{1}.
 #' @param seed						The set to set for deterministic output. This should only be set if \code{num_cores = 1} otherwise
 #' 									the output will not be deterministic. Default is \code{NULL} for no seed set.
+#' @param verbose					Should the algorithm emit progress output? Default is \code{TRUE}.
+#' @param use_safe_inverse			Should a regularized inverse be used for the Mahalanobis objective?
+#' 									Default is \code{FALSE}.
 #' @return							An object of type \code{rerandomization_experimental_design_search} which can be further operated upon.
 #' 
 #' @author Adam Kapelner
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' X = matrix(rnorm(20), nrow = 10)
+#' obj = initRerandomizationExperimentalDesignObject(
+#'   X,
+#'   max_designs = 5,
+#'   num_cores = 1,
+#'   objective = "abs_sum_diff",
+#'   obj_val_cutoff_to_include = Inf,
+#'   start = TRUE,
+#'   wait = TRUE,
+#'   verbose = FALSE
+#' )
+#' obj
+#' }
 #' @export
 initRerandomizationExperimentalDesignObject = function(
 		X = NULL, 
@@ -36,7 +55,9 @@ initRerandomizationExperimentalDesignObject = function(
 		wait = FALSE, 
 		start = TRUE,
 		num_cores = 1,
-		seed = NULL){
+		seed = NULL,
+		verbose = TRUE,
+		use_safe_inverse = FALSE){
 	
 	verify_objective_function(objective, Kgram, n)
 	
@@ -57,9 +78,15 @@ initRerandomizationExperimentalDesignObject = function(
 	}
 	if (objective == "mahal_dist"){
 		if (p < n){
-			SinvX = solve(var(X))
+			if (use_safe_inverse){
+				SinvX = safe_cov_inverse(X)
+			} else {
+				SinvX = solve(stats::var(X))
+			}
 		}
 	}
+	assertLogical(verbose)
+	assertLogical(use_safe_inverse)
 	
 	#we are about to construct a RerandomizationExperimentalDesign java object. First, let R garbage collect
 	#to clean up previous RerandomizationExperimentalDesign objects that are no longer in use. This is important
@@ -69,6 +96,7 @@ initRerandomizationExperimentalDesignObject = function(
 	
 	#now go ahead and create the Java object and set its information
 	java_obj = .jnew("RerandomizationExperimentalDesign.RerandomizationExperimentalDesign")
+	set_verbose_if_available(java_obj, verbose)
 	.jcall(java_obj, "V", "setMaxDesigns", as.integer(max_designs))
 	if (!is.null(obj_val_cutoff_to_include)){
 		.jcall(java_obj, "V", "setObjValCutoffToInclude", as.numeric(obj_val_cutoff_to_include))
@@ -124,6 +152,7 @@ initRerandomizationExperimentalDesignObject = function(
 	rerandomization_experimental_design_search$p = p
 	rerandomization_experimental_design_search$objective = objective
 	rerandomization_experimental_design_search$java_obj = java_obj
+	rerandomization_experimental_design_search$verbose = verbose
 	class(rerandomization_experimental_design_search) = "rerandomization_experimental_design_search"
 	#if the user wants to run it immediately...
 	if (start){
@@ -173,15 +202,43 @@ summary.rerandomization_experimental_design_search = function(object, ...){
 #' @param form					Which form should the assignments be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's. 
 #' 
 #' @author Adam Kapelner
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' X = matrix(rnorm(20), nrow = 10)
+#' obj = initRerandomizationExperimentalDesignObject(
+#'   X,
+#'   max_designs = 5,
+#'   num_cores = 1,
+#'   objective = "abs_sum_diff",
+#'   obj_val_cutoff_to_include = Inf,
+#'   start = TRUE,
+#'   wait = TRUE,
+#'   verbose = FALSE
+#' )
+#' res = resultsRerandomizationSearch(obj, include_assignments = TRUE, form = "one_zero")
+#' dim(res$ending_indicTs)
+#' }
 #' @export
 resultsRerandomizationSearch = function(obj, include_assignments = FALSE, form = "one_zero"){
 	obj_vals = .jcall(obj$java_obj, "[D", "getObjectiveVals")
 	
 	ending_indicTs = NULL
 	if (include_assignments){
-		ending_indicTs = .jcall(obj$java_obj, "[[I", "getEndingIndicTs", simplify = TRUE)
-		if (form == "pos_one_min_one"){
-			ending_indicTs = (ending_indicTs - 0.5) * 2
+		num_completed = length(obj_vals)
+		if (num_completed > 0){
+			ordered_java_indices = as.integer(seq_len(num_completed) - 1)
+			ordered_java_indices_j = .jarray(ordered_java_indices)
+			ending_indicTs = .jcall(obj$java_obj, "[[I", "getEndingIndicTs", ordered_java_indices_j, simplify = TRUE)
+			if (form == "pos_one_min_one"){
+				if (length(ending_indicTs) > 0 && min(ending_indicTs) >= 0 && max(ending_indicTs) <= 1){
+					ending_indicTs = (ending_indicTs - 0.5) * 2
+				}
+			} else if (length(ending_indicTs) > 0 && min(ending_indicTs) < 0){
+				ending_indicTs = (ending_indicTs + 1) / 2
+			}
+		} else {
+			ending_indicTs = matrix(integer(0), nrow = 0, ncol = obj$n)
 		}
 	}	
 	

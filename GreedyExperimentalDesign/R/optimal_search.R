@@ -1,7 +1,7 @@
 #' Begin a Search for the Optimal Solution
 #' 
 #' This method creates an object of type optimal_experimental_design and will immediately initiate
-#' a search through $1_{T}$ space. Since this search takes exponential time, for most machines, 
+#' a search through allocation space. Since this search takes exponential time, for most machines, 
 #' this method is futile beyond 28 samples. You've been warned! For debugging, you can use set 
 #' \code{num_cores = 1} to be assured of deterministic output.
 #' 
@@ -16,9 +16,26 @@
 #' 							deafult is \code{FALSE}.
 #' @param start				Should we start searching immediately (default is \code{TRUE}).
 #' @param num_cores 		The number of CPU cores you wish to use during the search. The default is \code{1}.
+#' @param verbose			Should the algorithm emit progress output? Default is \code{TRUE}.
+#' @param use_safe_inverse	Should a regularized inverse be used for the Mahalanobis objective?
+#' 							Default is \code{FALSE}.
 #' @return					An object of type \code{optimal_experimental_design_search} which can be further operated upon
 #' 
 #' @author Adam Kapelner
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' X = matrix(rnorm(12), nrow = 6)
+#' obj = initOptimalExperimentalDesignObject(
+#'   X,
+#'   objective = "abs_sum_diff",
+#'   num_cores = 1,
+#'   start = TRUE,
+#'   wait = TRUE,
+#'   verbose = FALSE
+#' )
+#' obj
+#' }
 #' @export
 initOptimalExperimentalDesignObject = function(
 		X = NULL,
@@ -26,7 +43,9 @@ initOptimalExperimentalDesignObject = function(
 		Kgram = NULL,
 		wait = FALSE, 
 		start = TRUE,
-		num_cores = 1){
+		num_cores = 1,
+		verbose = TRUE,
+		use_safe_inverse = FALSE){
 	
 	verify_objective_function(objective, Kgram, n)
 	
@@ -48,9 +67,15 @@ initOptimalExperimentalDesignObject = function(
 	}
 	if (objective == "mahal_dist"){
 		if (p < n){
-			SinvX = solve(var(X))
+			if (use_safe_inverse){
+				SinvX = safe_cov_inverse(X)
+			} else {
+				SinvX = solve(stats::var(X))
+			}
 		}
 	}
+	assertLogical(verbose)
+	assertLogical(use_safe_inverse)
 	
 	#we are about to construct a OptimalExperimentalDesign java object. First, let R garbage collect
 	#to clean up previous objects that are no longer in use. This is important
@@ -60,6 +85,7 @@ initOptimalExperimentalDesignObject = function(
 	
 	#now go ahead and create the Java object and set its information
 	java_obj = .jnew("OptimalExperimentalDesign.OptimalExperimentalDesign")
+	set_verbose_if_available(java_obj, verbose)
 	.jcall(java_obj, "V", "setNumCores", as.integer(num_cores))
 	.jcall(java_obj, "V", "setN", as.integer(n))
 	if (objective != "kernel"){
@@ -76,20 +102,22 @@ initOptimalExperimentalDesignObject = function(
 		setGramMatrix(java_obj, Kgram)
 	} else {
 		#feed in the data
-		for (i in 1 : n){	
-			if (objective == "abs_sum_diff"){
-				.jcall(java_obj, "V", "setDataRow", as.integer(i - 1), Xstd[i, , drop = FALSE]) #java indexes from 0...n-1
-			} else {
-				.jcall(java_obj, "V", "setDataRow", as.integer(i - 1), X[i, , drop = FALSE]) #java indexes from 0...n-1
-			}
+		if (objective == "abs_sum_diff"){
+			.jcall(java_obj, "V", "setDataMatrix", as.double(Xstd), as.integer(n), as.integer(p))
+		} else {
+			.jcall(java_obj, "V", "setDataMatrix", as.double(X), as.integer(n), as.integer(p))
 		}
 		
 		#feed in the inverse var-cov matrix
 		if (objective == "mahal_dist"){
 			if (p < n){
-				for (j in 1 : p){
-					.jcall(java_obj, "V", "setInvVarCovRow", as.integer(j - 1), SinvX[j, , drop = FALSE]) #java indexes from 0...n-1
-				}
+				.jcall(
+					java_obj,
+					"V",
+					"setInvVarCovMatrix",
+					.jarray(as.double(SinvX), contents.class = "double"),
+					as.integer(p)
+				)
 			}
 		}
 	}
@@ -103,6 +131,7 @@ initOptimalExperimentalDesignObject = function(
 	optimal_experimental_design_search$p = p
 	optimal_experimental_design_search$objective = objective
 	optimal_experimental_design_search$java_obj = java_obj
+	optimal_experimental_design_search$verbose = verbose
 	class(optimal_experimental_design_search) = "optimal_experimental_design_search"
 	#if the user wants to run it immediately...
 	if (start){
@@ -152,6 +181,21 @@ summary.optimal_experimental_design_search = function(object, ...){
 #' @param form				Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's.
 #' 
 #' @author Adam Kapelner
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' X = matrix(rnorm(12), nrow = 6)
+#' obj = initOptimalExperimentalDesignObject(
+#'   X,
+#'   objective = "abs_sum_diff",
+#'   num_cores = 1,
+#'   start = TRUE,
+#'   wait = TRUE,
+#'   verbose = FALSE
+#' )
+#' res = resultsOptimalSearch(obj, num_vectors = 2, form = "one_zero")
+#' res$opt_obj_val
+#' }
 #' @export
 resultsOptimalSearch = function(obj, num_vectors = 2, form = "one_zero"){
 	obj_vals = .jcall(obj$java_obj, "[D", "getAllObjectiveVals", simplify = TRUE)
@@ -160,10 +204,19 @@ resultsOptimalSearch = function(obj, num_vectors = 2, form = "one_zero"){
 	if (num_vectors == Inf){
 		num_vectors = length(ordered_indices)
 	}
-	
-	indicTs = .jcall(obj$java_obj, "[[I", "getIndicTs", as.integer(ordered_indices[1 : num_vectors] - 1), simplify = TRUE)
-	if (form == "pos_one_min_one"){
-		indicTs = (indicTs - 0.5) * 2
+
+	indicTs = NULL
+	if (num_vectors > 0){
+		ordered_java_indices = as.integer(ordered_indices[1 : num_vectors] - 1)
+		ordered_java_indices_j = .jarray(ordered_java_indices)
+		indicTs = .jcall(obj$java_obj, "[[I", "getIndicTs", ordered_java_indices_j, simplify = TRUE)
+		if (form == "pos_one_min_one"){
+			if (length(indicTs) > 0 && min(indicTs) >= 0 && max(indicTs) <= 1){
+				indicTs = (indicTs - 0.5) * 2
+			}
+		} else if (form == "one_zero" && length(indicTs) > 0 && min(indicTs) < 0){
+			indicTs = (indicTs + 1) / 2
+		}
 	}
 	list(
 		opt_obj_val = obj_vals[ordered_indices[1]],

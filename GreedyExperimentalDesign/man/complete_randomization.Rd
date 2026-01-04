@@ -20,6 +20,11 @@ a matrix where each column is one of the \code{r} designs
 For debugging, you can use \code{set.seed}
 to be assured of deterministic output.
 }
+\examples{
+\dontrun{
+complete_randomization(n = 6, r = 2)
+}
+}
 \author{
 Adam Kapelner
 }

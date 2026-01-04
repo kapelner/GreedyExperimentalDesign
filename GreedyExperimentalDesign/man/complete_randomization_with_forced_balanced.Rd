@@ -27,6 +27,11 @@ a matrix where each column is one of the \code{r} designs
 For debugging, you can use \code{set.seed}
 to be assured of deterministic output.
 }
+\examples{
+\dontrun{
+complete_randomization_with_forced_balanced(n = 6, r = 2, seed = 1)
+}
+}
 \author{
 Adam Kapelner
 }

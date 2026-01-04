@@ -146,6 +146,7 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 			d0, 
 			semigreedy, 
 			diagnostics, 
+			verbose,
 			max_iters, 
 			rand_obj,
 			search_stopped,
@@ -226,8 +227,7 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 		}
 		return starting_indicTs;
 	}
-	
-	
+
 	public void setLegalPair(int[] legal_pair, int i) {
 		if (legal_pairs == null) {
 			legal_pairs = new ArrayList<int[]>(n / 2);

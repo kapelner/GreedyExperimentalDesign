@@ -4,7 +4,13 @@
 \alias{compute_objective_val}
 \title{Computes Objective Value From Allocation Vector}
 \usage{
-compute_objective_val(X, indic_T, objective = "abs_sum_diff", inv_cov_X = NULL)
+compute_objective_val(
+  X,
+  indic_T,
+  objective = "abs_sum_diff",
+  inv_cov_X = NULL,
+  use_safe_inverse = FALSE
+)
 }
 \arguments{
 \item{X}{The n x p design matrix}
@@ -17,12 +23,22 @@ compute_objective_val(X, indic_T, objective = "abs_sum_diff", inv_cov_X = NULL)
 \item{inv_cov_X}{Optional: the inverse sample variance covariance matrix. Use this
 argument if you will be doing many calculations since passing this
 in will cache this data.}
+
+\item{use_safe_inverse}{Should a regularized inverse be used for the Mahalanobis objective?
+Default is \code{FALSE}.}
 }
 \description{
 Returns the objective value given a design vector as well an an objective function.
 This is sometimes duplicated in Java. However, within Java, tricks are played to make
 optimization go faster so Java's objective values may not always be the same as the true
 objective function (e.g. logs or constants dropped).
+}
+\examples{
+\dontrun{
+X = matrix(rnorm(12), nrow = 6)
+indic_T = c(1, 0, 1, 0, 1, 0)
+compute_objective_val(X, indic_T, objective = "abs_sum_diff")
+}
 }
 \author{
 Adam Kapelner

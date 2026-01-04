@@ -9,7 +9,8 @@ resultsBinaryMatchThenRerandomizationSearch(
   obj,
   num_vectors = NULL,
   compute_obj_vals = FALSE,
-  form = "one_zero"
+  form = "one_zero",
+  use_safe_inverse = FALSE
 )
 }
 \arguments{
@@ -20,9 +21,30 @@ resultsBinaryMatchThenRerandomizationSearch(
 \item{compute_obj_vals}{Should we compute all the objective values for each allocation? Default is \code{FALSE}.}
 
 \item{form}{Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's.}
+
+\item{use_safe_inverse}{Should a regularized inverse be used for the Mahalanobis objective?
+Default is \code{FALSE}.}
 }
 \description{
 Returns unique allocation vectors that are binary matched
+}
+\examples{
+\dontrun{
+set.seed(1)
+X = matrix(rnorm(16), nrow = 8)
+obj = initBinaryMatchFollowedByRerandomizationDesignSearchObject(
+  X,
+  max_designs = 4,
+  num_cores = 1,
+  objective = "abs_sum_diff",
+  obj_val_cutoff_to_include = Inf,
+  start = TRUE,
+  wait = TRUE,
+  verbose = FALSE
+)
+res = resultsBinaryMatchThenRerandomizationSearch(obj, num_vectors = 3, form = "one_zero")
+dim(res$indicTs)
+}
 }
 \author{
 Adam Kapelner

@@ -1,7 +1,7 @@
 #' Begin Karp Search
 #' 
 #' This method creates an object of type karp_experimental_design and will immediately initiate
-#' a search through $1_{T}$ space. Note that the Karp search only works 
+#' a search through allocation  space. Note that the Karp search only works 
 #' for one covariate (i.e. $p=1$) and the objective "abs_sum_diff".
 #' 
 #' @param X					The design matrix with $n$ rows (one for each subject) and $p$ columns 
@@ -11,14 +11,29 @@
 #' @param wait				Should the \code{R} terminal hang until all \code{max_designs} vectors are found? The 
 #' 							deafult is \code{FALSE}.
 #' @param start				Should we start searching immediately (default is \code{TRUE}).
+#' @param verbose			Should the algorithm emit progress output? Default is \code{TRUE}.
 #' @return					An object of type \code{karp_experimental_design_search} which can be further operated upon
 #' 
 #' @author Adam Kapelner
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' X = matrix(rnorm(10), nrow = 10)
+#' kobj = initKarpExperimentalDesignObject(
+#'   X,
+#'   start = TRUE,
+#'   wait = TRUE,
+#'   balanced = TRUE,
+#'   verbose = FALSE
+#' )
+#' kobj
+#' }
 #' @export
 initKarpExperimentalDesignObject = function(X,
 		wait = FALSE, 
 		balanced = TRUE,
-		start = TRUE){
+		start = TRUE,
+		verbose = TRUE){
 	n = nrow(X)
 	if (n %% 2 != 0 && balanced){
 		stop("Design matrix must have even rows to have equal treatments and controls if you are requiring balance.")
@@ -28,6 +43,7 @@ initKarpExperimentalDesignObject = function(X,
 	if (p > 1){
 		stop("Karp search only works for p = 1.")
 	}
+	assertLogical(verbose)
 	
 	#we are about to construct a KarpExperimentalDesign java object. First, let R garbage collect
 	#to clean up previous objects that are no longer in use. This is important
@@ -37,6 +53,7 @@ initKarpExperimentalDesignObject = function(X,
 	
 	#now go ahead and create the Java object and set its information
 	java_obj = .jnew("KarpExperimentalDesign.KarpExperimentalDesign")
+	set_verbose_if_available(java_obj, verbose)
 	.jcall(java_obj, "V", "setN", as.integer(n))
 	.jcall(java_obj, "V", "setP", as.integer(p))
 	if (wait){
@@ -47,9 +64,7 @@ initKarpExperimentalDesignObject = function(X,
 	}
 	
 	#feed in the data
-	for (i in 1 : n){		
-		.jcall(java_obj, "V", "setDataRow", as.integer(i - 1), X[i, , drop = FALSE]) #java indexes from 0...n-1
-	}
+	.jcall(java_obj, "V", "setDataMatrix", as.double(X), as.integer(n), as.integer(p))
 	
 	#now return information as an object (just a list)
 	karp_experimental_design_search = list()
@@ -59,6 +74,7 @@ initKarpExperimentalDesignObject = function(X,
 	karp_experimental_design_search$X = X
 	karp_experimental_design_search$n = n
 	karp_experimental_design_search$java_obj = java_obj
+	karp_experimental_design_search$verbose = verbose
 	class(karp_experimental_design_search) = "karp_experimental_design_search"
 	#if the user wants to run it immediately...
 	if (start){
@@ -105,6 +121,20 @@ summary.karp_experimental_design_search = function(object, ...){
 #' @param obj 			The \code{karp_experimental_design} object that is currently running the search
 #' 
 #' @author Adam Kapelner
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' X = matrix(rnorm(10), nrow = 10)
+#' kobj = initKarpExperimentalDesignObject(
+#'   X,
+#'   start = TRUE,
+#'   wait = TRUE,
+#'   balanced = TRUE,
+#'   verbose = FALSE
+#' )
+#' res = resultsKarpSearch(kobj)
+#' res$obj_val
+#' }
 #' @export
 resultsKarpSearch = function(obj){
 	obj_val = .jcall(obj$java_obj, "D", "getKarpObjectiveVal")

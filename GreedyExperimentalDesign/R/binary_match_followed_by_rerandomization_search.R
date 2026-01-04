@@ -12,18 +12,37 @@
 #' 								its only argument. The default is \code{NULL} signifying euclidean squared distance optimized in C++.
 #' @param ...					Arguments passed to \code{initGreedyExperimentalDesignObject}. It is recommended to set
 #' 								\code{max_designs} otherwise it will default to 10,000.
+#' @param verbose				Should the algorithm emit progress output? Default is \code{TRUE}.
 #' @return						An object of type \code{binary_experimental_design} which can be further operated upon.
 #' 
 #' @author Adam Kapelner
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' X = matrix(rnorm(16), nrow = 8)
+#' obj = initBinaryMatchFollowedByRerandomizationDesignSearchObject(
+#'   X,
+#'   max_designs = 4,
+#'   num_cores = 1,
+#'   objective = "abs_sum_diff",
+#'   obj_val_cutoff_to_include = Inf,
+#'   start = TRUE,
+#'   wait = TRUE,
+#'   verbose = FALSE
+#' )
+#' obj
+#' }
 #' @export
-initBinaryMatchFollowedByRerandomizationDesignSearch = function(X, compute_dist_matrix = NULL, ...){
+initBinaryMatchFollowedByRerandomizationDesignSearchObject = function(X, compute_dist_matrix = NULL, verbose = TRUE, ...){
 	n = nrow(X)
 	p = ncol(X)
+	assertLogical(verbose)
 	
 	if (n %% 4 != 0){
 		stop("Design matrix must have number of rows divisible by four for this type of design.")
 	}
-	binary_match_structure = computeBinaryMatchStructure(X, compute_dist_matrix)
+	binary_match_structure = computeBinaryMatchStructure(X, compute_dist_matrix = compute_dist_matrix)
+	binary_match_structure$verbose = verbose
 	#now we create a reduced matrix X by diffing the pairs
 	Xdiffs = matrix(NA, nrow = nrow(X) / 2, ncol = ncol(X))
 	for (i in 1 : (nrow(X) / 2)){		
@@ -35,7 +54,12 @@ initBinaryMatchFollowedByRerandomizationDesignSearch = function(X, compute_dist_
 	binary_then_rerandomization_experimental_design$n = n
 	binary_then_rerandomization_experimental_design$p = p
 	binary_then_rerandomization_experimental_design$binary_match_structure = binary_match_structure
-	binary_then_rerandomization_experimental_design$rerandomization_design = initRerandomizationExperimentalDesignObject(Xdiffs, ...)
+	binary_then_rerandomization_experimental_design$verbose = verbose
+	dots = list(...)
+	if (is.null(dots$verbose)){
+		dots$verbose = verbose
+	}
+	binary_then_rerandomization_experimental_design$rerandomization_design = do.call(initRerandomizationExperimentalDesignObject, c(list(Xdiffs), dots))
 	class(binary_then_rerandomization_experimental_design) = "binary_then_rerandomization_experimental_design"
 	binary_then_rerandomization_experimental_design
 }
@@ -45,35 +69,53 @@ initBinaryMatchFollowedByRerandomizationDesignSearch = function(X, compute_dist_
 #' @param obj 				The \code{binary_then_greedy_experimental_design} object where the pairs are computed.
 #' @param num_vectors		How many random allocation vectors you wish to return. The default is \code{NULL} indicating you want all of them.
 #' @param compute_obj_vals	Should we compute all the objective values for each allocation? Default is \code{FALSE}.
-#' @param form				Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's. 
+#' @param form				Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's.
+#' @param use_safe_inverse	Should a regularized inverse be used for the Mahalanobis objective?
+#' 							Default is \code{FALSE}.
 #' 
 #' @author Adam Kapelner
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' X = matrix(rnorm(16), nrow = 8)
+#' obj = initBinaryMatchFollowedByRerandomizationDesignSearchObject(
+#'   X,
+#'   max_designs = 4,
+#'   num_cores = 1,
+#'   objective = "abs_sum_diff",
+#'   obj_val_cutoff_to_include = Inf,
+#'   start = TRUE,
+#'   wait = TRUE,
+#'   verbose = FALSE
+#' )
+#' res = resultsBinaryMatchThenRerandomizationSearch(obj, num_vectors = 3, form = "one_zero")
+#' dim(res$indicTs)
+#' }
 #' @export
-resultsBinaryMatchThenRerandomizationSearch = function(obj, num_vectors = NULL, compute_obj_vals = FALSE, form = "one_zero"){
+resultsBinaryMatchThenRerandomizationSearch = function(obj, num_vectors = NULL, compute_obj_vals = FALSE, form = "one_zero", use_safe_inverse = FALSE){
 	assertClass(obj, "binary_then_rerandomization_experimental_design")
 	assertCount(num_vectors, positive = TRUE, null.ok = TRUE)
 	if (is.null(num_vectors)){
 		num_vectors = obj$rerandomization_design$max_designs
 	}
-	num_vectors_completed = .jcall(obj$rerandomization_design, "I", "progress")
+	num_vectors_completed = .jcall(obj$rerandomization_design$java_obj, "I", "progress")
 	if (num_vectors > num_vectors_completed){
 		warning("You requested ", num_vectors, " but only ", num_vectors_completed, " are available.")
 		num_vectors = num_vectors_completed
 	}
 	assertLogical(compute_obj_vals)
 	assertChoice(form, c("one_zero", "pos_one_min_one"))
+	assertLogical(use_safe_inverse)
 	
 	rerand_res = resultsRerandomizationSearch(obj$rerandomization_design, include_assignments = TRUE, "one_zero")
 	#the allocation vectors returned here have entries = 1 if the pair is left unswitched and = 0 if we should switch the pair
-	
 	indicTs = matrix(NA, nrow = num_vectors, ncol = obj$n)
 	for (r in 1 : num_vectors){
 		#first we copy the binary indices starting point
 		pair_matrix_copy = obj$binary_match_structure$indicies_pairs
 		#now we pull out a w_diff
 		w_diff = rerand_res$ending_indicTs[r, ]
-		
-		#split the pair matrix based on the greedy vector
+		#split the pair matrix based on the rerandomization vector
 		pair_matrix_T_is_first = pair_matrix_copy[w_diff == 1, ] #"one_zero" form was forced above
 		pair_matrix_C_is_first = pair_matrix_copy[w_diff == 0, ] #"one_zero" form was forced above
 		#now set all the entries as T if T is first and it's in the first column and 0 if second column
@@ -82,16 +124,20 @@ resultsBinaryMatchThenRerandomizationSearch = function(obj, num_vectors = NULL, 
 		#vice versa if C is first
 		indicTs[r, pair_matrix_C_is_first[, 1]] = 0
 		indicTs[r, pair_matrix_C_is_first[, 2]] = 1		
-	}	
+	}
 	
 	obj_vals = NULL
 	if (compute_obj_vals){
 		if (obj$rerandomization_design$objective == "mahal_dist"){
-			SinvX = solve(var(obj$X))
+			if (use_safe_inverse){
+				SinvX = safe_cov_inverse(obj$X)
+			} else {
+				SinvX = solve(stats::var(obj$X))
+			}
 			obj_vals = apply(indicTs, 1, FUN = function(w){compute_objective_val(obj$X, w, objective = "mahal_dist", SinvX)})
 		} else {
-			obj_vals = apply(indicTs, 1, FUN = function(w){compute_objective_val(obj$X, w, objective = "abs_sum_diff")})	
-		}	
+			obj_vals = apply(indicTs, 1, FUN = function(w){compute_objective_val(obj$X, w, objective = "abs_sum_diff")})
+		}
 	}
 
 	if (form == "pos_one_min_one"){
@@ -113,7 +159,7 @@ resultsBinaryMatchThenRerandomizationSearch = function(obj, num_vectors = NULL, 
 #' @method print binary_then_rerandomization_experimental_design
 #' @export
 print.binary_then_rerandomization_experimental_design = function(x, ...){
-	print.binary_then_rerandomization_experimental_design(x$rerandomization_design)
+	print(x$rerandomization_design, ...)
 }
 
 #' Prints a summary of a \code{binary_then_rerandomization_experimental_design} object
@@ -125,5 +171,5 @@ print.binary_then_rerandomization_experimental_design = function(x, ...){
 #' @method summary binary_then_rerandomization_experimental_design
 #' @export
 summary.binary_then_rerandomization_experimental_design = function(object, ...){
-	print(object, ...)
+	print(object$rerandomization_design, ...)
 }

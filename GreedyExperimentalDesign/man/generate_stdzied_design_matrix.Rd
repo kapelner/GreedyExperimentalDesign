@@ -22,6 +22,12 @@ THe design matrix
 \description{
 This function is useful for debugging.
 }
+\examples{
+\dontrun{
+X = generate_stdzied_design_matrix(n = 6, p = 2)
+colMeans(X)
+}
+}
 \author{
 Adam Kapelner
 }

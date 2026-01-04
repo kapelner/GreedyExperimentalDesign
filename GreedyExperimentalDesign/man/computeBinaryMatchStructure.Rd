@@ -8,7 +8,9 @@ computeBinaryMatchStructure(
   X,
   mahal_match = FALSE,
   compute_dist_matrix = NULL,
-  D = NULL
+  D = NULL,
+  symmetry_tol = 1e-12,
+  use_safe_inverse = FALSE
 )
 }
 \arguments{
@@ -22,14 +24,27 @@ to search for a more optimal design.}
 its only argument. The default is \code{NULL} signifying euclidean squared distance optimized in C++.}
 
 \item{D}{A distance matrix precomputed. The default is \code{NULL} indicating the distance matrix should be computed.}
+
+\item{symmetry_tol}{Tolerance for symmetry check on \code{D}. Default is \code{1e-12}.}
+
+\item{use_safe_inverse}{Should a regularized inverse be used for the Mahalanobis objective?
+Default is \code{FALSE}.}
 }
 \value{
 An object of type \code{binary_experimental_design} which can be further operated upon.
 }
 \description{
 This method creates an object of type binary_match_structure and will compute pairs. You can then
-use the functions \code{initBinaryMatchExperimentalDesignSearch} and \code{resultsBinaryMatchSearch} 
+use the functions \code{initBinaryMatchExperimentalDesignSearchObject} and \code{resultsBinaryMatchSearch} 
 to create randomized allocation vectors. For one column in X, we just sort to find the pairs trivially.
+}
+\examples{
+\dontrun{
+set.seed(1)
+X = matrix(rnorm(16), nrow = 8)
+bms = computeBinaryMatchStructure(X)
+bms$indicies_pairs
+}
 }
 \author{
 Adam Kapelner

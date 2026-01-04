@@ -15,6 +15,12 @@ A boolean if it has all same elements
 \description{
 Tests if a vector has all elements the same
 }
+\examples{
+\dontrun{
+all_elements_same_cpp_wrap(c(1, 1, 1))
+all_elements_same_cpp_wrap(c(1, 2, 1))
+}
+}
 \author{
 Adam Kapelner
 }

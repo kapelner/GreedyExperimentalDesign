@@ -24,6 +24,14 @@ The \code{n x n} gram matrix for the given kernel on the given data.
 Computes the Gram Matrix for a user-specified kernel using the library \code{kernlab}. Note that 
 this function automatically standardizes the columns of the data entered.
 }
+\examples{
+\dontrun{
+set.seed(1)
+X = matrix(rnorm(12), nrow = 6)
+K = compute_gram_matrix(X, kernel_type = "rbf", params = 0.5)
+dim(K)
+}
+}
 \author{
 Adam Kapelner
 }

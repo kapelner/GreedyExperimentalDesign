@@ -20,6 +20,24 @@ resultsRerandomizationSearch(
 \description{
 Returns the results (thus far) of the rerandomization design search
 }
+\examples{
+\dontrun{
+set.seed(1)
+X = matrix(rnorm(20), nrow = 10)
+obj = initRerandomizationExperimentalDesignObject(
+  X,
+  max_designs = 5,
+  num_cores = 1,
+  objective = "abs_sum_diff",
+  obj_val_cutoff_to_include = Inf,
+  start = TRUE,
+  wait = TRUE,
+  verbose = FALSE
+)
+res = resultsRerandomizationSearch(obj, include_assignments = TRUE, form = "one_zero")
+dim(res$ending_indicTs)
+}
+}
 \author{
 Adam Kapelner
 }

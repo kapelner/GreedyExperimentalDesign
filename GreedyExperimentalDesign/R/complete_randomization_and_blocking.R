@@ -10,20 +10,20 @@
 #' @return 			a matrix where each column is one of the \code{r} designs
 #' 
 #' @author Adam Kapelner
+#' @examples
+#' \dontrun{
+#' complete_randomization_with_forced_balanced(n = 6, r = 2, seed = 1)
+#' }
 #' @export
 complete_randomization_with_forced_balanced = function(n, r, form = "one_zero", seed = NULL){
 	assert_count(n, positive = TRUE)
 	assert_count(r, positive = TRUE)
-	assert_count(form, c("one_zero", "pos_one_min_one"))
+	assert_choice(form, c("one_zero", "pos_one_min_one"))
 	assert_count(seed, positive = TRUE, null.ok = TRUE)
 	seed = ifelse(is.null(seed), NA_integer_, as.integer(seed))
 	assert_integer(seed)
 	
-	indicTs = matrix(NA, nrow = r, ncol = n)
-	one_zero_vec = c(rep(0, n / 2), rep(1, n / 2))
-	for (nsim in 1 : r){
-		indicTs[nsim, ] = shuffle_cpp(one_zero_vec, seed)
-	}
+	indicTs = complete_randomization_forced_balanced_cpp(n, r, seed)
 	if (form == "pos_one_min_one"){
 		indicTs = (indicTs - 0.5) * 2
 	}
@@ -42,17 +42,17 @@ complete_randomization_with_forced_balanced = function(n, r, form = "one_zero", 
 #' @return 			a matrix where each column is one of the \code{r} designs
 #' 
 #' @author Adam Kapelner
+#' @examples
+#' \dontrun{
+#' complete_randomization(n = 6, r = 2)
+#' }
 #' @export
 complete_randomization = function(n, r, form = "one_zero"){
 	assert_count(n, positive = TRUE)
 	assert_count(r, positive = TRUE)
-	assert_count(form, c("one_zero", "pos_one_min_one"))
+	assert_choice(form, c("one_zero", "pos_one_min_one"))
 	
-	indicTs = matrix(NA, nrow = r, ncol = n)
-	
-	for (nsim in 1 : r){
-		indicTs[nsim, ] = rbinom(n, 1, 0.5)
-	}
+	indicTs = complete_randomization_cpp(n, r)
 	if (form == "pos_one_min_one"){
 		indicTs = (indicTs - 0.5) * 2
 	}
@@ -72,6 +72,10 @@ complete_randomization = function(n, r, form = "one_zero"){
 #' @return 			a matrix where each column is one of the \code{r} designs
 #' 
 #' @author Adam Kapelner
+#' @examples
+#' \dontrun{
+#' imbalanced_complete_randomization(n = 10, prop_T = 0.3, r = 2, seed = 1)
+#' }
 #' @export
 imbalanced_complete_randomization = function(n, prop_T, r, form = "one_zero", seed = NULL){
 	assert_count(n, positive = TRUE)
@@ -83,12 +87,7 @@ imbalanced_complete_randomization = function(n, prop_T, r, form = "one_zero", se
 	seed = ifelse(is.null(seed), NA_integer_, as.integer(seed))
 	assert_integer(seed)
 	
-	indicTs = matrix(NA, nrow = r, ncol = n)
-	
-	blank = c(rep(1, n_T), rep(0, n - n_T))
-	for (nsim in 1 : r){
-		indicTs[nsim, ] = shuffle_cpp(blank, seed)
-	}
+	indicTs = complete_randomization_imbalanced_cpp(n, n_T, r, seed)
 	if (form == "pos_one_min_one"){
 		indicTs = (indicTs - 0.5) * 2
 	}
@@ -111,6 +110,10 @@ imbalanced_complete_randomization = function(n, prop_T, r, form = "one_zero", se
 #' @return 			a matrix where each column is one of the \code{r} designs
 #' 
 #' @author Adam Kapelner
+#' @examples
+#' \dontrun{
+#' imbalanced_block_designs(n = 12, prop_T = 0.5, B = 3, r = 2, seed = 1)
+#' }
 #' @export
 imbalanced_block_designs = function(n, prop_T, B, r, form = "one_zero", seed = NULL){
 	assert_count(n, positive = TRUE)
@@ -124,21 +127,16 @@ imbalanced_block_designs = function(n, prop_T, B, r, form = "one_zero", seed = N
 	n_B_T = n_B * prop_T
 	assert_count(n_B, positive = TRUE)
 	assert_count(n_B_T, positive = TRUE)
-	dummy_block = c(rep(1, n_B_T), rep(0, n_B - n_B_T))
-	
-	Ws = list()
-	for (b in 1 : B){
-		Ws[[b]] = matrix(NA, nrow = r, ncol = n_B)
-		for (nr in 1 : r){
-			Ws[[b]][nr, ] = shuffle_cpp(dummy_block, seed)
-		}
-	}
-	indicTs = list.cbind(Ws)
+	indicTs = imbalanced_block_designs_cpp(n_B, n_B_T, B, r, seed)
 	if (form == "pos_one_min_one"){
 		indicTs = (indicTs - 0.5) * 2
 	}
 	indicTs
 }
+
+# internal cache for block design var-cov results
+.gen_var_cov_cache = new.env(parent = emptyenv())
+.gen_var_cov_cache$max = 8L
 
 #' Computes varcov matrix for block designs
 #' 
@@ -150,28 +148,42 @@ imbalanced_block_designs = function(n, prop_T, B, r, form = "one_zero", seed = N
 #' @param n 		number of observations
 #' @param prop_T    the proportion of treatments allocated
 #' @param B 		the number of blocks
+#' @param use_cache	Cache results for repeated calls with identical inputs. Default is \code{TRUE}.
 #' @return 			varcov matrix for the specific block design
 #' 
 #' @author Adam Kapelner
+#' @examples
+#' \dontrun{
+#' gen_var_cov_matrix_block_designs(n = 12, prop_T = 0.5, B = 3)
+#' }
 #' @export
-gen_var_cov_matrix_block_designs = function(n, prop_T, B){
+gen_var_cov_matrix_block_designs = function(n, prop_T, B, use_cache = TRUE){
   assertCount(n, positive = TRUE)
   assert_numeric(prop_T, lower = .Machine$double.eps, upper = 1 - .Machine$double.eps)
   assertCount(B, positive = TRUE)
-  n_B = n / B
-  assertCount(n_B, positive = TRUE)
-  n_T = n * prop_T 
-  n_C = n * (1 - prop_T)
-  assertCount(n_T, positive = TRUE)
-  assertCount(n_C, positive = TRUE)
-  b = (n_T - n_C)^2 / n^2
-  block_diagonal_sub_matrix = (1 - b) * (
-    n_B / (n_B - 1) * diag(n_B) -
-      1 / (n_B - 1) * matrix(1, n_B, n_B)
-  )
-  SigmaW = matrix(0, n, n)
-  for (i_B in seq(from = 1, to = n, by = n_B)){
-    SigmaW[i_B : (i_B + n_B - 1), i_B : (i_B + n_B - 1)] = block_diagonal_sub_matrix
+  assertLogical(use_cache)
+  key = NULL
+  if (use_cache){
+    key = paste("cache", n, sprintf("%.17g", prop_T), B, sep = "|")
+    cached = .gen_var_cov_cache[[key]]
+    if (!is.null(cached)){
+      return(cached)
+    }
+  }
+  SigmaW = gen_var_cov_matrix_block_designs_cpp(n, prop_T, B)
+  if (use_cache){
+    .gen_var_cov_cache[[key]] = SigmaW
+    order = .gen_var_cov_cache$order
+    if (is.null(order)){
+      order = character()
+    }
+    order = c(order[order != key], key)
+    if (length(order) > .gen_var_cov_cache$max){
+      drop_key = order[1]
+      rm(list = drop_key, envir = .gen_var_cov_cache)
+      order = order[-1]
+    }
+    .gen_var_cov_cache$order = order
   }
   SigmaW
 }

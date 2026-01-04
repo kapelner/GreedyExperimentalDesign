@@ -10,39 +10,37 @@
 #' 					(the sum of the squared eigenvalues)
 #' 
 #' @author Adam Kapelner
+#' @examples
+#' \dontrun{
+#' designs = matrix(c(1, 0, 1, 0, 0, 1, 0, 1), nrow = 4, ncol = 2)
+#' compute_randomization_metrics(designs)
+#' }
 #' @export
 compute_randomization_metrics = function(designs){
 	n = nrow(designs)
 	r = ncol(designs)
-	
-	gc() #Delete at your own risk!
-	#now go ahead and create the Java object and set its information
-	java_obj = .jnew("DesignMetrics.RandomizationMetrics")
-	.jcall(java_obj, "V", "setNandR", as.integer(n), as.integer(r))
-#	.jcall(java_obj, "V", "setNumCores", as.integer(num_cores))
-	
-	#feed in the data
-	for (j in 1 : r){
-		.jcall(java_obj, "V", "setDesign", as.integer(j - 1), as.integer(designs[, j])) #java indexes from 0...n-1
-	}
-	#get it going
-	.jcall(java_obj, "V", "compute")
-	
-	#harvest the data and return it as a list
-	p_hat_ijs = .jcall(java_obj, "[[D", "getPhats", simplify = TRUE)
-	rand_entropy_metric = .jcall(java_obj, "D", "getRandEntropyMetric")
-	rand_norm_se_metric = .jcall(java_obj, "D", "getRandStdErrMetric")
+	res = compute_randomization_metrics_cpp(designs)
+	p_hat_ijs = res$p_hat_ijs
+	rand_entropy_metric = res$rand_entropy_metric
+	rand_norm_se_metric = res$rand_norm_se_metric
 	
 	#for the maximum eigenvalue we need to transform the allocation vector to be in {-1, 1}
 	designs[designs == 0] = -1
 	#now take the eigendecomposition of the variance-covariance matrix of the allocations
-	e_d = eigen(var(t(designs)))	
+	cov_mat = var(t(designs))
+	max_eigenval = NA_real_
+	frob_norm_sqd = NA_real_
+	if (all(is.finite(cov_mat))){
+		e_d = eigen(cov_mat, symmetric = TRUE, only.values = TRUE)
+		max_eigenval = max(e_d$values)
+		frob_norm_sqd = sum(e_d$values^2)
+	}
 	
 	list(
 		p_hat_ijs = p_hat_ijs, 
 		rand_entropy_metric = rand_entropy_metric, 
 		rand_norm_se_metric = rand_norm_se_metric,
-		max_eigenval = max(e_d$values),
-		frob_norm_sqd = sum(e_d$values^2)
+		max_eigenval = max_eigenval,
+		frob_norm_sqd = frob_norm_sqd
 	)
 }

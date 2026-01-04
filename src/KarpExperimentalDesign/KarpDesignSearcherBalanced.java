@@ -6,8 +6,8 @@ import java.util.Comparator;
 
 public class KarpDesignSearcherBalanced extends KarpDesignSearcher {
 	
-	public KarpDesignSearcherBalanced(double[][] Xstd) {
-		super(Xstd);
+	public KarpDesignSearcherBalanced(double[][] Xstd, boolean verbose) {
+		super(Xstd, verbose);
 	}
 	
 	

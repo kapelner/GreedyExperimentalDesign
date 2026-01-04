@@ -6,11 +6,30 @@
 \usage{
 create_all_ys_cpp_wrap(pCs, pTs, W, two_n, nY)
 }
+\arguments{
+\item{pCs}{Control-group success probabilities (length \code{two_n})}
+
+\item{pTs}{Treatment-group success probabilities (length \code{two_n})}
+
+\item{W}{Assignment matrix with \code{nY} rows and \code{two_n} columns}
+
+\item{two_n}{Total number of units}
+
+\item{nY}{Number of Y vectors to generate}
+}
 \value{
 A matrix of boolean Y's
 }
 \description{
 Create all binary Y's convenience function using a randomized design
+}
+\examples{
+\dontrun{
+pCs = rep(0.2, 4)
+pTs = rep(0.8, 4)
+W = matrix(c(1, 0, 1, 0, 0, 1, 0, 1), nrow = 2, byrow = TRUE)
+create_all_ys_cpp_wrap(pCs, pTs, W, two_n = 4, nY = 2)
+}
 }
 \author{
 Adam Kapelner

@@ -13,6 +13,7 @@ public class GreedySearch {
 	private double[][] Xscaled;
 	private double[][] X;
 	private int nT;
+	private boolean verbose;
 
 	public GreedySearch(
 		int nT,
@@ -31,6 +32,7 @@ public class GreedySearch {
 		int d0, 
 		boolean semigreedy, //purely experimental... we didn't see any gain in this
 		boolean diagnostics, 
+		boolean verbose,
 		Integer max_iters, 
 		Random r, 
 		AtomicBoolean search_stopped, 
@@ -46,6 +48,7 @@ public class GreedySearch {
 		this.nT = nT;
 		
 		ObjectiveFunction obj_fun = null;
+		this.verbose = verbose;
 		int p = 0;
 		int n = 0;
 		if (objective.equals(ObjectiveFunction.KER)){
@@ -53,7 +56,7 @@ public class GreedySearch {
 			n = Kgram.length;
 			((KernelObjective)obj_fun).setW(indicT);	
 		} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
-			obj_fun = new MultipleKernelObjectiveFunction(Kgrams, max_reduction_log_obj_vals, kernel_weights, maximum_gain_scaling, kernel_obj_values);	
+			obj_fun = new MultipleKernelObjectiveFunction(Kgrams, max_reduction_log_obj_vals, kernel_weights, maximum_gain_scaling, kernel_obj_values, verbose);	
 			n = Kgrams.get(0).length; 
 			((MultipleKernelObjectiveFunction)obj_fun).setW(indicT);
 			((MultipleKernelObjectiveFunction)obj_fun).setInitialObjVals();
@@ -373,7 +376,7 @@ public class GreedySearch {
 //		System.out.println("ending_indicT " + Tools.StringJoin(ending_indicT));
 		objective_vals[d0] = min_obj_val;
 		num_iters[d0] = iter - 1;
-		if (objective.equals(ObjectiveFunction.MUL_KER_PCT)){	
+		if (objective.equals(ObjectiveFunction.MUL_KER_PCT) && verbose){	
 			System.out.println("SEARCH DONE obj_val " + min_obj_val + " iters " + (iter - 1));
 		}
 	}

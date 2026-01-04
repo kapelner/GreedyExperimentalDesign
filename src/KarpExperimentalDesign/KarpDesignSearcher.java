@@ -130,7 +130,8 @@ public abstract class KarpDesignSearcher extends AllExperimentalDesigns {
 		}
 	}
 	
-	public KarpDesignSearcher(double[][] Xstd){
+	public KarpDesignSearcher(double[][] Xstd, boolean verbose){
+		this.verbose = verbose;
 		this.Xstd = Xstd;
 		
 		n = Xstd.length;
@@ -146,10 +147,12 @@ public abstract class KarpDesignSearcher extends AllExperimentalDesigns {
 			//the first thing to do is order these things up
 			sortObsBundles();			
 			
-			System.out.println("\n\niter " + iter + " size of obs_bundles: " + obs_bundles.size() + "  ===========================================================================================================");
-			for (int i = 0; i < obs_bundles.size(); i++){
-				System.out.println("  BUNDLE #" + (i + 1));
-				obs_bundles.get(i).print("    ");
+			if (verbose){
+				System.out.println("\n\niter " + iter + " size of obs_bundles: " + obs_bundles.size() + "  ===========================================================================================================");
+				for (int i = 0; i < obs_bundles.size(); i++){
+					System.out.println("  BUNDLE #" + (i + 1));
+					obs_bundles.get(i).print("    ");
+				}
 			}			
 			
 			
@@ -166,11 +169,13 @@ public abstract class KarpDesignSearcher extends AllExperimentalDesigns {
 			}
 			iter++;
 		}
-		System.out.println("\n\niter FINAL size of obs_bundles: " + obs_bundles.size() + "  ===========================================================================================================");
-		for (int i = 0; i < obs_bundles.size(); i++){
-			System.out.println("  BUNDLE #" + (i + 1));
-			obs_bundles.get(i).print("    ");
-		}	
+		if (verbose){
+			System.out.println("\n\niter FINAL size of obs_bundles: " + obs_bundles.size() + "  ===========================================================================================================");
+			for (int i = 0; i < obs_bundles.size(); i++){
+				System.out.println("  BUNDLE #" + (i + 1));
+				obs_bundles.get(i).print("    ");
+			}
+		}
 	}
 	
 	protected abstract void sortObsBundles();

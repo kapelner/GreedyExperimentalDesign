@@ -36,7 +36,6 @@ import java.util.Random;
  * @author Adam Kapelner
  */
 public class Tools {	
-
 	public static double[] colAvg(ArrayList<double[]> X, int p) {
 		int n = X.size();	
 		double[] tally = new double[p];

@@ -10,7 +10,9 @@ initOptimalExperimentalDesignObject(
   Kgram = NULL,
   wait = FALSE,
   start = TRUE,
-  num_cores = 1
+  num_cores = 1,
+  verbose = TRUE,
+  use_safe_inverse = FALSE
 )
 }
 \arguments{
@@ -30,15 +32,35 @@ deafult is \code{FALSE}.}
 \item{start}{Should we start searching immediately (default is \code{TRUE}).}
 
 \item{num_cores}{The number of CPU cores you wish to use during the search. The default is \code{1}.}
+
+\item{verbose}{Should the algorithm emit progress output? Default is \code{TRUE}.}
+
+\item{use_safe_inverse}{Should a regularized inverse be used for the Mahalanobis objective?
+Default is \code{FALSE}.}
 }
 \value{
 An object of type \code{optimal_experimental_design_search} which can be further operated upon
 }
 \description{
 This method creates an object of type optimal_experimental_design and will immediately initiate
-a search through $1_{T}$ space. Since this search takes exponential time, for most machines, 
+a search through allocation space. Since this search takes exponential time, for most machines, 
 this method is futile beyond 28 samples. You've been warned! For debugging, you can use set 
 \code{num_cores = 1} to be assured of deterministic output.
+}
+\examples{
+\dontrun{
+set.seed(1)
+X = matrix(rnorm(12), nrow = 6)
+obj = initOptimalExperimentalDesignObject(
+  X,
+  objective = "abs_sum_diff",
+  num_cores = 1,
+  start = TRUE,
+  wait = TRUE,
+  verbose = FALSE
+)
+obj
+}
 }
 \author{
 Adam Kapelner

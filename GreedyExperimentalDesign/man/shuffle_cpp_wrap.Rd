@@ -4,16 +4,23 @@
 \alias{shuffle_cpp_wrap}
 \title{Shuffles a vector rapidly}
 \usage{
-shuffle_cpp_wrap(w)
+shuffle_cpp_wrap(w, seed = NA_integer_)
 }
 \arguments{
 \item{w}{The vector to be shuffled}
+
+\item{seed}{Optional integer seed; use NA to draw from the system clock}
 }
 \value{
 The vector with elements shuffled
 }
 \description{
 Shuffles a vector rapidly
+}
+\examples{
+\dontrun{
+shuffle_cpp_wrap(1:5, seed = 1)
+}
 }
 \author{
 Adam Kapelner

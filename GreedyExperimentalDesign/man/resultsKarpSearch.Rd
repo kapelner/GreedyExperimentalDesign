@@ -12,6 +12,21 @@ resultsKarpSearch(obj)
 \description{
 Returns the results (thus far) of the karp design search
 }
+\examples{
+\dontrun{
+set.seed(1)
+X = matrix(rnorm(10), nrow = 10)
+kobj = initKarpExperimentalDesignObject(
+  X,
+  start = TRUE,
+  wait = TRUE,
+  balanced = TRUE,
+  verbose = FALSE
+)
+res = resultsKarpSearch(kobj)
+res$obj_val
+}
+}
 \author{
 Adam Kapelner
 }

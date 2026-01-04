@@ -10,6 +10,29 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// is_symmetric_cpp
+bool is_symmetric_cpp(NumericMatrix D, double tol);
+RcppExport SEXP _GreedyExperimentalDesign_is_symmetric_cpp(SEXP DSEXP, SEXP tolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type D(DSEXP);
+    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(is_symmetric_cpp(D, tol));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sort_unique_pairs_cpp
+IntegerMatrix sort_unique_pairs_cpp(IntegerMatrix pairs);
+RcppExport SEXP _GreedyExperimentalDesign_sort_unique_pairs_cpp(SEXP pairsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerMatrix >::type pairs(pairsSEXP);
+    rcpp_result_gen = Rcpp::wrap(sort_unique_pairs_cpp(pairs));
+    return rcpp_result_gen;
+END_RCPP
+}
 // generate_block_design_cpp
 List generate_block_design_cpp(int B, int nR, NumericVector dummy_block);
 RcppExport SEXP _GreedyExperimentalDesign_generate_block_design_cpp(SEXP BSEXP, SEXP nRSEXP, SEXP dummy_blockSEXP) {
@@ -85,6 +108,83 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// greedy_orthogonalization_eliminate_cpp
+List greedy_orthogonalization_eliminate_cpp(NumericMatrix Rij, int Rmin, bool stop_if_worse);
+RcppExport SEXP _GreedyExperimentalDesign_greedy_orthogonalization_eliminate_cpp(SEXP RijSEXP, SEXP RminSEXP, SEXP stop_if_worseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type Rij(RijSEXP);
+    Rcpp::traits::input_parameter< int >::type Rmin(RminSEXP);
+    Rcpp::traits::input_parameter< bool >::type stop_if_worse(stop_if_worseSEXP);
+    rcpp_result_gen = Rcpp::wrap(greedy_orthogonalization_eliminate_cpp(Rij, Rmin, stop_if_worse));
+    return rcpp_result_gen;
+END_RCPP
+}
+// compute_indicTs_from_pairs_cpp
+IntegerMatrix compute_indicTs_from_pairs_cpp(IntegerMatrix pairs, IntegerMatrix w_diff, int n);
+RcppExport SEXP _GreedyExperimentalDesign_compute_indicTs_from_pairs_cpp(SEXP pairsSEXP, SEXP w_diffSEXP, SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerMatrix >::type pairs(pairsSEXP);
+    Rcpp::traits::input_parameter< IntegerMatrix >::type w_diff(w_diffSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_indicTs_from_pairs_cpp(pairs, w_diff, n));
+    return rcpp_result_gen;
+END_RCPP
+}
+// compute_indicTs_from_pairs_lgl_cpp
+IntegerMatrix compute_indicTs_from_pairs_lgl_cpp(IntegerMatrix pairs, LogicalMatrix w_diff, int n);
+RcppExport SEXP _GreedyExperimentalDesign_compute_indicTs_from_pairs_lgl_cpp(SEXP pairsSEXP, SEXP w_diffSEXP, SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerMatrix >::type pairs(pairsSEXP);
+    Rcpp::traits::input_parameter< LogicalMatrix >::type w_diff(w_diffSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_indicTs_from_pairs_lgl_cpp(pairs, w_diff, n));
+    return rcpp_result_gen;
+END_RCPP
+}
+// compute_indicTs_from_pairs_raw_cpp
+IntegerMatrix compute_indicTs_from_pairs_raw_cpp(IntegerMatrix pairs, RawMatrix w_diff, int n);
+RcppExport SEXP _GreedyExperimentalDesign_compute_indicTs_from_pairs_raw_cpp(SEXP pairsSEXP, SEXP w_diffSEXP, SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerMatrix >::type pairs(pairsSEXP);
+    Rcpp::traits::input_parameter< RawMatrix >::type w_diff(w_diffSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_indicTs_from_pairs_raw_cpp(pairs, w_diff, n));
+    return rcpp_result_gen;
+END_RCPP
+}
+// compute_kernel_matrix_cpp
+NumericMatrix compute_kernel_matrix_cpp(NumericMatrix X, int kernel_type, int poly_s);
+RcppExport SEXP _GreedyExperimentalDesign_compute_kernel_matrix_cpp(SEXP XSEXP, SEXP kernel_typeSEXP, SEXP poly_sSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    Rcpp::traits::input_parameter< int >::type kernel_type(kernel_typeSEXP);
+    Rcpp::traits::input_parameter< int >::type poly_s(poly_sSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_kernel_matrix_cpp(X, kernel_type, poly_s));
+    return rcpp_result_gen;
+END_RCPP
+}
+// compute_kernel_quadratic_forms_cpp
+NumericVector compute_kernel_quadratic_forms_cpp(NumericMatrix W, NumericMatrix K);
+RcppExport SEXP _GreedyExperimentalDesign_compute_kernel_quadratic_forms_cpp(SEXP WSEXP, SEXP KSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type W(WSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type K(KSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_kernel_quadratic_forms_cpp(W, K));
+    return rcpp_result_gen;
+END_RCPP
+}
 // compute_avg_abs_rijss_left
 NumericVector compute_avg_abs_rijss_left(NumericMatrix Rij);
 RcppExport SEXP _GreedyExperimentalDesign_compute_avg_abs_rijss_left(SEXP RijSEXP) {
@@ -96,15 +196,175 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// compute_mahalanobis_distance_matrix_cpp
+NumericMatrix compute_mahalanobis_distance_matrix_cpp(NumericMatrix X, NumericMatrix Sinv);
+RcppExport SEXP _GreedyExperimentalDesign_compute_mahalanobis_distance_matrix_cpp(SEXP XSEXP, SEXP SinvSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type Sinv(SinvSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_mahalanobis_distance_matrix_cpp(X, Sinv));
+    return rcpp_result_gen;
+END_RCPP
+}
+// standardize_data_matrix_cpp
+NumericMatrix standardize_data_matrix_cpp(NumericMatrix X);
+RcppExport SEXP _GreedyExperimentalDesign_standardize_data_matrix_cpp(SEXP XSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    rcpp_result_gen = Rcpp::wrap(standardize_data_matrix_cpp(X));
+    return rcpp_result_gen;
+END_RCPP
+}
+// compute_objective_val_cpp
+double compute_objective_val_cpp(NumericMatrix X, IntegerVector indic_T, std::string objective, Nullable<NumericMatrix> inv_cov_X);
+RcppExport SEXP _GreedyExperimentalDesign_compute_objective_val_cpp(SEXP XSEXP, SEXP indic_TSEXP, SEXP objectiveSEXP, SEXP inv_cov_XSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type indic_T(indic_TSEXP);
+    Rcpp::traits::input_parameter< std::string >::type objective(objectiveSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericMatrix> >::type inv_cov_X(inv_cov_XSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_objective_val_cpp(X, indic_T, objective, inv_cov_X));
+    return rcpp_result_gen;
+END_RCPP
+}
+// compute_objective_vals_cpp
+NumericVector compute_objective_vals_cpp(NumericMatrix X, IntegerMatrix indicTs, std::string objective, Nullable<NumericMatrix> inv_cov_X);
+RcppExport SEXP _GreedyExperimentalDesign_compute_objective_vals_cpp(SEXP XSEXP, SEXP indicTsSEXP, SEXP objectiveSEXP, SEXP inv_cov_XSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    Rcpp::traits::input_parameter< IntegerMatrix >::type indicTs(indicTsSEXP);
+    Rcpp::traits::input_parameter< std::string >::type objective(objectiveSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericMatrix> >::type inv_cov_X(inv_cov_XSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_objective_vals_cpp(X, indicTs, objective, inv_cov_X));
+    return rcpp_result_gen;
+END_RCPP
+}
+// compute_pair_differences_cpp
+NumericMatrix compute_pair_differences_cpp(NumericMatrix X, IntegerMatrix pairs);
+RcppExport SEXP _GreedyExperimentalDesign_compute_pair_differences_cpp(SEXP XSEXP, SEXP pairsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    Rcpp::traits::input_parameter< IntegerMatrix >::type pairs(pairsSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_pair_differences_cpp(X, pairs));
+    return rcpp_result_gen;
+END_RCPP
+}
+// complete_randomization_forced_balanced_cpp
+IntegerMatrix complete_randomization_forced_balanced_cpp(int n, int r, int seed);
+RcppExport SEXP _GreedyExperimentalDesign_complete_randomization_forced_balanced_cpp(SEXP nSEXP, SEXP rSEXP, SEXP seedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type r(rSEXP);
+    Rcpp::traits::input_parameter< int >::type seed(seedSEXP);
+    rcpp_result_gen = Rcpp::wrap(complete_randomization_forced_balanced_cpp(n, r, seed));
+    return rcpp_result_gen;
+END_RCPP
+}
+// complete_randomization_imbalanced_cpp
+IntegerMatrix complete_randomization_imbalanced_cpp(int n, int nT, int r, int seed);
+RcppExport SEXP _GreedyExperimentalDesign_complete_randomization_imbalanced_cpp(SEXP nSEXP, SEXP nTSEXP, SEXP rSEXP, SEXP seedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type nT(nTSEXP);
+    Rcpp::traits::input_parameter< int >::type r(rSEXP);
+    Rcpp::traits::input_parameter< int >::type seed(seedSEXP);
+    rcpp_result_gen = Rcpp::wrap(complete_randomization_imbalanced_cpp(n, nT, r, seed));
+    return rcpp_result_gen;
+END_RCPP
+}
+// complete_randomization_cpp
+IntegerMatrix complete_randomization_cpp(int n, int r);
+RcppExport SEXP _GreedyExperimentalDesign_complete_randomization_cpp(SEXP nSEXP, SEXP rSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type r(rSEXP);
+    rcpp_result_gen = Rcpp::wrap(complete_randomization_cpp(n, r));
+    return rcpp_result_gen;
+END_RCPP
+}
+// imbalanced_block_designs_cpp
+IntegerMatrix imbalanced_block_designs_cpp(int n_B, int n_B_T, int B, int r, int seed);
+RcppExport SEXP _GreedyExperimentalDesign_imbalanced_block_designs_cpp(SEXP n_BSEXP, SEXP n_B_TSEXP, SEXP BSEXP, SEXP rSEXP, SEXP seedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type n_B(n_BSEXP);
+    Rcpp::traits::input_parameter< int >::type n_B_T(n_B_TSEXP);
+    Rcpp::traits::input_parameter< int >::type B(BSEXP);
+    Rcpp::traits::input_parameter< int >::type r(rSEXP);
+    Rcpp::traits::input_parameter< int >::type seed(seedSEXP);
+    rcpp_result_gen = Rcpp::wrap(imbalanced_block_designs_cpp(n_B, n_B_T, B, r, seed));
+    return rcpp_result_gen;
+END_RCPP
+}
+// compute_randomization_metrics_cpp
+List compute_randomization_metrics_cpp(NumericMatrix designs);
+RcppExport SEXP _GreedyExperimentalDesign_compute_randomization_metrics_cpp(SEXP designsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type designs(designsSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_randomization_metrics_cpp(designs));
+    return rcpp_result_gen;
+END_RCPP
+}
+// gen_var_cov_matrix_block_designs_cpp
+NumericMatrix gen_var_cov_matrix_block_designs_cpp(int n, double prop_T, int B);
+RcppExport SEXP _GreedyExperimentalDesign_gen_var_cov_matrix_block_designs_cpp(SEXP nSEXP, SEXP prop_TSEXP, SEXP BSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< double >::type prop_T(prop_TSEXP);
+    Rcpp::traits::input_parameter< int >::type B(BSEXP);
+    rcpp_result_gen = Rcpp::wrap(gen_var_cov_matrix_block_designs_cpp(n, prop_T, B));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_GreedyExperimentalDesign_is_symmetric_cpp", (DL_FUNC) &_GreedyExperimentalDesign_is_symmetric_cpp, 2},
+    {"_GreedyExperimentalDesign_sort_unique_pairs_cpp", (DL_FUNC) &_GreedyExperimentalDesign_sort_unique_pairs_cpp, 1},
     {"_GreedyExperimentalDesign_generate_block_design_cpp", (DL_FUNC) &_GreedyExperimentalDesign_generate_block_design_cpp, 3},
     {"_GreedyExperimentalDesign_compute_distance_matrix_cpp", (DL_FUNC) &_GreedyExperimentalDesign_compute_distance_matrix_cpp, 1},
     {"_GreedyExperimentalDesign_shuffle_cpp", (DL_FUNC) &_GreedyExperimentalDesign_shuffle_cpp, 2},
     {"_GreedyExperimentalDesign_create_all_ys_cpp", (DL_FUNC) &_GreedyExperimentalDesign_create_all_ys_cpp, 5},
     {"_GreedyExperimentalDesign_all_elements_same_cpp", (DL_FUNC) &_GreedyExperimentalDesign_all_elements_same_cpp, 1},
     {"_GreedyExperimentalDesign_gen_pm_designs_cpp", (DL_FUNC) &_GreedyExperimentalDesign_gen_pm_designs_cpp, 3},
+    {"_GreedyExperimentalDesign_greedy_orthogonalization_eliminate_cpp", (DL_FUNC) &_GreedyExperimentalDesign_greedy_orthogonalization_eliminate_cpp, 3},
+    {"_GreedyExperimentalDesign_compute_indicTs_from_pairs_cpp", (DL_FUNC) &_GreedyExperimentalDesign_compute_indicTs_from_pairs_cpp, 3},
+    {"_GreedyExperimentalDesign_compute_indicTs_from_pairs_lgl_cpp", (DL_FUNC) &_GreedyExperimentalDesign_compute_indicTs_from_pairs_lgl_cpp, 3},
+    {"_GreedyExperimentalDesign_compute_indicTs_from_pairs_raw_cpp", (DL_FUNC) &_GreedyExperimentalDesign_compute_indicTs_from_pairs_raw_cpp, 3},
+    {"_GreedyExperimentalDesign_compute_kernel_matrix_cpp", (DL_FUNC) &_GreedyExperimentalDesign_compute_kernel_matrix_cpp, 3},
+    {"_GreedyExperimentalDesign_compute_kernel_quadratic_forms_cpp", (DL_FUNC) &_GreedyExperimentalDesign_compute_kernel_quadratic_forms_cpp, 2},
     {"_GreedyExperimentalDesign_compute_avg_abs_rijss_left", (DL_FUNC) &_GreedyExperimentalDesign_compute_avg_abs_rijss_left, 1},
+    {"_GreedyExperimentalDesign_compute_mahalanobis_distance_matrix_cpp", (DL_FUNC) &_GreedyExperimentalDesign_compute_mahalanobis_distance_matrix_cpp, 2},
+    {"_GreedyExperimentalDesign_standardize_data_matrix_cpp", (DL_FUNC) &_GreedyExperimentalDesign_standardize_data_matrix_cpp, 1},
+    {"_GreedyExperimentalDesign_compute_objective_val_cpp", (DL_FUNC) &_GreedyExperimentalDesign_compute_objective_val_cpp, 4},
+    {"_GreedyExperimentalDesign_compute_objective_vals_cpp", (DL_FUNC) &_GreedyExperimentalDesign_compute_objective_vals_cpp, 4},
+    {"_GreedyExperimentalDesign_compute_pair_differences_cpp", (DL_FUNC) &_GreedyExperimentalDesign_compute_pair_differences_cpp, 2},
+    {"_GreedyExperimentalDesign_complete_randomization_forced_balanced_cpp", (DL_FUNC) &_GreedyExperimentalDesign_complete_randomization_forced_balanced_cpp, 3},
+    {"_GreedyExperimentalDesign_complete_randomization_imbalanced_cpp", (DL_FUNC) &_GreedyExperimentalDesign_complete_randomization_imbalanced_cpp, 4},
+    {"_GreedyExperimentalDesign_complete_randomization_cpp", (DL_FUNC) &_GreedyExperimentalDesign_complete_randomization_cpp, 2},
+    {"_GreedyExperimentalDesign_imbalanced_block_designs_cpp", (DL_FUNC) &_GreedyExperimentalDesign_imbalanced_block_designs_cpp, 5},
+    {"_GreedyExperimentalDesign_compute_randomization_metrics_cpp", (DL_FUNC) &_GreedyExperimentalDesign_compute_randomization_metrics_cpp, 1},
+    {"_GreedyExperimentalDesign_gen_var_cov_matrix_block_designs_cpp", (DL_FUNC) &_GreedyExperimentalDesign_gen_var_cov_matrix_block_designs_cpp, 3},
     {NULL, NULL, 0}
 };
 

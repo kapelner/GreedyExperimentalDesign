@@ -29,6 +29,22 @@ An array of order statistics as a list element
 \description{
 Plots an order statistic of the object value as a function of number of searches
 }
+\examples{
+\dontrun{
+set.seed(1)
+X = matrix(rnorm(20), nrow = 10)
+ged = initGreedyExperimentalDesignObject(
+  X,
+  max_designs = 5,
+  num_cores = 1,
+  objective = "abs_sum_diff",
+  start = TRUE,
+  wait = TRUE,
+  verbose = FALSE
+)
+plot_obj_val_order_statistic(ged, order_stat = 1, skip_every = 1)
+}
+}
 \author{
 Adam Kapelner
 }

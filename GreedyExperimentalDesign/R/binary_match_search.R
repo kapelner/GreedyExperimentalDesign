@@ -1,7 +1,7 @@
 #' Compute Binary Matching Strcuture
 #' 
 #' This method creates an object of type binary_match_structure and will compute pairs. You can then
-#' use the functions \code{initBinaryMatchExperimentalDesignSearch} and \code{resultsBinaryMatchSearch} 
+#' use the functions \code{initBinaryMatchExperimentalDesignSearchObject} and \code{resultsBinaryMatchSearch} 
 #' to create randomized allocation vectors. For one column in X, we just sort to find the pairs trivially.
 #' 
 #' @param X						The design matrix with $n$ rows (one for each subject) and $p$ columns 
@@ -11,23 +11,35 @@
 #' 								its only argument. The default is \code{NULL} signifying euclidean squared distance optimized in C++.
 #' @param mahal_match			Match using Mahalanobis distance. Default is \code{FALSE}.
 #' @param D						A distance matrix precomputed. The default is \code{NULL} indicating the distance matrix should be computed.
+#' @param symmetry_tol			Tolerance for symmetry check on \code{D}. Default is \code{1e-12}.
+#' @param use_safe_inverse		Should a regularized inverse be used for the Mahalanobis objective?
+#' 								Default is \code{FALSE}.
 #' @return						An object of type \code{binary_experimental_design} which can be further operated upon.
 #' 
 #' @author Adam Kapelner
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' X = matrix(rnorm(16), nrow = 8)
+#' bms = computeBinaryMatchStructure(X)
+#' bms$indicies_pairs
+#' }
 #' @export
-computeBinaryMatchStructure = function(X, mahal_match = FALSE, compute_dist_matrix = NULL, D = NULL){
+computeBinaryMatchStructure = function(X, mahal_match = FALSE, compute_dist_matrix = NULL, D = NULL, symmetry_tol = 1e-12, use_safe_inverse = FALSE){
 	assertClass(X, "matrix")
 	assertClass(compute_dist_matrix, "function", null.ok = TRUE)
 	n = nrow(X)
 	assertTRUE(n > 1)
 	p = ncol(X)
+	assertNumeric(symmetry_tol, lower = 0)
+	assertLogical(use_safe_inverse)
 	if (!is.null(D)){
 		assertClass(D, "matrix")
 		assertTRUE(nrow(D) == n)
 		assertTRUE(ncol(D) == n)
 		for (i in 1 : (n - 1)){ #ensure symmetric
 			for (j in (i + 1) : n){
-				assertTRUE(D[i, j] == D[j, i])
+				assertTRUE(abs(D[i, j] - D[j, i]) <= symmetry_tol)
 			}
 		}
 	}
@@ -41,8 +53,11 @@ computeBinaryMatchStructure = function(X, mahal_match = FALSE, compute_dist_matr
 	} else {
 		if (is.null(compute_dist_matrix) & is.null(D)) {	
 			if (mahal_match){
-				#C++-optimize one day please!
-				S_X_inv = solve(var(X))
+				if (use_safe_inverse){
+					S_X_inv = safe_cov_inverse(X)
+				} else {
+					S_X_inv = solve(stats::var(X))
+				}
 				D = matrix(NA, nrow = n, ncol = n)
 				for (i in 1 : (n - 1)){ #ensure symmetric
 					for (j in (i + 1) : n){
@@ -77,6 +92,7 @@ computeBinaryMatchStructure = function(X, mahal_match = FALSE, compute_dist_matr
 	binary_match_structure$compute_dist_matrix = compute_dist_matrix
 	binary_match_structure$D = D
 	binary_match_structure$indicies_pairs = indicies_pairs
+	binary_match_structure$indices_pairs = indicies_pairs
 	class(binary_match_structure) = "binary_match_structure"
 	binary_match_structure
 }
@@ -84,7 +100,7 @@ computeBinaryMatchStructure = function(X, mahal_match = FALSE, compute_dist_matr
 #' Begin a Binary Match Search
 #' 
 #' This method creates an object of type pairwise_matching_experimental_design_search and will immediately initiate
-#' a search through $1_{T}$ space for pairwise match designs based on the structure computed in the function \code{computeBinaryMatchStructure}. 
+#' a search through allocation space for pairwise match designs based on the structure computed in the function \code{computeBinaryMatchStructure}. 
 #' For debugging, you can use set the \code{seed} parameter and \code{num_cores = 1} to be assured of deterministic output.
 #' 
 #' @param binary_match_structure 	The \code{binary_experimental_design} object where the pairs are computed.
@@ -96,23 +112,43 @@ computeBinaryMatchStructure = function(X, mahal_match = FALSE, compute_dist_matr
 #' @param seed						The set to set for deterministic output. This should only be set if \code{num_cores = 1} otherwise
 #' 									the output will not be deterministic. Default is \code{NULL} for no seed set. 
 #' @param prop_flips				Proportion of flips. Default is all. Lower for more correlated assignments (useful for research only).
+#' @param verbose					Should the algorithm emit progress output? Default is \code{TRUE}.
 #' 
 #' @author Adam Kapelner
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' X = matrix(rnorm(16), nrow = 8)
+#' bms = computeBinaryMatchStructure(X)
+#' bm = initBinaryMatchExperimentalDesignSearchObject(
+#'   bms,
+#'   max_designs = 4,
+#'   num_cores = 1,
+#'   start = TRUE,
+#'   wait = TRUE,
+#'   seed = 1,
+#'   verbose = FALSE
+#' )
+#' bm
+#' }
 #' @export
-initBinaryMatchExperimentalDesignSearch = function(binary_match_structure, 
+initBinaryMatchExperimentalDesignSearchObject = function(binary_match_structure, 
 		max_designs = 1000, 
 		wait = FALSE, 
 		start = TRUE,
 		num_cores = 1,
 		seed = NULL,
-		prop_flips = 1){
+		prop_flips = 1,
+		verbose = TRUE){
 	assertClass(binary_match_structure, "binary_match_structure")
 	assertCount(max_designs, positive = TRUE)
 	assertNumeric(prop_flips, lower = 0, upper = 1)
+	assertLogical(verbose)
 	
 	if (prop_flips < 1){
 		warning("prop_flips feature is not implemented yet")
 	}
+	binary_match_structure$verbose = verbose
 		
 	n = binary_match_structure$n
 	if (2^(n / 2) < max_designs){
@@ -131,6 +167,7 @@ initBinaryMatchExperimentalDesignSearch = function(binary_match_structure,
 	
 	#now go ahead and create the Java object and set its information
 	java_obj = .jnew("PairwiseMatchingExperimentalDesign.PairwiseMatchingExperimentalDesign")
+	set_verbose_if_available(java_obj, verbose)
 	.jcall(java_obj, "V", "setMaxDesigns", as.integer(max_designs))
 	.jcall(java_obj, "V", "setNumCores", as.integer(num_cores))	
 	if (!is.null(seed)){
@@ -159,6 +196,7 @@ initBinaryMatchExperimentalDesignSearch = function(binary_match_structure,
 	pairwise_matching_experimental_design_search$wait = wait
 	pairwise_matching_experimental_design_search$num_cores = num_cores
 	pairwise_matching_experimental_design_search$java_obj = java_obj
+	pairwise_matching_experimental_design_search$verbose = verbose
 	class(pairwise_matching_experimental_design_search) = "pairwise_matching_experimental_design_search"
 	#if the user wants to run it immediately...
 	if (start){
@@ -176,14 +214,35 @@ initBinaryMatchExperimentalDesignSearch = function(binary_match_structure,
 #' @param form					Which form should the assignments be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's. 
 #' 
 #' @author Adam Kapelner
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' X = matrix(rnorm(16), nrow = 8)
+#' bms = computeBinaryMatchStructure(X)
+#' bm = initBinaryMatchExperimentalDesignSearchObject(
+#'   bms,
+#'   max_designs = 4,
+#'   num_cores = 1,
+#'   start = TRUE,
+#'   wait = TRUE,
+#'   seed = 1,
+#'   verbose = FALSE
+#' )
+#' res = resultsBinaryMatchSearch(bm, form = "one_zero")
+#' dim(res)
+#' }
 #' @export
 resultsBinaryMatchSearch = function(obj, form = "one_zero"){
 	assertClass(obj, "pairwise_matching_experimental_design_search")
 	assertChoice(form, c("one_zero", "pos_one_min_one"))
-	
-	ending_indicTs = .jcall(obj$java_obj, "[[I", "getEndingIndicTs", simplify = TRUE)	
+
+	ending_indicTs = .jcall(obj$java_obj, "[[I", "getEndingIndicTs", simplify = TRUE)
 	if (form == "pos_one_min_one"){
-		ending_indicTs = (ending_indicTs - 0.5) * 2
+		if (length(ending_indicTs) > 0 && min(ending_indicTs) >= 0 && max(ending_indicTs) <= 1){
+			ending_indicTs = (ending_indicTs - 0.5) * 2
+		}
+	} else if (length(ending_indicTs) > 0 && min(ending_indicTs) < 0){
+		ending_indicTs = (ending_indicTs + 1) / 2
 	}	
 	ending_indicTs
 }
@@ -229,7 +288,8 @@ summary.pairwise_matching_experimental_design_search = function(object, ...){
 #' @method print binary_match_structure
 #' @export
 print.binary_match_structure = function(x, ...){
-	cat("The pairs have been computed. Now use the initBinaryMatchExperimentalDesignSearch function to create allocations.\n")
+	cat("The pairs have been computed. Now use the initBinaryMatchExperimentalDesignSearchObject function to create allocations.\n")
+	invisible(x)
 }
 
 #' Prints a summary of a \code{binary_match_structure} object

@@ -20,6 +20,7 @@ public class MultipleKernelObjectiveFunction extends ObjectiveFunction {
 	private double maximum_gain_scaling;
 	private HashMap<Integer, Double> max_reduction_log_obj_vals;
 	private ArrayList<double[]> kernel_obj_values;
+	private boolean verbose;
 
 	public MultipleKernelObjectiveFunction(
 			HashMap<Integer, double[][]> Kgrams,	
@@ -27,7 +28,8 @@ public class MultipleKernelObjectiveFunction extends ObjectiveFunction {
 			HashMap<Integer, Double> max_reduction_log_obj_vals, 
 			double[] kernel_weights, 
 			double maximum_gain_scaling, 
-			ArrayList<double[]> kernel_obj_values
+			ArrayList<double[]> kernel_obj_values,
+			boolean verbose
 		) {
 //		this.Kgrams = Kgrams;
 //		this.obj_val_kernel_library = obj_val_kernel_library;
@@ -35,6 +37,7 @@ public class MultipleKernelObjectiveFunction extends ObjectiveFunction {
 		this.max_reduction_log_obj_vals = max_reduction_log_obj_vals;
 		this.maximum_gain_scaling = maximum_gain_scaling;
 		this.kernel_obj_values = kernel_obj_values;
+		this.verbose = verbose;
 		m = Kgrams.size();
 		
 		//now we create sub-objective functions
@@ -42,7 +45,9 @@ public class MultipleKernelObjectiveFunction extends ObjectiveFunction {
 		for (int i_k = 0; i_k < m; i_k++) {
 			kernel_objective_functions[i_k] = new KernelObjective(Kgrams.get(i_k));
 		}
-		System.out.println("MultipleKernelObjectiveFunction init m = " + m + " maximum_gain_scaling =  " + maximum_gain_scaling + " kernel_weights = " + Tools.StringJoin(kernel_weights));
+		if (verbose){
+			System.out.println("MultipleKernelObjectiveFunction init m = " + m + " maximum_gain_scaling =  " + maximum_gain_scaling + " kernel_weights = " + Tools.StringJoin(kernel_weights));
+		}
 		//now cache the empirical distribution object
 //		for (int i_k = 0; i_k < m; i_k++) {
 //			kernel_ecdfs[i_k] = new EmpiricalDistribution();

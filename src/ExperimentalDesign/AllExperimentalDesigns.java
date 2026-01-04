@@ -25,6 +25,7 @@ public abstract class AllExperimentalDesigns extends FileLoggedClass {
 	protected double[][] Sinv;	
 	protected double[][] Kgram;
 	protected boolean wait;
+	protected boolean verbose = true;
 	
 	//temporary objects needed for search
 	protected ExecutorService search_thread_pool;	
@@ -102,6 +103,14 @@ public abstract class AllExperimentalDesigns extends FileLoggedClass {
 //		System.out.println("setNumCores " +num_cores);
 		this.num_cores = num_cores;
 	}	
+
+	public void setVerbose(boolean verbose){
+		this.verbose = verbose;
+	}
+
+	public boolean isVerbose(){
+		return verbose;
+	}
 	
 	public void setN(int n) {
 		this.n = n;
@@ -120,6 +129,17 @@ public abstract class AllExperimentalDesigns extends FileLoggedClass {
 		}
 //		System.out.println("setKgramRow " + i0 + " " + Tools.StringJoin(Kgram[i0]));
 	}
+
+	public void setKgramMatrix(double[] kgram_flat, int n){
+		this.n = n;
+		Kgram = new double[n][n];
+		int idx = 0;
+		for (int j = 0; j < n; j++){
+			for (int i = 0; i < n; i++){
+				Kgram[i][j] = kgram_flat[idx++];
+			}
+		}
+	}
 	
 	public void setDataRow(int i0, double[] x_i){
 //		System.out.println("setDataRow " + i0 + "  " + x_i);
@@ -128,6 +148,18 @@ public abstract class AllExperimentalDesigns extends FileLoggedClass {
 		}
 		for (int j = 0; j < p; j++){
 			X[i0][j] = x_i[j];
+		}
+	}
+
+	public void setDataMatrix(double[] x_flat, int n, int p){
+		this.n = n;
+		this.p = p;
+		X = new double[n][p];
+		int idx = 0;
+		for (int j = 0; j < p; j++){
+			for (int i = 0; i < n; i++){
+				X[i][j] = x_flat[idx++];
+			}
 		}
 	}
 	
@@ -147,6 +179,17 @@ public abstract class AllExperimentalDesigns extends FileLoggedClass {
 		}
 		for (int j = 0; j < p; j++){
 			Sinv[j0][j] = Sinv_i[j];
+		}
+	}
+
+	public void setInvVarCovMatrix(double[] sinv_flat, int p){
+		this.p = p;
+		Sinv = new double[p][p];
+		int idx = 0;
+		for (int j = 0; j < p; j++){
+			for (int i = 0; i < p; i++){
+				Sinv[i][j] = sinv_flat[idx++];
+			}
 		}
 	}
 	

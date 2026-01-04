@@ -19,6 +19,11 @@ A matrix with rows being the nR random block allocation of sample size B x lengt
 \description{
 Generates homogeneous block design allocations rapidly
 }
+\examples{
+\dontrun{
+generate_block_design_cpp_wrap(B = 2, nR = 3, dummy_block = c(1, 0))
+}
+}
 \author{
 Adam Kapelner
 }

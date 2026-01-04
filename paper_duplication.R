@@ -279,13 +279,13 @@ r = 100
 
 #numerical optimization
 gnoed = initGurobiNumericalOptimizationExperimentalDesignObject(X, time_limit_min = 0.5, num_cores = NUM_CORES)
-indicT = resultsGurobiNumericalOptimizeExperimentalDesign(gnoed)$indicT
+indicT = resultsGurobiNumericalOptimizeSearch(gnoed)$indicT
 compute_objective_val(X, indicT, objective = "mahal_dist")
 
 random_indices = sample(1 : n)
 X_randomized = X[random_indices, , drop = FALSE]
 gnoed = initGurobiNumericalOptimizationExperimentalDesignObject(X_randomized, time_limit_min = 0.5, num_cores = NUM_CORES)
-indicT = resultsGurobiNumericalOptimizeExperimentalDesign(gnoed)$indicT
+indicT = resultsGurobiNumericalOptimizeSearch(gnoed)$indicT
 compute_objective_val(X_randomized, indicT, objective = "mahal_dist")
 # compute_objective_val(X, indicT[order(random_indices)], objective = "mahal_dist")
 

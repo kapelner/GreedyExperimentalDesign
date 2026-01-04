@@ -17,14 +17,14 @@ r = 100
 #numerical optimization
 gnoed = initGurobiNumericalOptimizationExperimentalDesignObject(X, time_limit_min = 3, 
                                                                 num_cores = NUM_CORES)
-indicTs = resultsGurobiNumericalOptimizeExperimentalDesign(gnoed)$indicTs
+indicTs = resultsGurobiNumericalOptimizeSearch(gnoed)$indicTs
 indicTs
 compute_objective_val(X, indicTs[,1], objective = "mahal_dist")
 
 random_indices = sample(1 : n)
 X_randomized = X[random_indices, , drop = FALSE]
 gnoed = initGurobiNumericalOptimizationExperimentalDesignObject(X_randomized, time_limit_min = 0.5, num_cores = NUM_CORES)
-indicT = resultsGurobiNumericalOptimizeExperimentalDesign(gnoed)$indicTs[,1]
+indicT = resultsGurobiNumericalOptimizeSearch(gnoed)$indicTs[,1]
 compute_objective_val(X_randomized, indicT, objective = "mahal_dist")
 compute_objective_val(X, indicT[order(random_indices)], objective = "mahal_dist")
 
@@ -122,20 +122,20 @@ Kgram = compute_gram_matrix(X, "rbf", 1)
 rd = initGurobiNumericalOptimizationExperimentalDesignObject(Kgram = Kgram, objective = "kernel", 
                                                              time_limit_min = 3, 
                                                              num_cores = NUM_CORES)
-indicT_kernel_rbf = resultsGurobiNumericalOptimizeExperimentalDesign(rd)$indicTs[, 1]
+indicT_kernel_rbf = resultsGurobiNumericalOptimizeSearch(rd)$indicTs[, 1]
 
 Kgram = compute_gram_matrix(X, "poly", c(1, 1, 1)) #linear
 
 rd = initGurobiNumericalOptimizationExperimentalDesignObject(Kgram = Kgram, objective = "kernel", 
                                                              time_limit_min = 3, 
                                                              num_cores = NUM_CORES)
-indicT_kernel_linear = resultsGurobiNumericalOptimizeExperimentalDesign(rd)$indicTs[, 1]
+indicT_kernel_linear = resultsGurobiNumericalOptimizeSearch(rd)$indicTs[, 1]
 
 
 rd = initGurobiNumericalOptimizationExperimentalDesignObject(X, objective = "mahal_dist", 
                                                              time_limit_min = 3, 
                                                              num_cores = NUM_CORES)
-indicT_mahal = resultsGurobiNumericalOptimizeExperimentalDesign(rd)$indicTs[, 1]
+indicT_mahal = resultsGurobiNumericalOptimizeSearch(rd)$indicTs[, 1]
 
 indicT_kernel_rbf
 indicT_kernel_linear

@@ -45,13 +45,16 @@ public class KarpExperimentalDesign extends AllExperimentalDesigns {
 		super.beginSearch();
     	search_thread_pool.execute(new Runnable(){
 			public void run() {
-				keds = balanced ? new KarpDesignSearcherBalanced(X) : new KarpDesignSearcherUnbalanced(X);
+				keds = balanced ? new KarpDesignSearcherBalanced(X, verbose) : new KarpDesignSearcherUnbalanced(X, verbose);
+				keds.setVerbose(verbose);
 			}
 		});
 		afterBeginSearch();	
-		System.out.println("FINAL INDIC_T: " + Tools.StringJoin(getKarpIndicT()));
-		System.out.println("Num T: " + Tools.sum_array(getKarpIndicT()) + " n: " + n);
-		System.out.println("Final obj val: " + getKarpObjectiveVal());
+		if (verbose){
+			System.out.println("FINAL INDIC_T: " + Tools.StringJoin(getKarpIndicT()));
+			System.out.println("Num T: " + Tools.sum_array(getKarpIndicT()) + " n: " + n);
+			System.out.println("Final obj val: " + getKarpObjectiveVal());
+		}
 	}
 	
 	public void setBalanced(){

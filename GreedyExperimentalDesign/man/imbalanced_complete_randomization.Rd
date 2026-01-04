@@ -24,6 +24,11 @@ a matrix where each column is one of the \code{r} designs
 For debugging, you can use \code{set.seed}
 to be assured of deterministic output.
 }
+\examples{
+\dontrun{
+imbalanced_complete_randomization(n = 10, prop_T = 0.3, r = 2, seed = 1)
+}
+}
 \author{
 Adam Kapelner
 }

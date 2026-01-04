@@ -8,7 +8,8 @@ initKarpExperimentalDesignObject(
   X,
   wait = FALSE,
   balanced = TRUE,
-  start = TRUE
+  start = TRUE,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -22,14 +23,30 @@ deafult is \code{FALSE}.}
 \item{balanced}{Should the final vector be balanced? Default and recommended is \code{TRUE}.}
 
 \item{start}{Should we start searching immediately (default is \code{TRUE}).}
+
+\item{verbose}{Should the algorithm emit progress output? Default is \code{TRUE}.}
 }
 \value{
 An object of type \code{karp_experimental_design_search} which can be further operated upon
 }
 \description{
 This method creates an object of type karp_experimental_design and will immediately initiate
-a search through $1_{T}$ space. Note that the Karp search only works 
+a search through allocation  space. Note that the Karp search only works 
 for one covariate (i.e. $p=1$) and the objective "abs_sum_diff".
+}
+\examples{
+\dontrun{
+set.seed(1)
+X = matrix(rnorm(10), nrow = 10)
+kobj = initKarpExperimentalDesignObject(
+  X,
+  start = TRUE,
+  wait = TRUE,
+  balanced = TRUE,
+  verbose = FALSE
+)
+kobj
+}
 }
 \author{
 Adam Kapelner

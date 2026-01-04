@@ -111,7 +111,9 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 						}
 //						System.out.println("d00 " + d00 + " stop " + stop);
 						if (d00 % 1000000 == 0){
-							System.out.println("million");
+							if (verbose){
+								System.out.println("million");
+							}
 						}
 						ObjectiveFunction obj_fun = null;
 						if (objective.equals(ObjectiveFunction.MAHAL)){
@@ -169,10 +171,12 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 //		}
 		//now return the min
 		d_opt = Tools.min_index(objective_vals);
-		System.out.println("size of space: " + max_designs);
-		System.out.println("d_opt: " + (d_opt + 1));
-		System.out.println("obj_opt: " + objective_vals[d_opt]);
-		System.out.println("time elapsed in sec: " + timeElapsedInSeconds());
+		if (verbose){
+			System.out.println("size of space: " + max_designs);
+			System.out.println("d_opt: " + (d_opt + 1));
+			System.out.println("obj_opt: " + objective_vals[d_opt]);
+			System.out.println("time elapsed in sec: " + timeElapsedInSeconds());
+		}
 	}
 	
 	private void initializeStartingIndicTs() {
@@ -200,7 +204,9 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 			all_indicTs.get(n).add(bitSet);
 //			System.out.println("bitSet: " + Tools.StringJoin(Tools.convert_bitvector_to_intvector(bitSet, n)));
 			if (all_indicTs.size() % 1000000 == 0){
-				System.out.println("million");
+				if (verbose){
+					System.out.println("million");
+				}
 			}
 //			System.out.println(Tools.StringJoin(bitSet, ""));
 			return;

@@ -14,6 +14,24 @@ plot_obj_val_by_iter(res, runs = NULL)
 \description{
 Plots the objective value by iteration
 }
+\examples{
+\dontrun{
+set.seed(1)
+X = matrix(rnorm(20), nrow = 10)
+ged = initGreedyExperimentalDesignObject(
+  X,
+  max_designs = 5,
+  num_cores = 1,
+  diagnostics = TRUE,
+  objective = "abs_sum_diff",
+  start = TRUE,
+  wait = TRUE,
+  verbose = FALSE
+)
+res = resultsGreedySearch(ged, max_vectors = 2)
+plot_obj_val_by_iter(res)
+}
+}
 \author{
 Adam Kapelner
 }

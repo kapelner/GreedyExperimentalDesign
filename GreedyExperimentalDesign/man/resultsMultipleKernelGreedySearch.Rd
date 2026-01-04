@@ -18,24 +18,22 @@ This is not recommended as returning over 1,000 vectors is time-intensive. The d
 Returns the results (thus far) of the greedy design search for multiple kernels
 }
 \examples{
- \dontrun{
-	library(MASS)
-	data(Boston)
- #pretend the Boston data was an experiment setting 
-	#first pull out the covariates
- X = Boston[, 1 : 13]
- #begin the greedy design search
-	ged = initGreedyMultipleKernelExperimentalDesignObject(X, 
-		max_designs = 1000, num_cores = 3, kernel_names = c("mahalanobis", "gaussian"))
-	#wait
-	res = resultsMultipleKernelGreedySearch(ged, max_vectors = 2)
-	design = res$ending_indicTs[, 1] #ordered already by best-->worst
- design
-	#how far have we come of the 1000 we set out to do?
-	ged
-	#we can cut it here
-	stopSearch(ged)
-	}
+\dontrun{
+set.seed(1)
+X = matrix(rnorm(20), nrow = 10)
+mk = initGreedyMultipleKernelExperimentalDesignObject(
+  X,
+  max_designs = 4,
+  kernel_pre_num_designs = 4,
+  num_cores = 1,
+  kernel_names = c("mahalanobis", "gaussian"),
+  start = TRUE,
+  wait = TRUE,
+  verbose = FALSE
+)
+res = resultsMultipleKernelGreedySearch(mk, max_vectors = 2, form = "one_zero")
+res$obj_vals
+}
 }
 \author{
 Adam Kapelner

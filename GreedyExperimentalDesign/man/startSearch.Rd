@@ -12,6 +12,23 @@ startSearch(obj)
 \description{
 Once begun, this function cannot be run again.
 }
+\examples{
+\dontrun{
+set.seed(1)
+X = matrix(rnorm(20), nrow = 10)
+ged = initGreedyExperimentalDesignObject(
+  X,
+  max_designs = 3,
+  num_cores = 1,
+  start = FALSE,
+  wait = FALSE,
+  objective = "abs_sum_diff",
+  verbose = FALSE
+)
+startSearch(ged)
+stopSearch(ged)
+}
+}
 \author{
 Adam Kapelner
 }

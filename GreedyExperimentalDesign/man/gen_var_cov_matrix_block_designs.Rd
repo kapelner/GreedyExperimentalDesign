@@ -4,7 +4,7 @@
 \alias{gen_var_cov_matrix_block_designs}
 \title{Computes varcov matrix for block designs}
 \usage{
-gen_var_cov_matrix_block_designs(n, prop_T, B)
+gen_var_cov_matrix_block_designs(n, prop_T, B, use_cache = TRUE)
 }
 \arguments{
 \item{n}{number of observations}
@@ -12,6 +12,8 @@ gen_var_cov_matrix_block_designs(n, prop_T, B)
 \item{prop_T}{the proportion of treatments allocated}
 
 \item{B}{the number of blocks}
+
+\item{use_cache}{Cache results for repeated calls with identical inputs. Default is \code{TRUE}.}
 }
 \value{
 varcov matrix for the specific block design
@@ -21,6 +23,11 @@ The varcov matrix for block designs consists of a block-
 diagonal matrix with B blocks (the number of blocks in
 the design) with off-diagonal entries = -1 / (n/B - 1)
 where n is the number of subjected in the study.
+}
+\examples{
+\dontrun{
+gen_var_cov_matrix_block_designs(n = 12, prop_T = 0.5, B = 3)
+}
 }
 \author{
 Adam Kapelner

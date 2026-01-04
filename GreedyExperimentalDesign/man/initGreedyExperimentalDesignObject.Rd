@@ -17,7 +17,9 @@ initGreedyExperimentalDesignObject(
   semigreedy = FALSE,
   diagnostics = FALSE,
   num_cores = 1,
-  seed = NULL
+  seed = NULL,
+  verbose = TRUE,
+  use_safe_inverse = FALSE
 )
 }
 \arguments{
@@ -62,28 +64,35 @@ at every iteration (default is \code{FALSE} to decrease the algorithm's run time
 
 \item{seed}{The set to set for deterministic output. This should only be set if \code{num_cores = 1} otherwise
 the output will not be deterministic. Default is \code{NULL} for no seed set.}
+
+\item{verbose}{Should the algorithm emit progress output? Default is \code{TRUE}.}
+
+\item{use_safe_inverse}{Should a regularized inverse be used for the Mahalanobis objective?
+Default is \code{FALSE}.}
 }
 \value{
 An object of type \code{greedy_experimental_design_search} which can be further operated upon
 }
 \description{
 This method creates an object of type greedy_experimental_design and will immediately initiate
-a search through $1_{T}$ space for forced balance designs. For debugging, you can use set the \code{seed}
+a search through allocation space for forced balance designs. For debugging, you can use set the \code{seed}
 parameter and \code{num_cores = 1} to be assured of deterministic output.
 }
 \examples{
- \dontrun{
-	library(MASS)
-	data(Boston)
- #pretend the Boston data was an experiment setting 
-	#first pull out the covariates
- X = Boston[, 1 : 13] 
- #begin the greedy design search
-	ged = initGreedyExperimentalDesignObject(X, 
-		max_designs = 1000, num_cores = 3, objective = "abs_sum_diff")
-	#wait
-	ged
-	}
+\dontrun{
+set.seed(1)
+X = matrix(rnorm(20), nrow = 10)
+ged = initGreedyExperimentalDesignObject(
+  X,
+  max_designs = 5,
+  num_cores = 1,
+  objective = "abs_sum_diff",
+  start = TRUE,
+  wait = TRUE,
+  verbose = FALSE
+)
+ged
+}
 }
 \author{
 Adam Kapelner

@@ -17,6 +17,22 @@ it means all vectors.}
 \description{
 Returns the results (thus far) of the optimal design search
 }
+\examples{
+\dontrun{
+set.seed(1)
+X = matrix(rnorm(12), nrow = 6)
+obj = initOptimalExperimentalDesignObject(
+  X,
+  objective = "abs_sum_diff",
+  num_cores = 1,
+  start = TRUE,
+  wait = TRUE,
+  verbose = FALSE
+)
+res = resultsOptimalSearch(obj, num_vectors = 2, form = "one_zero")
+res$opt_obj_val
+}
+}
 \author{
 Adam Kapelner
 }

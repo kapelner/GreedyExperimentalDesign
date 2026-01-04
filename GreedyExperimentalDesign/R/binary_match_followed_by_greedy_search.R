@@ -15,18 +15,36 @@
 #' 								its only argument. The default is \code{NULL} signifying euclidean squared distance optimized in C++.
 #' @param ...					Arguments passed to \code{initGreedyExperimentalDesignObject}. It is recommended to set
 #' 								\code{max_designs} otherwise it will default to 10,000.
+#' @param verbose				Should the algorithm emit progress output? Default is \code{TRUE}.
 #' @return						An object of type \code{binary_experimental_design} which can be further operated upon.
 #' 
 #' @author Adam Kapelner
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' X = matrix(rnorm(16), nrow = 8)
+#' obj = initBinaryMatchFollowedByGreedyExperimentalDesignSearchObject(
+#'   X,
+#'   max_designs = 4,
+#'   num_cores = 1,
+#'   objective = "abs_sum_diff",
+#'   start = TRUE,
+#'   wait = TRUE,
+#'   verbose = FALSE
+#' )
+#' obj
+#' }
 #' @export
-initBinaryMatchFollowedByGreedyExperimentalDesignSearch = function(X, diff_method = FALSE, compute_dist_matrix = NULL, ...){
+initBinaryMatchFollowedByGreedyExperimentalDesignSearchObject = function(X, diff_method = FALSE, compute_dist_matrix = NULL, verbose = TRUE, ...){
 	n = nrow(X)
 	p = ncol(X)
+	assertLogical(verbose)
 	
 	if (n %% 4 != 0){
 		stop("Design matrix must have number of rows divisible by four for this type of design.")
 	}
-	binary_match_structure = computeBinaryMatchStructure(X, compute_dist_matrix)
+	binary_match_structure = computeBinaryMatchStructure(X, compute_dist_matrix = compute_dist_matrix)
+	binary_match_structure$verbose = verbose
 
 	
 	binary_then_greedy_experimental_design = list()
@@ -35,16 +53,21 @@ initBinaryMatchFollowedByGreedyExperimentalDesignSearch = function(X, diff_metho
 	binary_then_greedy_experimental_design$p = p
 	binary_then_greedy_experimental_design$binary_match_structure = binary_match_structure
 	binary_then_greedy_experimental_design$diff_method = diff_method
+	binary_then_greedy_experimental_design$verbose = verbose
+	dots = list(...)
+	if (is.null(dots$verbose)){
+		dots$verbose = verbose
+	}
 	if (diff_method){
 		#we create a reduced matrix X by diffing the pairs
 		Xdiffs = matrix(NA, nrow = nrow(X) / 2, ncol = ncol(X))
-		for (i in 1 : (nrow(X) / 2)){		
+		for (i in 1 : (nrow(X) / 2)){
 			Xdiffs[i, ] = X[binary_match_structure$indices_pairs[i, 1], ] - X[binary_match_structure$indices_pairs[i, 2], ]
 		}
 		#now we pass these differences into greedy as-is (note: there is no need to pass in the set of pairs atop)
-		binary_then_greedy_experimental_design$greedy_design = initGreedyExperimentalDesignObject(Xdiffs, ...)
+		binary_then_greedy_experimental_design$greedy_design = do.call(initGreedyExperimentalDesignObject, c(list(Xdiffs), dots))
 	} else {
-		binary_then_greedy_experimental_design$greedy_design = initGreedyExperimentalDesignObject(X, indicies_pairs = binary_match_structure$indicies_pairs, ...)
+		binary_then_greedy_experimental_design$greedy_design = do.call(initGreedyExperimentalDesignObject, c(list(X), list(indicies_pairs = binary_match_structure$indicies_pairs), dots))
 	}
 	class(binary_then_greedy_experimental_design) = "binary_then_greedy_experimental_design"
 	binary_then_greedy_experimental_design
@@ -55,11 +78,29 @@ initBinaryMatchFollowedByGreedyExperimentalDesignSearch = function(X, diff_metho
 #' @param obj 				The \code{binary_then_greedy_experimental_design} object where the pairs are computed.
 #' @param num_vectors		How many random allocation vectors you wish to return. The default is \code{NULL} indicating you want all of them.
 #' @param compute_obj_vals	Should we compute all the objective values for each allocation? Default is \code{FALSE}.
-#' @param form				Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's. 
+#' @param form				Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's.
+#' @param use_safe_inverse	Should a regularized inverse be used for the Mahalanobis objective?
+#' 							Default is \code{FALSE}.
 #' 
 #' @author Adam Kapelner
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' X = matrix(rnorm(16), nrow = 8)
+#' obj = initBinaryMatchFollowedByGreedyExperimentalDesignSearchObject(
+#'   X,
+#'   max_designs = 4,
+#'   num_cores = 1,
+#'   objective = "abs_sum_diff",
+#'   start = TRUE,
+#'   wait = TRUE,
+#'   verbose = FALSE
+#' )
+#' res = resultsBinaryMatchThenGreedySearch(obj, num_vectors = 3, form = "one_zero")
+#' dim(res$indicTs)
+#' }
 #' @export
-resultsBinaryMatchThenGreedySearch = function(obj, num_vectors = NULL, compute_obj_vals = FALSE, form = "one_zero"){
+resultsBinaryMatchThenGreedySearch = function(obj, num_vectors = NULL, compute_obj_vals = FALSE, form = "one_zero", use_safe_inverse = FALSE){
 	assertClass(obj, "binary_then_greedy_experimental_design")
 	assertCount(num_vectors, positive = TRUE, null.ok = TRUE)
 	if (is.null(num_vectors)){
@@ -72,6 +113,7 @@ resultsBinaryMatchThenGreedySearch = function(obj, num_vectors = NULL, compute_o
 	}
 	assertLogical(compute_obj_vals)
 	assertChoice(form, c("one_zero", "pos_one_min_one"))
+	assertLogical(use_safe_inverse)
 	
 	ged_res = resultsGreedySearch(obj$greedy_design, num_vectors, "one_zero")
 	
@@ -102,7 +144,11 @@ resultsBinaryMatchThenGreedySearch = function(obj, num_vectors = NULL, compute_o
 	obj_vals = NULL
 	if (compute_obj_vals){
 		if (obj$greedy_design$objective == "mahal_dist"){
-			SinvX = solve(var(obj$X))
+			if (use_safe_inverse){
+				SinvX = safe_cov_inverse(obj$X)
+			} else {
+				SinvX = solve(stats::var(obj$X))
+			}
 			obj_vals = apply(indicTs, 1, FUN = function(w){compute_objective_val(obj$X, w, objective = "mahal_dist", SinvX)})
 		} else {
 			obj_vals = apply(indicTs, 1, FUN = function(w){compute_objective_val(obj$X, w, objective = "abs_sum_diff")})	

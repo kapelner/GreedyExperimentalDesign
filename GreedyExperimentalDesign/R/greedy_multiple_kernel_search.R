@@ -1,7 +1,7 @@
 #' Begin A Greedy Pair Multiple Kernel Switching Search
 #' 
 #' This method creates an object of type greedy_multiple_kernel_experimental_design and will immediately initiate
-#' a search through $1_{T}$ space for forced balance designs. For debugging, you can use set the \code{seed}
+#' a search through allocation space for forced balance designs. For debugging, you can use set the \code{seed}
 #' parameter and \code{num_cores = 1} to be assured of deterministic output.
 #' 
 #' @param X					The design matrix with $n$ rows (one for each subject) and $p$ columns 
@@ -40,22 +40,28 @@
 #' @param num_cores 		The number of CPU cores you wish to use during the search. The default is \code{1}.
 #' @param seed				The set to set for deterministic output. This should only be set if \code{num_cores = 1} otherwise
 #' 							the output will not be deterministic. Default is \code{NULL} for no seed set.
+#' @param verbose			Should the algorithm emit progress output? Default is \code{TRUE}.
+#' @param use_safe_inverse	Should a regularized inverse be used for the Mahalanobis objective?
+#' 							Default is \code{FALSE}.
 #' @return					An object of type \code{greedy_experimental_design_search} which can be further operated upon
 #' 
 #' @author Adam Kapelner
 #' @examples
-#'  \dontrun{
-#' 	library(MASS)
-#' 	data(Boston)
-#'  #pretend the Boston data was an experiment setting 
-#' 	#first pull out the covariates
-#'  X = Boston[, 1 : 13] 
-#'  #begin the greedy design search
-#' 	ged = initGreedyMultipleKernelExperimentalDesignObject(X, 
-#' 		max_designs = 1000, num_cores = 3, kernel_names = c("mahalanobis", "gaussian"))
-#' 	#wait
-#' 	ged
-#' 	}
+#' \dontrun{
+#' set.seed(1)
+#' X = matrix(rnorm(20), nrow = 10)
+#' mk = initGreedyMultipleKernelExperimentalDesignObject(
+#'   X,
+#'   max_designs = 4,
+#'   kernel_pre_num_designs = 4,
+#'   num_cores = 1,
+#'   kernel_names = c("mahalanobis", "gaussian"),
+#'   start = TRUE,
+#'   wait = TRUE,
+#'   verbose = FALSE
+#' )
+#' mk
+#' }
 #' @export
 initGreedyMultipleKernelExperimentalDesignObject = function(
 		X = NULL, 
@@ -72,7 +78,9 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 		semigreedy = FALSE, 
 		diagnostics = FALSE,
 		num_cores = 1,
-		seed = NULL){
+		seed = NULL,
+		verbose = TRUE,
+		use_safe_inverse = FALSE){
 	
 	assertMatrix(X)
 	Xstd = standardize_data_matrix(X)
@@ -91,9 +99,12 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 	assertCount(num_cores, positive = TRUE)
 	assertNumeric(seed, null.ok = TRUE)
 	assertNumeric(maximum_gain_scaling, lower = 1)
+	assertLogical(verbose)
+	assertLogical(use_safe_inverse)
 	
 	n = nrow(Xstd)
 	p = ncol(Xstd)
+	nT = n / 2
 	if (n %% 2 != 0){
 		stop("Design matrix must have even rows to have equal treatments and controls")
 	}
@@ -102,7 +113,12 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 		Kgrams = list()
 		for (i_k in 1 : length(kernel_names)){
 			if (kernel_names[i_k] == "mahalanobis"){
-				Kgrams[[i_k]] = X %*% solve(var(X)) %*% t(X)
+				if (use_safe_inverse){
+					SinvX = safe_cov_inverse(X)
+				} else {
+					SinvX = solve(var(X))
+				}
+				Kgrams[[i_k]] = X %*% SinvX %*% t(X)
 			} else {
 				Kgrams[[i_k]] = matrix(NA, n, n)
 				for (i in 1 : n){
@@ -163,7 +179,7 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 		for (i_k in 1 : m){		
 			gd = suppressWarnings(initGreedyExperimentalDesignObject(Xstd, 
 							max_designs = kernel_pre_num_designs, Kgram = Kgrams[[i_k]], objective = "kernel",
-							diagnostics = TRUE, wait = TRUE, num_cores = num_cores, seed = prelim_seed)) #same seed should guarantee same starting vectors
+							diagnostics = TRUE, wait = TRUE, num_cores = num_cores, seed = prelim_seed, verbose = verbose)) #same seed should guarantee same starting vectors
 			gd_res = resultsGreedySearch(gd, max_vectors = kernel_pre_num_designs, form = "pos_one_min_one")
 			objvalsi = array(NA, kernel_pre_num_designs)
 			for (i in 1 : kernel_pre_num_designs){
@@ -193,6 +209,7 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 	
 	#now go ahead and create the Java object and set its information
 	java_obj = .jnew("MultipleKernelGreedyExperimentalDesign.MultipleKernelGreedyExperimentalDesign")
+	set_verbose_if_available(java_obj, verbose)
 	.jcall(java_obj, "V", "setMaxDesigns", as.integer(max_designs))
 	.jcall(java_obj, "V", "setNumCores", as.integer(num_cores))
 	if (!is.null(seed)){
@@ -203,6 +220,7 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 	}
 	.jcall(java_obj, "V", "setN", as.integer(n))
 	.jcall(java_obj, "V", "setP", as.integer(p))
+	.jcall(java_obj, "V", "setNumTreatments", as.integer(nT))
 	.jcall(java_obj, "V", "setObjective", objective)
 	if (wait){
 		.jcall(java_obj, "V", "setWait")
@@ -258,6 +276,7 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 	ged$start = start
 	ged$wait = wait
 	ged$diagnostics = diagnostics
+	ged$verbose = verbose
 	ged$X = X
 	ged$Xstd = Xstd
 	ged$n = n
@@ -281,24 +300,22 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 #' 
 #' @author Adam Kapelner
 #' @examples
-#'  \dontrun{
-#' 	library(MASS)
-#' 	data(Boston)
-#'  #pretend the Boston data was an experiment setting 
-#' 	#first pull out the covariates
-#'  X = Boston[, 1 : 13]
-#'  #begin the greedy design search
-#' 	ged = initGreedyMultipleKernelExperimentalDesignObject(X, 
-#' 		max_designs = 1000, num_cores = 3, kernel_names = c("mahalanobis", "gaussian"))
-#' 	#wait
-#' 	res = resultsMultipleKernelGreedySearch(ged, max_vectors = 2)
-#' 	design = res$ending_indicTs[, 1] #ordered already by best-->worst
-#'  design
-#' 	#how far have we come of the 1000 we set out to do?
-#' 	ged
-#' 	#we can cut it here
-#' 	stopSearch(ged)
-#' 	}
+#' \dontrun{
+#' set.seed(1)
+#' X = matrix(rnorm(20), nrow = 10)
+#' mk = initGreedyMultipleKernelExperimentalDesignObject(
+#'   X,
+#'   max_designs = 4,
+#'   kernel_pre_num_designs = 4,
+#'   num_cores = 1,
+#'   kernel_names = c("mahalanobis", "gaussian"),
+#'   start = TRUE,
+#'   wait = TRUE,
+#'   verbose = FALSE
+#' )
+#' res = resultsMultipleKernelGreedySearch(mk, max_vectors = 2, form = "one_zero")
+#' res$obj_vals
+#' }
 #' @export
 resultsMultipleKernelGreedySearch = function(obj, max_vectors = 9, form = "one_zero"){
 	#get standard information

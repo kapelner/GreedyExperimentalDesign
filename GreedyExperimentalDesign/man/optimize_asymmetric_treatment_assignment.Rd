@@ -30,13 +30,11 @@ number of treatments and controls that optimize the variance of the estimator.
 The number of treatments is rounded up by default.
 }
 \examples{
- \dontrun{
-	optimize_asymmetric_treatment_assignment(n = 100) 
- #nT = nC = 50
-	optimize_asymmetric_treatment_assignment(n = 100, c_treatment = 2, c_control = 1) 
- #nT = 66, nC = 34
-	optimize_asymmetric_treatment_assignment(c_total_max = 50, c_treatment = 2, c_control = 1) 
-	}
+\dontrun{
+optimize_asymmetric_treatment_assignment(n = 100)
+optimize_asymmetric_treatment_assignment(n = 100, c_treatment = 2, c_control = 1)
+optimize_asymmetric_treatment_assignment(c_total_max = 50, c_treatment = 2, c_control = 1)
+}
 }
 \author{
 Adam Kapelner

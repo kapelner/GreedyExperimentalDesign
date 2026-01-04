@@ -18,6 +18,13 @@ VALID_KERNEL_TYPES = c("vanilla", "rbf", "poly", "tanh", "bessel", "laplace", "a
 #' @return					The \code{n x n} gram matrix for the given kernel on the given data. 
 #' 
 #' @author Adam Kapelner
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' X = matrix(rnorm(12), nrow = 6)
+#' K = compute_gram_matrix(X, kernel_type = "rbf", params = 0.5)
+#' dim(K)
+#' }
 #' @export
 compute_gram_matrix = function(X, kernel_type, params = c()){
 	#ensure that the kernel_type is valid
@@ -75,7 +82,7 @@ compute_gram_matrix = function(X, kernel_type, params = c()){
 
 #private
 setGramMatrix = function(java_obj, Kgram){
-	for (i in 1 : nrow(Kgram)){	
+	for (i in 1 : nrow(Kgram)){
 		.jcall(java_obj, "V", "setKgramRow", as.integer(i - 1), Kgram[i, , drop = FALSE]) #java indexes from 0...n-1
 	}
 }

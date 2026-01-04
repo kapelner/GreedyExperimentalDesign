@@ -15,6 +15,12 @@ The n x n Euclidean distances squared
 \description{
 Computes a Euclidean-squared distance matrix rapidly
 }
+\examples{
+\dontrun{
+X = matrix(c(0, 1, 2, 3), nrow = 2)
+compute_distance_matrix_cpp_wrap(X)
+}
+}
 \author{
 Adam Kapelner
 }

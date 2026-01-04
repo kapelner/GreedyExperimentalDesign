@@ -1,3 +1,14 @@
+version 1.6
+* Massive speedups using Rcpp all over the codebase
+* Gurobi search for r many vectors now works using pooling
+* ggplot2 in now the plotting engine
+* Added a test suite for public exported functions
+* Added a benchmark suite
+* Standardized method names across all types of searches
+* Added examples for all functions in documentation
+* Fixed documentation errors and inconsistencies
+* Updated package description with DOI's for the relevant publications
+
 version 1.5.6.3
 * Fixed the Java-side cache so newBlankDesign no longer reuses a design with the wrong nT when the same n is requested again, which was causing findIndicies to overrun its array (issue #3 on github)
 
@@ -21,44 +32,34 @@ version 1.5.6
 * Imbalanced (unequal allocation) Block Designs
 
 version 1.5.5
-
 * Speedier implementation of binary pairwise matching designs using Java and Hash functions to check uniqueness
 
 version 1.5
-
 * Greedy Design on Multiple Kernels simultaneously
 * You can pass distance matrices to binary match design initialization
 * You can create binary match designs based on Mahalanobis distances between units using a flag in the design initialization
 
 version 1.4
-
 * Binary match followed by greedy within-the-binary-pairs search / rerandomization
 
 version 1.35
-
 * Curation of designs based on minimizing orthogonality as measured by average absolute correlation between each pair of vectors
 * Hadamard matrix experimental designs
 
 version 1.31
-
 * Various speedups and bug fixes.
 
 version 1.3
-
 * Gurobi now works with Kernel distances.
 
 version 1.21
-
 * Fixed small bug, deleted vignette which was causing compilation issues.
 
 version 1.2
-
 * Gurobi setup for allocation searches via numerical optimization.
 
 version 1.1
-
 * Updated package to conform to CRAN's new policies.
 
 version 1.0
-
 * Initial Release

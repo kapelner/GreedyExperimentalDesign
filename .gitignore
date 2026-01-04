@@ -21,3 +21,11 @@ gurobi_numerical_optimization_via_R_package_Gree.log
 .idea/*
 GreedyExperimentalDesign.iml
 gurobi.log
+GreedyExperimentalDesign/.Rlib/
+GreedyExperimentalDesign/tests/testthat/ged-failures.log
+.Rlib/
+GreedyExperimentalDesign.Rcheck/
+GreedyExperimentalDesign_*.tar.gz
+mahal_dist_all_searches.png
+power_bakeoff_results.csv
+power_bakoff_output.txt

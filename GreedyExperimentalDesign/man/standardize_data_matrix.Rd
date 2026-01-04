@@ -15,6 +15,13 @@ The n x p design matrix with columns standardized
 \description{
 Standardizes the columns of a data matrix.
 }
+\examples{
+\dontrun{
+X = matrix(rnorm(12), nrow = 6)
+Xstd = standardize_data_matrix(X)
+colMeans(Xstd)
+}
+}
 \author{
 Adam Kapelner
 }

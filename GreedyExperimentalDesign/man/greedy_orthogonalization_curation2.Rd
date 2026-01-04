@@ -7,7 +7,7 @@
 greedy_orthogonalization_curation2(W, R0 = 100, verbose = FALSE)
 }
 \arguments{
-\item{W}{A matrix in ${-1, 1}^{R x n}$ which have R allocation vectors for an experiment of sample size n.}
+\item{W}{A matrix in \eqn{{-1, 1}^{R x n}} which have R allocation vectors for an experiment of sample size n.}
 
 \item{R0}{The minimum number of vectors to consider in a design. The default is the true bottom, two.}
 
@@ -23,6 +23,14 @@ This function takes a set of allocation vectors and pares them down one-by-one
 by eliminating the vector that can result in the largest reduction in Avg[ |r_ij| ].
 It is recommended to begin with a set of unmirrored vectors for speed. Then add the mirrors later
 for whichever subset you wish.
+}
+\examples{
+\dontrun{
+set.seed(1)
+W = matrix(sample(c(-1, 1), 6 * 8, replace = TRUE), nrow = 6)
+W2 = greedy_orthogonalization_curation2(W, R0 = 4, verbose = FALSE)
+dim(W2)
+}
 }
 \author{
 Adam Kapelner

@@ -28,6 +28,11 @@ to be assured of deterministic output. The following quantities
 in this design must be integer valued or an error will be thrown: 
   n_B := n / B and n_B * prop_T
 }
+\examples{
+\dontrun{
+imbalanced_block_designs(n = 12, prop_T = 0.5, B = 3, r = 2, seed = 1)
+}
+}
 \author{
 Adam Kapelner
 }

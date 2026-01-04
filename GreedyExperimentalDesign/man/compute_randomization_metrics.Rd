@@ -20,6 +20,12 @@ A list of resulting data: the probability estimates for
 \description{
 Computes Randomization Metrics (explained in paper) about a design algorithm
 }
+\examples{
+\dontrun{
+designs = matrix(c(1, 0, 1, 0, 0, 1, 0, 1), nrow = 4, ncol = 2)
+compute_randomization_metrics(designs)
+}
+}
 \author{
 Adam Kapelner
 }

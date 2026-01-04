@@ -22,6 +22,14 @@ An matrix of dimension $R$ x $n$ where $R$ is the number of Hadamard allocations
 This method returns unique designs according to a Hadamard matrix. For debugging, you can use \code{set.seed}
 to be assured of deterministic output.
 }
+\examples{
+\dontrun{
+set.seed(1)
+X = matrix(rnorm(16), nrow = 8)
+W = hadamardExperimentalDesign(X, strict = TRUE, form = "one_zero")
+dim(W)
+}
+}
 \author{
 Adam Kapelner
 }

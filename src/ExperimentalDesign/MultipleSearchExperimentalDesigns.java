@@ -54,7 +54,7 @@ public abstract class MultipleSearchExperimentalDesigns extends AllExperimentalD
 		}
 		return ending_indicTs;
 	}
-	
+
 	public int[][] getEndingIndicTs(){
 		return ending_indicTs;
 	}
