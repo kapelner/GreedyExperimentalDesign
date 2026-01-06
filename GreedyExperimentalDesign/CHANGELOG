@@ -1,6 +1,6 @@
 version 1.6
 * Massive speedups using Rcpp all over the codebase
-* Gurobi search for r many vectors now works using pooling
+* Gurobi search for r many vectors now works using pooling and a whole array of other arguments
 * ggplot2 in now the plotting engine
 * Added a test suite for public exported functions
 * Added a benchmark suite

@@ -17,8 +17,9 @@
 #' 							entries are the evaluation of the kernel function between subject i and subject j. Default is \code{NULL}.
 #' @param initial_time_limit_sec	The maximum amount of time the optimizer can run for in seconds. The default is \code{5 * 60}.
 #' @param restart_time_limit_sec	The maximum amount of time each restart can run for in seconds. The default is \code{60}.
-#' @param allow_restarts			Should the solver run additional restarts if too few unique solutions are returned?
-#' 								Default is \code{TRUE}.
+#' @param max_number_of_restarts		The maximum number of restarts to attempt if too few unique solutions are returned.
+#' 								Default is \code{0}.
+#' @param max_no_good_cuts			The maximum number of no-good cuts to attempt. Default is \code{0} (disabled).
 #' @param num_cores			Number of cores to use during search. Default is \code{2}.
 #' @param w_0				The initial starting location (optional).
 #' @param gurobi_params		A list of optional parameters to be passed to Gurobi (see their documentation online).
@@ -28,6 +29,7 @@
 #' @param r					Number of solution vectors to request from the Gurobi pool.
 #' @param pool_solutions 	Number of solutions to request from the Gurobi pool. Defaults to \code{10 * r}.
 #' @param pool_gap 			Relative optimality gap for the pool. Default is \code{0.2}. Use \code{NULL} to skip.
+#' @param pool_gap_abs 		Absolute optimality gap for the pool. Default is \code{NULL} to skip.
 #' @param pool_search_mode	Solution pool search mode. Default is \code{2} for diverse solutions.
 #' @param mip_gap			Relative MIP gap target (stops when \code{|best-bound - best-incumbent| / |best-incumbent| <= mip_gap}).
 #' 							Lower values force deeper search. Default is \code{1e-4}.
@@ -71,13 +73,15 @@ initGurobiNumericalOptimizationExperimentalDesignObject = function(
 		w_0 = NULL,
 		initial_time_limit_sec = 5 * 60,
 		restart_time_limit_sec = 60,
-		allow_restarts = TRUE,
+		max_number_of_restarts = 0,
+		max_no_good_cuts = 0,
 		verbose = TRUE,
 		gurobi_params = list(),
 		use_safe_inverse = FALSE,
 		r,
 		pool_solutions = NULL,
 		pool_gap = 0.2,
+		pool_gap_abs = NULL,
 		pool_search_mode = 2,
 		mip_gap = 1e-4,
 		mip_gap_abs = 1e-10,
@@ -90,7 +94,11 @@ initGurobiNumericalOptimizationExperimentalDesignObject = function(
 	assertCount(num_cores, positive = TRUE)
 	assertNumeric(initial_time_limit_sec, lower = 1)
 	assertNumeric(restart_time_limit_sec, lower = 1)
-	assertLogical(allow_restarts)
+	assertCount(max_number_of_restarts, positive = FALSE)
+	assertNumeric(max_no_good_cuts, lower = 0)
+	if (is.finite(max_no_good_cuts) && max_no_good_cuts %% 1 != 0) {
+		stop("\"max_no_good_cuts\" must be an integer or Inf.")
+	}
 	assertLogical(verbose)
 	assertClass(gurobi_params, "list")
 	assertLogical(use_safe_inverse)
@@ -98,6 +106,7 @@ initGurobiNumericalOptimizationExperimentalDesignObject = function(
 	assertCount(pool_solutions, positive = TRUE, null.ok = TRUE)
 	assertNumeric(pool_search_mode, lower = 0)
 	assertNumeric(pool_gap, lower = 0, null.ok = TRUE)
+	assertNumeric(pool_gap_abs, lower = 0, null.ok = TRUE)
 	assertNumeric(mip_gap, lower = 0)
 	assertNumeric(mip_gap_abs, lower = 0)
 	assertNumeric(mip_focus, lower = 0, upper = 3)
@@ -141,6 +150,9 @@ initGurobiNumericalOptimizationExperimentalDesignObject = function(
 	}
 	if (!is.null(pool_solutions) && !is.null(pool_gap) && is.null(gurobi_params$PoolGap)) {
 		gurobi_params$PoolGap = pool_gap
+	}
+	if (!is.null(pool_solutions) && !is.null(pool_gap_abs) && is.null(gurobi_params$PoolGapAbs)) {
+		gurobi_params$PoolGapAbs = pool_gap_abs
 	}
 	
 	verify_objective_function(objective, Kgram, n)
@@ -214,7 +226,8 @@ initGurobiNumericalOptimizationExperimentalDesignObject = function(
 	gurobi_numerical_optimization_experimental_design_search$pool_gap = pool_gap
 	gurobi_numerical_optimization_experimental_design_search$pool_search_mode = pool_search_mode
 	gurobi_numerical_optimization_experimental_design_search$restart_time_limit_sec = restart_time_limit_sec
-	gurobi_numerical_optimization_experimental_design_search$allow_restarts = allow_restarts
+	gurobi_numerical_optimization_experimental_design_search$max_number_of_restarts = max_number_of_restarts
+	gurobi_numerical_optimization_experimental_design_search$max_no_good_cuts = max_no_good_cuts
 	gurobi_numerical_optimization_experimental_design_search$model = model
 	class(gurobi_numerical_optimization_experimental_design_search) = "gurobi_numerical_optimization_experimental_design_search"
 	#run the optimization and return the final object	
@@ -565,10 +578,12 @@ resultsGurobiNumericalOptimizeSearch = function(obj){
 		stop("No Gurobi solution found on object.")
 	}
 
-	if (isTRUE(obj$allow_restarts) && !is.null(obj$r) && nrow(indicTs) < obj$r && !is.null(obj$model)) {
+	indicTs = ged_helper_unique_rows(indicTs)
+if (!is.null(obj$max_number_of_restarts) && obj$max_number_of_restarts > 0 &&
+		!is.null(obj$model)) {
 		gurobi_ns = tryCatch(get_gurobi_namespace(), error = function(e) NULL)
 		if (!is.null(gurobi_ns)) {
-			restarts = max(0L, obj$r - nrow(indicTs))
+			restarts = as.integer(obj$max_number_of_restarts)
 			base_seed = if (!is.null(obj$gurobi_params$Seed)) {
 				as.integer(obj$gurobi_params$Seed)
 			} else {
@@ -609,8 +624,84 @@ resultsGurobiNumericalOptimizeSearch = function(obj){
 					new_mat = ged_helper_normalize_rows(new_vecs, n = obj$n)
 					indicTs = rbind(indicTs, new_mat)
 				}
-				if (nrow(indicTs) >= obj$r){
+			}
+		}
+	}
+
+	if (!is.null(obj$max_no_good_cuts) && obj$max_no_good_cuts > 0 &&
+		!is.null(obj$model) && !is.null(obj$r) && nrow(indicTs) < obj$r) {
+		gurobi_ns = tryCatch(get_gurobi_namespace(), error = function(e) NULL)
+		if (!is.null(gurobi_ns)) {
+			model = obj$model
+			model$A = as.matrix(model$A)
+			model$rhs = as.numeric(model$rhs)
+			model$sense = as.character(model$sense)
+			cut_keys = character(0)
+			cuts_added = 0L
+			make_key = function(w) paste(as.integer(w), collapse = "")
+			add_cut = function(w){
+				if (cuts_added >= obj$max_no_good_cuts) {
+					return(FALSE)
+				}
+				w = as.integer(as.numeric(w) > 0.5)
+				key = make_key(w)
+				if (key %in% cut_keys) {
+					return(FALSE)
+				}
+				coeff = 2 * w - 1
+				rhs = sum(w == 1L) - 1L
+				model$A <<- rbind(model$A, coeff)
+				model$rhs <<- c(model$rhs, rhs)
+				model$sense <<- c(model$sense, "<")
+				cut_keys <<- c(cut_keys, key)
+				cuts_added <<- cuts_added + 1L
+				TRUE
+			}
+			if (nrow(indicTs) > 0) {
+				for (i in seq_len(nrow(indicTs))) {
+				if (cuts_added >= obj$max_no_good_cuts) {
 					break
+				}
+					add_cut(indicTs[i, ])
+				}
+			}
+			params = obj$gurobi_params
+			if (!is.null(obj$restart_time_limit_sec)) {
+				params$TimeLimit = obj$restart_time_limit_sec
+			}
+			while (cuts_added < obj$max_no_good_cuts && nrow(indicTs) < obj$r) {
+				sol = gurobi_call(gurobi_ns, model, params)
+				solcount = sol$solcount
+				if (is.null(solcount) && !is.null(sol$poolobjval)) {
+					solcount = length(sol$poolobjval)
+				}
+				new_vecs = list()
+				for (field in c("pool", "poolx", "poolnx", "poolX", "poolnX")){
+					new_vecs = coerce_pool_vecs(sol[[field]], obj$n, solcount)
+					if (length(new_vecs) > 0){
+						break
+					}
+				}
+				if (length(new_vecs) == 0){
+					for (field in c("xn", "x")){
+						new_vecs = coerce_pool_vecs(sol[[field]], obj$n, 1)
+						if (length(new_vecs) > 0){
+							break
+						}
+					}
+				}
+				if (length(new_vecs) == 0) {
+					break
+				}
+				new_vecs = lapply(new_vecs, function(x) as.integer(as.numeric(x) > 0.5))
+				new_mat = ged_helper_normalize_rows(new_vecs, n = obj$n)
+				indicTs = rbind(indicTs, new_mat)
+				indicTs = ged_helper_unique_rows(indicTs)
+				for (i in seq_len(nrow(new_mat))) {
+					if (cuts_added >= obj$max_no_good_cuts) {
+						break
+					}
+					add_cut(new_mat[i, ])
 				}
 			}
 		}

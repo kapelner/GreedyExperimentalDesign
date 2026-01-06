@@ -1,5 +1,5 @@
 options(java.parameters = c("-Xmx20000m"))
-pacman::p_load(GreedyExperimentalDesign, doParallel, tidyverse, magrittr, scales, data.table, r2r, checkmate, rlist)
+pacman::p_load(GreedyExperimentalDesign, data.table)
 #/c/Program\ Files/R/R-devel/bin/R.exe CMD INSTALL -l ~/AppData/Local/R/win-library/4.3/ GreedyExperimentalDesign
 
 # alloc = optimize_asymmetric_treatment_assignment(

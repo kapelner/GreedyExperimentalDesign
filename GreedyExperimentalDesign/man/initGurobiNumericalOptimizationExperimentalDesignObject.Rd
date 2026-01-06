@@ -12,13 +12,15 @@ initGurobiNumericalOptimizationExperimentalDesignObject(
   w_0 = NULL,
   initial_time_limit_sec = 5 * 60,
   restart_time_limit_sec = 60,
-  allow_restarts = TRUE,
+  max_number_of_restarts = 0,
+  max_no_good_cuts = 0,
   verbose = TRUE,
   gurobi_params = list(),
   use_safe_inverse = FALSE,
   r,
   pool_solutions = NULL,
   pool_gap = 0.2,
+  pool_gap_abs = NULL,
   pool_search_mode = 2,
   mip_gap = 1e-04,
   mip_gap_abs = 1e-10,
@@ -47,7 +49,10 @@ entries are the evaluation of the kernel function between subject i and subject 
 
 \item{restart_time_limit_sec}{The maximum amount of time each restart can run for in seconds. The default is \code{60}.}
 
-\item{allow_restarts}{Should the solver run additional restarts if too few unique solutions are returned? Default is \code{TRUE}.}
+\item{max_number_of_restarts}{The maximum number of restarts to attempt if too few unique solutions are returned.
+Default is \code{0}.}
+
+\item{max_no_good_cuts}{The maximum number of no-good cuts to attempt. Default is \code{0} (disabled).}
 
 \item{verbose}{Should Gurobi log to console? Default is \code{TRUE}.}
 
@@ -61,6 +66,8 @@ Default is \code{FALSE}.}
 \item{pool_solutions}{Number of solutions to request from the Gurobi pool. Defaults to \code{10 * r}.}
 
 \item{pool_gap}{Relative optimality gap for the pool. Default is \code{0.2}. Use \code{NULL} to skip.}
+
+\item{pool_gap_abs}{Absolute optimality gap for the pool. Default is \code{NULL} to skip.}
 
 \item{pool_search_mode}{Solution pool search mode. Default is \code{2} for diverse solutions.}
 

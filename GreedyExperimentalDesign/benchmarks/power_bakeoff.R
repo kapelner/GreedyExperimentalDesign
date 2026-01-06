@@ -6,33 +6,6 @@
 
 options(java.parameters = "-Xmx10g")
 
-suppressPackageStartupMessages(library(GreedyExperimentalDesign))
-suppressPackageStartupMessages(library(MASS))
-suppressPackageStartupMessages(library(survival))
-if (!requireNamespace("fastLogisticRegressionWrap", quietly = TRUE)) {
-  devtools::install_github("kapelner/fastLogisticRegressionWrap")
-}
-suppressPackageStartupMessages(library(fastLogisticRegressionWrap))
-if (!requireNamespace("Rcpp", quietly = TRUE)) {
-  stop("Package \"Rcpp\" is required for fast OLS.")
-}
-if (!requireNamespace("RcppEigen", quietly = TRUE)) {
-  stop("Package \"RcppEigen\" is required for fast OLS.")
-}
-if (!exists("fast_ols_cpp", mode = "function")) {
-  Rcpp::cppFunction(code = '
-    #include <RcppEigen.h>
-    Rcpp::List fast_ols_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& y) {
-      Eigen::MatrixXd XtX = X.transpose() * X;
-      Eigen::VectorXd Xty = X.transpose() * y;
-      Eigen::VectorXd beta = XtX.ldlt().solve(Xty);
-      return Rcpp::List::create(
-        Rcpp::Named("b") = beta,
-        Rcpp::Named("XtX") = XtX
-      );
-    }', depends = "RcppEigen", plugins = "cpp11")
-}
-
 SEED = 1984
 N = 100
 P = 2
@@ -70,6 +43,83 @@ WEIBULL_LAMBDA = 0.05
 CENSOR_RATE = 0
 
 OUT_PATH = "power_bakeoff_results.csv"
+
+
+script_path = function() {
+  args = commandArgs(trailingOnly = FALSE)
+  file_flag = "--file="
+  match_idx = grep(file_flag, args)
+  if (length(match_idx) == 0) {
+    return(NULL)
+  }
+  normalizePath(sub(file_flag, "", args[[match_idx[1]]]))
+}
+
+this_script = script_path()
+pkg_root = NULL
+if (!is.null(this_script)) {
+  pkg_root = normalizePath(file.path(dirname(this_script), ".."), winslash = "/", mustWork = FALSE)
+}
+
+if (!is.null(pkg_root) && requireNamespace("pkgload", quietly = TRUE) &&
+  file.exists(file.path(pkg_root, "DESCRIPTION"))) {
+  pkgload::load_all(pkg_root, export_all = FALSE, quiet = TRUE)
+} else {
+  suppressPackageStartupMessages(library(GreedyExperimentalDesign))
+}
+
+add_java_classpath = function(root_dir = NULL) {
+  if (!requireNamespace("rJava", quietly = TRUE)) {
+    return(invisible(FALSE))
+  }
+  jar_path = NULL
+  if (!is.null(root_dir)) {
+    jar_path = file.path(root_dir, "inst", "java", "GreedyExperimentalDesign.jar")
+    if (!file.exists(jar_path)) {
+      jar_path = NULL
+    }
+  }
+  if (is.null(jar_path)) {
+    jar_path = system.file("java", "GreedyExperimentalDesign.jar", package = "GreedyExperimentalDesign")
+  }
+  if (!is.null(jar_path) && nzchar(jar_path) && file.exists(jar_path)) {
+    rJava::.jaddClassPath(jar_path)
+    return(invisible(TRUE))
+  }
+  invisible(FALSE)
+}
+
+add_java_classpath(pkg_root)
+suppressPackageStartupMessages(library(MASS))
+suppressPackageStartupMessages(library(survival))
+if (!requireNamespace("fastLogisticRegressionWrap", quietly = TRUE)) {
+  devtools::install_github("kapelner/fastLogisticRegressionWrap")
+}
+suppressPackageStartupMessages(library(fastLogisticRegressionWrap))
+if (!requireNamespace("Rcpp", quietly = TRUE)) {
+  stop("Package \"Rcpp\" is required for fast OLS.")
+}
+if (!requireNamespace("RcppEigen", quietly = TRUE)) {
+  stop("Package \"RcppEigen\" is required for fast OLS.")
+}
+if (!exists("formC", mode = "function")) {
+  formC = formatC
+}
+if (!exists("fast_ols_cpp", mode = "function")) {
+  Rcpp::cppFunction(code = '
+    #include <RcppEigen.h>
+    Rcpp::List fast_ols_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& y) {
+      Eigen::MatrixXd XtX = X.transpose() * X;
+      Eigen::VectorXd Xty = X.transpose() * y;
+      Eigen::VectorXd beta = XtX.ldlt().solve(Xty);
+      return Rcpp::List::create(
+        Rcpp::Named("b") = beta,
+        Rcpp::Named("XtX") = XtX
+      );
+    }', depends = "RcppEigen", plugins = "cpp11")
+}
+
+
 
 set.seed(SEED)
 X = generate_stdzied_design_matrix(n = N, p = P, covariate_gen = rnorm)
@@ -411,12 +461,14 @@ get_designs_gurobi = function() {
     r = NUM_DESIGNS_BANK,
     pool_solutions = 2 * NUM_DESIGNS_BANK,
     pool_search_mode = 2,
-    pool_gap = 0.2,
+    pool_gap = 0.5,
+    pool_gap_abs = 0.1,
     objective = OBJECTIVE,
     num_cores = NUM_CORES,
-    initial_time_limit_sec = 20,
+    initial_time_limit_sec = 60,
     restart_time_limit_sec = 5,
-    allow_restarts = FALSE,
+    max_number_of_restarts = 10,
+    max_no_good_cuts = 10,
     verbose = FALSE,
     use_safe_inverse = USE_SAFE_INVERSE
   )
