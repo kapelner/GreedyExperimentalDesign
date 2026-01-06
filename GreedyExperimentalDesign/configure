@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# Remove stale compiled objects only if they are from a different platform.
+if command -v file >/dev/null 2>&1; then
+	case "$(uname -s)" in
+		Linux*) pattern="ELF" ;;
+		Darwin*) pattern="Mach-O" ;;
+		*) pattern="" ;;
+	esac
+	if [ -n "$pattern" ]; then
+		for f in src/*.o src/*.so src/*.dll src/*.dylib; do
+			[ -e "$f" ] || continue
+			if ! file "$f" | grep -q "$pattern"; then
+				rm -f "$f"
+			fi
+		done
+	fi
+fi
+
+exit 0

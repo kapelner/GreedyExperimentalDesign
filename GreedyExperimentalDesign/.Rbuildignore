@@ -1,2 +1,3 @@
 ^benchmarks$
 ^\.Rlib$
+^src/.*\.(o|so|dll|dylib)$
