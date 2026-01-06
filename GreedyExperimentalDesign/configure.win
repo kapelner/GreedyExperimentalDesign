@@ -1,6 +1,29 @@
 #!/bin/sh
 
-# Remove stale compiled objects to avoid arch mismatch on Windows builds.
-rm -f src/*.o src/*.so src/*.dll src/*.dylib
+# Remove stale compiled objects only if they are from a different platform.
+read_magic() {
+  dd if="$1" bs=1 count=2 2>/dev/null | od -An -t x1 | tr -d ' \n'
+}
+
+for f in src/*.so src/*.dylib; do
+  [ -e "$f" ] || continue
+  rm -f "$f"
+done
+
+for f in src/*.dll; do
+  [ -e "$f" ] || continue
+  magic=$(read_magic "$f")
+  if [ "$magic" != "4d5a" ]; then
+    rm -f "$f"
+  fi
+done
+
+for f in src/*.o; do
+  [ -e "$f" ] || continue
+  magic=$(read_magic "$f")
+  if [ "$magic" != "4c01" ] && [ "$magic" != "6486" ]; then
+    rm -f "$f"
+  fi
+done
 
 exit 0
