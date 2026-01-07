@@ -1,5 +1,0 @@
-#!/bin/sh
-
-# No-op on Windows; cleanup is manual to avoid install-time hangs.
-
-exit 0

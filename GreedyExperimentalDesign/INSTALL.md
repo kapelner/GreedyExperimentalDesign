@@ -1,26 +1,17 @@
 # Install Notes
 
-## Configure Script Permissions
+## Manual Cleanup
 
-This package includes `configure` and `configure.win` scripts to remove stale
-compiled artifacts before building. These scripts must be executable on Unix
-systems. If you build from a zip or copy that drops file permissions, fix it with:
+If you see architecture mismatch errors (e.g., "not a valid Win32 application"),
+remove stale compiled artifacts in `src/` before reinstalling.
 
-```sh
-chmod +x configure configure.win
-```
-
-Then rerun:
+macOS/Linux (from `GreedyExperimentalDesign/`):
 
 ```sh
-R CMD INSTALL GreedyExperimentalDesign
+rm -f src/*.o src/*.so src/*.dll src/*.dylib
 ```
 
-## Windows Cleanup
-
-On Windows, `configure.win` is a no-op to avoid install-time hangs. If you see
-architecture mismatch errors (e.g., "not a valid Win32 application"), manually
-remove stale artifacts in `src/` before reinstalling:
+Windows (from `GreedyExperimentalDesign\\`):
 
 ```sh
 del /Q src\\*.o src\\*.so src\\*.dll src\\*.dylib
