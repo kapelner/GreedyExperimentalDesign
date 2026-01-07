@@ -41,6 +41,7 @@ Depends:
     R (>= 4.1.0),
     rJava (>= 0.9-6)
 SystemRequirements: Java (>= 7.0)
+StagedInstall: no
 LinkingTo: Rcpp
 Imports: 
 	Rcpp,
