@@ -15,3 +15,13 @@ Then rerun:
 ```sh
 R CMD INSTALL GreedyExperimentalDesign
 ```
+
+## Windows Cleanup
+
+On Windows, `configure.win` is a no-op to avoid install-time hangs. If you see
+architecture mismatch errors (e.g., "not a valid Win32 application"), manually
+remove stale artifacts in `src/` before reinstalling:
+
+```sh
+del /Q src\\*.o src\\*.so src\\*.dll src\\*.dylib
+```

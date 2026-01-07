@@ -1,33 +1,5 @@
 #!/bin/sh
 
-# Remove stale shared objects from non-Windows platforms.
-rm -f src/*.so src/*.dylib
-
-read_u4() {
-  dd if="$1" bs=1 skip="$2" count=4 2>/dev/null | od -An -t u4 | tr -d ' \n'
-}
-
-read_u2() {
-  dd if="$1" bs=1 skip="$2" count=2 2>/dev/null | od -An -t u2 | tr -d ' \n'
-}
-
-for f in src/*.dll; do
-  [ -e "$f" ] || continue
-  # PE header offset at 0x3C, machine type at PE + 4.
-  pe_offset=$(read_u4 "$f" 60)
-  if [ -z "$pe_offset" ]; then
-    rm -f "$f"
-    continue
-  fi
-  machine=$(read_u2 "$f" $((pe_offset + 4)))
-  case "$R_ARCH" in
-    */x64) expected=34404 ;; # 0x8664
-    */i386) expected=332 ;;  # 0x14c
-    *) expected="$machine" ;;
-  esac
-  if [ "$machine" != "$expected" ]; then
-    rm -f "$f"
-  fi
-done
+# No-op on Windows; cleanup is manual to avoid install-time hangs.
 
 exit 0
