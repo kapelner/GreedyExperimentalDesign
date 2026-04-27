@@ -86,6 +86,8 @@ initOptimalExperimentalDesignObject = function(
 	#now go ahead and create the Java object and set its information
 	java_obj = .jnew("OptimalExperimentalDesign.OptimalExperimentalDesign")
 	set_verbose_if_available(java_obj, verbose)
+	use_gpu = ged_use_gpu(require_available = TRUE)
+	set_use_gpu_if_available(java_obj)
 	.jcall(java_obj, "V", "setNumCores", as.integer(num_cores))
 	.jcall(java_obj, "V", "setN", as.integer(n))
 	if (objective != "kernel"){
@@ -132,6 +134,8 @@ initOptimalExperimentalDesignObject = function(
 	optimal_experimental_design_search$objective = objective
 	optimal_experimental_design_search$java_obj = java_obj
 	optimal_experimental_design_search$verbose = verbose
+	optimal_experimental_design_search$use_gpu = ged_gpu_option()
+	optimal_experimental_design_search$use_gpu_effective = use_gpu
 	class(optimal_experimental_design_search) = "optimal_experimental_design_search"
 	#if the user wants to run it immediately...
 	if (start){

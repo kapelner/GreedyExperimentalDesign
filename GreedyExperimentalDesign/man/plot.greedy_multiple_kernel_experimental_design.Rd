@@ -7,12 +7,9 @@
 \method{plot}{greedy_multiple_kernel_experimental_design}(x, ...)
 }
 \arguments{
-\item{x}{The \code{greedy_multiple_kernel_experimental_design} object to be summarized in the plot}
+\item{x}{The \code{greedy_multiple_kernel_experimental_design} object to be plotted}
 
-\item{...}{Other parameters to pass to the default plot function}
-}
-\value{
-An array of order statistics from \link{plot_obj_val_order_statistic} as a list element
+\item{...}{Optional arguments for the \code{plot} function}
 }
 \description{
 Plots a summary of a \code{greedy_multiple_kernel_experimental_design} object

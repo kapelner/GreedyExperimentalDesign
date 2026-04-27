@@ -364,6 +364,37 @@ set_verbose_if_available <- function(java_obj, verbose) {
 	invisible(TRUE)
 }
 
+# internal GPU dispatch flag
+ged_gpu_option <- function() {
+	isTRUE(getOption("GreedyExperimentalDesign.use_gpu", FALSE))
+}
+
+ged_use_gpu <- function(require_available = FALSE) {
+	use_gpu = ged_gpu_option()
+	if (use_gpu && require_available && !isTRUE(ged_gpu_available())) {
+		warning("GreedyExperimentalDesign.use_gpu is TRUE, but no GPU backend is available. Falling back to CPU.")
+
+		return(FALSE)
+	}
+	use_gpu
+}
+
+# internal helper to avoid hard failure when older Java jars omit setUseGpu.
+# The raw option flag is passed to Java; R-side dispatch separately checks
+# native backend availability before using GPU paths.
+set_use_gpu_if_available <- function(java_obj, use_gpu = ged_gpu_option()) {
+	tryCatch(
+		.jcall(java_obj, "V", "setUseGpu", use_gpu),
+		error = function(e) {
+			if (grepl("setUseGpu", conditionMessage(e), fixed = TRUE)) {
+				return(invisible(FALSE))
+			}
+			stop(e)
+		}
+	)
+	invisible(TRUE)
+}
+
 # internal helper to avoid unnecessary coercion for w_diff
 compute_indicTs_from_pairs <- function(pairs, w_diff, n) {
 	if (is.logical(w_diff)) {

@@ -13,6 +13,7 @@ public class MultipleKernelGreedyExperimentalDesign extends GreedyExperimentalDe
 	private Double maximum_gain_scaling;
 	private HashMap<Integer, Double> max_reduction_log_obj_vals;
 	private ArrayList<ArrayList<double[]>> kernel_obj_values_by_design_num;
+	private int m;
 	
 	public MultipleKernelGreedyExperimentalDesign() {
 		super();
@@ -24,10 +25,12 @@ public class MultipleKernelGreedyExperimentalDesign extends GreedyExperimentalDe
 	
 	public void beginSearch(){
 		//initialize all data
-		kernel_obj_values_by_design_num = new ArrayList<ArrayList<double[]>>(max_designs);
-		for (int d = 0; d < max_designs; d++){
-			kernel_obj_values_by_design_num.add(new ArrayList<double[]>());
-		}	
+		if (kernel_obj_values_by_design_num == null) {
+			kernel_obj_values_by_design_num = new ArrayList<ArrayList<double[]>>(max_designs);
+			for (int d = 0; d < max_designs; d++){
+				kernel_obj_values_by_design_num.add(new ArrayList<double[]>());
+			}
+		}
 		super.beginSearch();
 	}
 	
@@ -58,7 +61,8 @@ public class MultipleKernelGreedyExperimentalDesign extends GreedyExperimentalDe
 			max_reduction_log_obj_vals,
 			kernel_weights,
 			maximum_gain_scaling,
-			kernel_obj_values_by_design_num.get(d0)
+			kernel_obj_values_by_design_num.get(d0),
+			use_gpu
 		);		
 	}
 	
@@ -110,6 +114,20 @@ public class MultipleKernelGreedyExperimentalDesign extends GreedyExperimentalDe
 	
 	public void setMaximumGainScaling(double maximum_gain_scaling) {
 		this.maximum_gain_scaling = maximum_gain_scaling;
+	}
+
+	public void setM(int m) {
+		this.m = m;
+	}
+
+	public void setInitialKernelObjValues(int r, double[] kernel_obj_values) {
+		if (this.kernel_obj_values_by_design_num == null) {
+			this.kernel_obj_values_by_design_num = new ArrayList<ArrayList<double[]>>(max_designs);
+			for (int d = 0; d < max_designs; d++) {
+				this.kernel_obj_values_by_design_num.add(new ArrayList<double[]>());
+			}
+		}
+		this.kernel_obj_values_by_design_num.get(r).add(kernel_obj_values);
 	}
 	
 	public double[][][] getObjValuesByKernel(int[] indicies){		

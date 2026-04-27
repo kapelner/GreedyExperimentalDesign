@@ -1,3 +1,15 @@
+version 1.6.1
+* Optional GPU acceleration via wgpu-native (WebGPU) on Linux (Vulkan), macOS (Metal), and Windows (Direct3D 12/Vulkan)
+* All five compute shaders use workgroup shared memory tiling, eliminating 8-16x memory bandwidth waste versus naive global-memory access
+* Distance matrix shader tiles X rows cooperatively across 256-thread workgroups, computing all n*(n-1)/2 pairs in parallel
+* Kernel matrix shader (Gaussian, Laplacian, inverse multiquadric, exponential, polynomial) uses the same 16-feature tiling strategy
+* Batch objective shader evaluates r candidate designs simultaneously; each workgroup tiles the n design-vector entries into shared memory before the inner product loop
+* Multiple-kernel objective shader applies the same tiling per kernel and accumulates the weighted (optionally log-scaled) sum in a single GPU pass
+* Greedy search shader (full_greedy_search_gpu) runs the complete pair-switching loop on the GPU: incremental O(p) average update per iteration eliminates the O(n*p) full recompute, and a 256-thread workgroup parallel argmin reduction reads back only 4 bytes per iteration instead of numIT*numIC*4 bytes
+* New R functions: ged_gpu_available(), ged_gpu_devices(), compute_distance_matrix_gpu(), compute_kernel_matrix_gpu(), compute_objective_vals_gpu(), compute_multiple_kernel_objective_vals_gpu(), compute_randomization_metrics_gpu(), full_greedy_search_gpu()
+* GPU use is automatic when wgpu-native is detected at install time; disabled transparently otherwise with no change to existing CPU code paths
+* Added benchmark script benchmarks/benchmark_gpu_backend.R for CPU vs GPU timing comparison
+
 version 1.6
 * Massive speedups using Rcpp all over the codebase
 * Gurobi search for r many vectors now works using pooling and a whole array of other arguments

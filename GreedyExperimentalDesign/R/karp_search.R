@@ -54,6 +54,8 @@ initKarpExperimentalDesignObject = function(X,
 	#now go ahead and create the Java object and set its information
 	java_obj = .jnew("KarpExperimentalDesign.KarpExperimentalDesign")
 	set_verbose_if_available(java_obj, verbose)
+	use_gpu = ged_use_gpu(require_available = TRUE)
+	set_use_gpu_if_available(java_obj)
 	.jcall(java_obj, "V", "setN", as.integer(n))
 	.jcall(java_obj, "V", "setP", as.integer(p))
 	if (wait){
@@ -75,6 +77,8 @@ initKarpExperimentalDesignObject = function(X,
 	karp_experimental_design_search$n = n
 	karp_experimental_design_search$java_obj = java_obj
 	karp_experimental_design_search$verbose = verbose
+	karp_experimental_design_search$use_gpu = ged_gpu_option()
+	karp_experimental_design_search$use_gpu_effective = use_gpu
 	class(karp_experimental_design_search) = "karp_experimental_design_search"
 	#if the user wants to run it immediately...
 	if (start){

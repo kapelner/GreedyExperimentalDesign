@@ -108,6 +108,121 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// ged_gpu_release_context_cpp
+void ged_gpu_release_context_cpp();
+RcppExport SEXP _GreedyExperimentalDesign_ged_gpu_release_context_cpp() {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    ged_gpu_release_context_cpp();
+    return R_NilValue;
+END_RCPP
+}
+// ged_gpu_available_cpp
+LogicalVector ged_gpu_available_cpp();
+RcppExport SEXP _GreedyExperimentalDesign_ged_gpu_available_cpp() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(ged_gpu_available_cpp());
+    return rcpp_result_gen;
+END_RCPP
+}
+// ged_gpu_devices_cpp
+DataFrame ged_gpu_devices_cpp();
+RcppExport SEXP _GreedyExperimentalDesign_ged_gpu_devices_cpp() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(ged_gpu_devices_cpp());
+    return rcpp_result_gen;
+END_RCPP
+}
+// compute_distance_matrix_gpu_cpp
+NumericMatrix compute_distance_matrix_gpu_cpp(NumericMatrix X, std::string backend, int device);
+RcppExport SEXP _GreedyExperimentalDesign_compute_distance_matrix_gpu_cpp(SEXP XSEXP, SEXP backendSEXP, SEXP deviceSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    Rcpp::traits::input_parameter< std::string >::type backend(backendSEXP);
+    Rcpp::traits::input_parameter< int >::type device(deviceSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_distance_matrix_gpu_cpp(X, backend, device));
+    return rcpp_result_gen;
+END_RCPP
+}
+// compute_kernel_matrix_gpu_cpp
+NumericMatrix compute_kernel_matrix_gpu_cpp(NumericMatrix X, std::string kernel, int poly_s, double gamma, int device);
+RcppExport SEXP _GreedyExperimentalDesign_compute_kernel_matrix_gpu_cpp(SEXP XSEXP, SEXP kernelSEXP, SEXP poly_sSEXP, SEXP gammaSEXP, SEXP deviceSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    Rcpp::traits::input_parameter< std::string >::type kernel(kernelSEXP);
+    Rcpp::traits::input_parameter< int >::type poly_s(poly_sSEXP);
+    Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< int >::type device(deviceSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_kernel_matrix_gpu_cpp(X, kernel, poly_s, gamma, device));
+    return rcpp_result_gen;
+END_RCPP
+}
+// compute_objective_vals_gpu_cpp
+NumericVector compute_objective_vals_gpu_cpp(NumericMatrix W, NumericMatrix Kgram, int device);
+RcppExport SEXP _GreedyExperimentalDesign_compute_objective_vals_gpu_cpp(SEXP WSEXP, SEXP KgramSEXP, SEXP deviceSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type W(WSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type Kgram(KgramSEXP);
+    Rcpp::traits::input_parameter< int >::type device(deviceSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_objective_vals_gpu_cpp(W, Kgram, device));
+    return rcpp_result_gen;
+END_RCPP
+}
+// compute_multiple_kernel_objective_vals_gpu_cpp
+NumericVector compute_multiple_kernel_objective_vals_gpu_cpp(NumericMatrix W, List Kgrams, NumericVector weights, NumericVector initial_objs, NumericVector running_sums, NumericVector max_reds, double maximum_gain_scaling, int device);
+RcppExport SEXP _GreedyExperimentalDesign_compute_multiple_kernel_objective_vals_gpu_cpp(SEXP WSEXP, SEXP KgramsSEXP, SEXP weightsSEXP, SEXP initial_objsSEXP, SEXP running_sumsSEXP, SEXP max_redsSEXP, SEXP maximum_gain_scalingSEXP, SEXP deviceSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type W(WSEXP);
+    Rcpp::traits::input_parameter< List >::type Kgrams(KgramsSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type weights(weightsSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type initial_objs(initial_objsSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type running_sums(running_sumsSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type max_reds(max_redsSEXP);
+    Rcpp::traits::input_parameter< double >::type maximum_gain_scaling(maximum_gain_scalingSEXP);
+    Rcpp::traits::input_parameter< int >::type device(deviceSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_multiple_kernel_objective_vals_gpu_cpp(W, Kgrams, weights, initial_objs, running_sums, max_reds, maximum_gain_scaling, device));
+    return rcpp_result_gen;
+END_RCPP
+}
+// compute_randomization_metrics_gpu_cpp
+NumericMatrix compute_randomization_metrics_gpu_cpp(IntegerMatrix W, int device);
+RcppExport SEXP _GreedyExperimentalDesign_compute_randomization_metrics_gpu_cpp(SEXP WSEXP, SEXP deviceSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerMatrix >::type W(WSEXP);
+    Rcpp::traits::input_parameter< int >::type device(deviceSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_randomization_metrics_gpu_cpp(W, device));
+    return rcpp_result_gen;
+END_RCPP
+}
+// full_greedy_search_gpu_cpp
+IntegerVector full_greedy_search_gpu_cpp(NumericMatrix X, NumericMatrix Sinv, IntegerVector start_indicT, int max_iters, int device);
+RcppExport SEXP _GreedyExperimentalDesign_full_greedy_search_gpu_cpp(SEXP XSEXP, SEXP SinvSEXP, SEXP start_indicTSEXP, SEXP max_itersSEXP, SEXP deviceSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type Sinv(SinvSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type start_indicT(start_indicTSEXP);
+    Rcpp::traits::input_parameter< int >::type max_iters(max_itersSEXP);
+    Rcpp::traits::input_parameter< int >::type device(deviceSEXP);
+    rcpp_result_gen = Rcpp::wrap(full_greedy_search_gpu_cpp(X, Sinv, start_indicT, max_iters, device));
+    return rcpp_result_gen;
+END_RCPP
+}
 // greedy_orthogonalization_eliminate_cpp
 List greedy_orthogonalization_eliminate_cpp(NumericMatrix Rij, int Rmin, bool stop_if_worse);
 RcppExport SEXP _GreedyExperimentalDesign_greedy_orthogonalization_eliminate_cpp(SEXP RijSEXP, SEXP RminSEXP, SEXP stop_if_worseSEXP) {
@@ -347,6 +462,15 @@ static const R_CallMethodDef CallEntries[] = {
     {"_GreedyExperimentalDesign_create_all_ys_cpp", (DL_FUNC) &_GreedyExperimentalDesign_create_all_ys_cpp, 5},
     {"_GreedyExperimentalDesign_all_elements_same_cpp", (DL_FUNC) &_GreedyExperimentalDesign_all_elements_same_cpp, 1},
     {"_GreedyExperimentalDesign_gen_pm_designs_cpp", (DL_FUNC) &_GreedyExperimentalDesign_gen_pm_designs_cpp, 3},
+    {"_GreedyExperimentalDesign_ged_gpu_release_context_cpp", (DL_FUNC) &_GreedyExperimentalDesign_ged_gpu_release_context_cpp, 0},
+    {"_GreedyExperimentalDesign_ged_gpu_available_cpp", (DL_FUNC) &_GreedyExperimentalDesign_ged_gpu_available_cpp, 0},
+    {"_GreedyExperimentalDesign_ged_gpu_devices_cpp", (DL_FUNC) &_GreedyExperimentalDesign_ged_gpu_devices_cpp, 0},
+    {"_GreedyExperimentalDesign_compute_distance_matrix_gpu_cpp", (DL_FUNC) &_GreedyExperimentalDesign_compute_distance_matrix_gpu_cpp, 3},
+    {"_GreedyExperimentalDesign_compute_kernel_matrix_gpu_cpp", (DL_FUNC) &_GreedyExperimentalDesign_compute_kernel_matrix_gpu_cpp, 5},
+    {"_GreedyExperimentalDesign_compute_objective_vals_gpu_cpp", (DL_FUNC) &_GreedyExperimentalDesign_compute_objective_vals_gpu_cpp, 3},
+    {"_GreedyExperimentalDesign_compute_multiple_kernel_objective_vals_gpu_cpp", (DL_FUNC) &_GreedyExperimentalDesign_compute_multiple_kernel_objective_vals_gpu_cpp, 8},
+    {"_GreedyExperimentalDesign_compute_randomization_metrics_gpu_cpp", (DL_FUNC) &_GreedyExperimentalDesign_compute_randomization_metrics_gpu_cpp, 2},
+    {"_GreedyExperimentalDesign_full_greedy_search_gpu_cpp", (DL_FUNC) &_GreedyExperimentalDesign_full_greedy_search_gpu_cpp, 5},
     {"_GreedyExperimentalDesign_greedy_orthogonalization_eliminate_cpp", (DL_FUNC) &_GreedyExperimentalDesign_greedy_orthogonalization_eliminate_cpp, 3},
     {"_GreedyExperimentalDesign_compute_indicTs_from_pairs_cpp", (DL_FUNC) &_GreedyExperimentalDesign_compute_indicTs_from_pairs_cpp, 3},
     {"_GreedyExperimentalDesign_compute_indicTs_from_pairs_lgl_cpp", (DL_FUNC) &_GreedyExperimentalDesign_compute_indicTs_from_pairs_lgl_cpp, 3},

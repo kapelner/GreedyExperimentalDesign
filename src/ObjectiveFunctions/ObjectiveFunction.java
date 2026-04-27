@@ -17,10 +17,15 @@ public abstract class ObjectiveFunction {
 		VALID_OBJ_FUNCTIONS.add(MUL_KER_PCT);
 	};
 	
+	protected boolean use_gpu;
 
 	public abstract double calc(boolean debug_mode);
 	
 	public static boolean isValidObjFunction(String objective){
 		return VALID_OBJ_FUNCTIONS.contains(objective);
+	}
+
+	public void setUseGpu(boolean use_gpu) {
+		this.use_gpu = use_gpu;
 	}
 }

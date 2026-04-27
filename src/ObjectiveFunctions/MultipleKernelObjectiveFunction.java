@@ -3,111 +3,98 @@ package ObjectiveFunctions;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import ExperimentalDesign.Tools;
-
-//import org.apache.commons.math3.random.EmpiricalDistribution;
-
 public class MultipleKernelObjectiveFunction extends ObjectiveFunction {
 
-
-	
-//	private HashMap<Integer, double[][]> Kgrams;
-//	private HashMap<Integer, double[]> obj_val_kernel_library;
+	private HashMap<Integer, double[][]> Kgrams;
 	private double[] kernel_weights;
-	private int m;
-	private KernelObjective[] kernel_objective_functions;
-//	private EmpiricalDistribution[] kernel_ecdfs;
-	private double maximum_gain_scaling;
+	private Double maximum_gain_scaling;
 	private HashMap<Integer, Double> max_reduction_log_obj_vals;
 	private ArrayList<double[]> kernel_obj_values;
+	private int m;
+	private KernelObjective[] kernel_objective_functions;
 	private boolean verbose;
 
-	public MultipleKernelObjectiveFunction(
-			HashMap<Integer, double[][]> Kgrams,	
-//			HashMap<Integer, double[]> obj_val_kernel_library, 
+	public MultipleKernelObjectiveFunction(HashMap<Integer, double[][]> Kgrams, 
 			HashMap<Integer, Double> max_reduction_log_obj_vals, 
-			double[] kernel_weights, 
-			double maximum_gain_scaling, 
-			ArrayList<double[]> kernel_obj_values,
-			boolean verbose
-		) {
-//		this.Kgrams = Kgrams;
-//		this.obj_val_kernel_library = obj_val_kernel_library;
-		this.kernel_weights = kernel_weights;
+			double[] kernel_weights, Double maximum_gain_scaling, 
+			ArrayList<double[]> kernel_obj_values, boolean verbose) {
+		this.Kgrams = Kgrams;
 		this.max_reduction_log_obj_vals = max_reduction_log_obj_vals;
+		this.kernel_weights = kernel_weights;
 		this.maximum_gain_scaling = maximum_gain_scaling;
 		this.kernel_obj_values = kernel_obj_values;
 		this.verbose = verbose;
-		m = Kgrams.size();
-		
-		//now we create sub-objective functions
-		kernel_objective_functions = new KernelObjective[m];
-		for (int i_k = 0; i_k < m; i_k++) {
-			kernel_objective_functions[i_k] = new KernelObjective(Kgrams.get(i_k));
+		this.m = kernel_weights.length;
+		this.kernel_objective_functions = new KernelObjective[m];
+		for (int k = 0; k < m; k++) {
+			this.kernel_objective_functions[k] = new KernelObjective(Kgrams.get(k));
 		}
-		if (verbose){
-			System.out.println("MultipleKernelObjectiveFunction init m = " + m + " maximum_gain_scaling =  " + maximum_gain_scaling + " kernel_weights = " + Tools.StringJoin(kernel_weights));
-		}
-		//now cache the empirical distribution object
-//		for (int i_k = 0; i_k < m; i_k++) {
-//			kernel_ecdfs[i_k] = new EmpiricalDistribution();
-//			kernel_ecdfs[i_k].load(obj_val_kernel_library.get(i_k));
-//		}
 	}
 
 	@Override
 	public double calc(boolean debug_mode) {
-		double obj_val = 0;
-		for (int i_k = 0; i_k < m; i_k++) {
-//			System.out.print("    i_k " + (i_k + 1));
-			obj_val += (kernel_weights[i_k] * pct_off_from_best(i_k));
+		double obj = 0;
+		for (int k = 0; k < m; k++) {
+			double val = kernel_objective_functions[k].calc(debug_mode);
+			if (maximum_gain_scaling != null) {
+				val = kernel_objective_functions[k].log10_i_over_current_obj_val() / (max_reduction_log_obj_vals.get(k) * maximum_gain_scaling);
+			}
+			obj += kernel_weights[k] * val;
 		}
-//		System.out.println("    aggregate objval: " + obj_val + "\n");
-		return obj_val;
-	}
-	
-	public void calcKernelObjDiagnostics() {
-		double[] obj_vals = new double[m];
-		for (int i_k = 0; i_k < m; i_k++) {
-			obj_vals[i_k] = pct_off_from_best(i_k);
-		}
-		kernel_obj_values.add(obj_vals);		
+		return obj;
 	}
 
-	private double pct_off_from_best(int i_k) {
-
-//		System.out.println("in pct_off_from_best " + i_k);
-//		System.out.print(" max_reduction " + String.format("%.4g", max_reduction_log_obj_vals.get(i_k)));	
-//		kernel_ecdfs[i_k].cumulativeProbability(x);
-		double ret = 1 - kernel_objective_functions[i_k].log10_i_over_current_obj_val() / (max_reduction_log_obj_vals.get(i_k) * maximum_gain_scaling);
-//		System.out.print(" pct_off_from_best " + String.format("%.4g", ret) + "\n");
-		
-		return ret; 
-	}
-
-	public void setW(int[] indicT) {
-		for (int i_k = 0; i_k < m; i_k++) {
-			kernel_objective_functions[i_k].setW(indicT);
+	public void setW(int[] w) {
+		for (int k = 0; k < m; k++) {
+			kernel_objective_functions[k].setW(w);
 		}
 	}
 
-	public void setSwitch(int t, int c) {
-//		System.out.println("    switch " + t + " <> " + c);
-		for (int i_k = 0; i_k < m; i_k++) {
-			kernel_objective_functions[i_k].setSwitch(t, c);
+	public void setSwitch(int i_T, int i_C) {
+		for (int k = 0; k < m; k++) {
+			kernel_objective_functions[k].setSwitch(i_T, i_C);
+		}
+	}
+
+	public void setUseGpu(boolean use_gpu) {
+		this.use_gpu = use_gpu;
+		for (int k = 0; k < m; k++) {
+			kernel_objective_functions[k].setUseGpu(use_gpu);
 		}
 	}
 
 	public void resetKernelSum() {
-		for (int i_k = 0; i_k < m; i_k++) {
-			kernel_objective_functions[i_k].resetKernelSum();
+		for (int k = 0; k < m; k++) {
+			kernel_objective_functions[k].resetKernelSum();
 		}
 	}
 
+	public void calcKernelObjDiagnostics() {
+		double[] res = new double[m];
+		for (int k = 0; k < m; k++) {
+			res[k] = kernel_objective_functions[k].running_kernel_sum;
+		}
+		kernel_obj_values.add(res);
+	}
+
 	public void setInitialObjVals() {
-		for (int i_k = 0; i_k < m; i_k++) {
-			kernel_objective_functions[i_k].setInitialObjVal();
-//			System.out.println("  i_k " + i_k + " initial objval: " + kernel_objective_functions[i_k].running_kernel_sum);	
+		for (int k = 0; k < m; k++) {
+			kernel_objective_functions[k].setInitialObjVal();
+		}
+	}
+
+	public double[] getRunningKernelSums() {
+		double[] sums = new double[m];
+		for (int k = 0; k < m; k++) {
+			sums[k] = kernel_objective_functions[k].getRunningKernelSum();
+		}
+		return sums;
+	}
+
+	public void restoreKernelSumsAndW(int i_T, int i_C, double[] saved_sums) {
+		kernel_objective_functions[0].restoreW(i_T, i_C);
+		for (int k = 0; k < m; k++) {
+			kernel_objective_functions[k].setRunningKernelSum(saved_sums[k]);
 		}
 	}
 

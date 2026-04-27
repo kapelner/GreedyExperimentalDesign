@@ -1,0 +1,48 @@
+#!/bin/sh
+
+BASE_DIR=$(cd "$(dirname "$0")" && pwd)
+
+wgpu_cppflags=""
+wgpu_libs=""
+
+for arg in "$@"; do
+	case "$arg" in
+        --with-wgpu)
+            with_wgpu=yes
+            ;;
+        --without-wgpu)
+            with_wgpu=no
+            ;;
+	esac
+done
+
+if [ -z "$with_wgpu" ]; then
+    with_wgpu=auto
+fi
+
+# WebGPU detection (preferring the one in ../lib/wgpu)
+if [ "$with_wgpu" != "no" ]; then
+    WGPU_DIR="${BASE_DIR}/../lib/wgpu"
+    if [ -d "$WGPU_DIR" ]; then
+        wgpu_cppflags="-I${WGPU_DIR}/include -DGED_USE_WGPU"
+        wgpu_libs="-L${WGPU_DIR}/lib -lwgpu_native"
+        echo "configure.win: wgpu-native found in ../lib/wgpu"
+    else
+        if [ "$with_wgpu" = "yes" ]; then
+            echo "configure.win: error: --with-wgpu requested, but ../lib/wgpu not found" >&2
+            exit 1
+        fi
+    fi
+fi
+
+# Rcpp headers
+RCPP_INC=`Rscript -e 'cat(system.file("include", package="Rcpp"))'`
+FINAL_CPPFLAGS="$wgpu_cppflags -I\"$RCPP_INC\""
+FINAL_LIBS="$wgpu_libs"
+
+sed \
+	-e "s|@GED_WIN_CPPFLAGS@|$FINAL_CPPFLAGS|g" \
+	-e "s|@GED_WIN_LIBS@|$FINAL_LIBS|g" \
+	"${BASE_DIR}/src/Makevars.win.in" > "${BASE_DIR}/src/Makevars.win"
+
+exit 0

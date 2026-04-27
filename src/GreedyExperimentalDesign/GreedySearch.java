@@ -14,6 +14,7 @@ public class GreedySearch {
 	private double[][] X;
 	private int nT;
 	private boolean verbose;
+	private boolean use_gpu;
 
 	public GreedySearch(
 		int nT,
@@ -30,7 +31,7 @@ public class GreedySearch {
 		Integer[] num_iters, 
 		String objective, 
 		int d0, 
-		boolean semigreedy, //purely experimental... we didn't see any gain in this
+		boolean semigreedy, 
 		boolean diagnostics, 
 		boolean verbose,
 		Integer max_iters, 
@@ -40,12 +41,12 @@ public class GreedySearch {
 		HashMap<Integer, Double> max_reduction_log_obj_vals, 
 		double[] kernel_weights, 
 		Double maximum_gain_scaling, 
-		ArrayList<double[]> kernel_obj_values
+		ArrayList<double[]> kernel_obj_values,
+		boolean use_gpu
 	) {
 
-		
-//		System.out.println("GreedySearch: ready to begin " + d0);
 		this.nT = nT;
+		this.use_gpu = use_gpu;
 		
 		ObjectiveFunction obj_fun = null;
 		this.verbose = verbose;
@@ -54,18 +55,19 @@ public class GreedySearch {
 		if (objective.equals(ObjectiveFunction.KER)){
 			obj_fun = new KernelObjective(Kgram);	
 			n = Kgram.length;
-			((KernelObjective)obj_fun).setW(indicT);	
+			((KernelObjective)obj_fun).setW(indicT);
+			((KernelObjective)obj_fun).setUseGpu(use_gpu);
 		} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
 			obj_fun = new MultipleKernelObjectiveFunction(Kgrams, max_reduction_log_obj_vals, kernel_weights, maximum_gain_scaling, kernel_obj_values, verbose);	
 			n = Kgrams.get(0).length; 
 			((MultipleKernelObjectiveFunction)obj_fun).setW(indicT);
 			((MultipleKernelObjectiveFunction)obj_fun).setInitialObjVals();
+			((MultipleKernelObjectiveFunction)obj_fun).setUseGpu(use_gpu);
 			if (diagnostics) {
-				((MultipleKernelObjectiveFunction)obj_fun).resetKernelSum(); //waste, yes... but cleanest way to do it
+				((MultipleKernelObjectiveFunction)obj_fun).resetKernelSum(); 
 				((MultipleKernelObjectiveFunction)obj_fun).calcKernelObjDiagnostics();
 			}
-			((MultipleKernelObjectiveFunction)obj_fun).resetKernelSum(); //waste, yes... but cleanest way to do it
-//			System.out.println("MultipleKernelObjectiveFunction GreedySearch #" + d0 + " ready to begin");
+			((MultipleKernelObjectiveFunction)obj_fun).resetKernelSum(); 
 		} else {
 			this.X = X;
 			n = X.length;
@@ -83,335 +85,199 @@ public class GreedySearch {
 				obj_fun = new AbsSumObjective();
 			}
 		}
-//		System.out.println("beginSearch d0:" + (d0 + 1) + " nT = " + nT + " and nC = " + (n - nT));
-		
-//		int[] i_Tss = Tools.findIndicies(indicT, nT, 1);
-//		System.out.println("i_Ts " + Tools.StringJoin(i_Tss));
 		
 		Double obj_val = null;		
-		
-//		System.out.println("indicT " + Tools.StringJoin(indicT));
 		int[] i_Ts = Tools.findIndicies(indicT, nT, 1);
-//		System.out.println("i_Ts " + Tools.StringJoin(i_Ts));
 		int[] i_Cs = Tools.findIndicies(indicT, n - nT, 0);
-		
-		ArrayList<double[]> XT = null;
-		ArrayList<double[]> XC = null;
+
 		double[] avg_Ts = null;
 		double[] avg_Cs = null;
-		
-		if (obj_fun instanceof SimpleAverageObjectiveFunction) {
-			XT = Tools.subsetMatrix(X, i_Ts); 
-			XC = Tools.subsetMatrix(X, i_Cs);
+		if (obj_fun instanceof SimpleAverageObjectiveFunction){
+			ArrayList<double[]> XT = Tools.subsetMatrix(X, i_Ts); 
+			ArrayList<double[]> XC = Tools.subsetMatrix(X, i_Cs); 
 			avg_Ts = Tools.colAvg(XT, p);
-			avg_Cs = Tools.colAvg(XC, p);			
+			avg_Cs = Tools.colAvg(XC, p);
 			((SimpleAverageObjectiveFunction)obj_fun).setXTbar(avg_Ts);
 			((SimpleAverageObjectiveFunction)obj_fun).setXCbar(avg_Cs);
 		}
-		double min_obj_val = obj_fun.calc(false); //start at wherever we begin
-			
-		if (diagnostics){
-//			System.out.println("calculating objective function for first time");
-			min_obj_val_by_iteration.add(min_obj_val);
-//			System.out.println("  iter 0 obj_val = " + min_obj_val);
-		}
 		
 		int iter = 0;
-		while (true){
-			if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
-//				System.out.println("    iter " + iter);
-			}
-			iter++;
-//			System.out.println("iter++ " + iter);
-			
-			int[] indicTmin = null;
-			double[] xbardiffjs = null;
-//			System.out.println("indicTmin " + indicTmin);
-			
-			
-			
-			i_Ts = Tools.findIndicies(indicT, nT, 1);
-//			System.out.println("i_Ts " + Tools.StringJoin(i_Ts));
-			i_Cs = Tools.findIndicies(indicT, n - nT, 0);
-//			System.out.println("i_Cs " + Tools.StringJoin(i_Cs));
-			if (semigreedy){ //gotta randomize otherwise inefficient
-				i_Ts = Tools.fisherYatesShuffle(i_Ts, r);
-				i_Cs = Tools.fisherYatesShuffle(i_Cs, r);
-			}
-			//build the first avg vectors for speed
+		double min_obj_val = obj_fun.calc(false);
 
-			if (obj_fun instanceof SimpleAverageObjectiveFunction) {
-				XT = Tools.subsetMatrix(X, i_Ts); 
-				XC = Tools.subsetMatrix(X, i_Cs); 
-	
-				avg_Ts = Tools.colAvg(XT, p);
-				avg_Cs = Tools.colAvg(XC, p);
-			}
-//			System.out.println("INIT XTbar: " + Tools.StringJoin(avg_Ts, ","));
-//			System.out.println("INIT XCbar: " + Tools.StringJoin(avg_Cs, ","));
+		OptimalExperimentalDesign.WebGpuPanama.GpuGreedySearchSession gpuSession = null;
+		if (use_gpu && objective.equals(ObjectiveFunction.MAHAL) && legal_pairs == null) {
+			double[] XFlat = new double[n * p];
+			for (int i = 0; i < n; i++) for (int j = 0; j < p; j++) XFlat[i * p + j] = X[i][j];
+			double[] SinvFlat = new double[p * p];
+			for (int i = 0; i < p; i++) for (int j = 0; j < p; j++) SinvFlat[i * p + j] = Sinvmat[i][j];
+			gpuSession = OptimalExperimentalDesign.WebGpuPanama.createGreedySearchSession(n, p, XFlat, SinvFlat, i_Ts, i_Cs);
+		}
+
+		while (true){
+			iter++;
 			int[] switched_pair_1 = new int[2];
 			int[] switched_pair_2 = new int[2];
+			int[] indicTmin = null;
 			
-
-			
-			
-			//This is dirty... but almost no choice
 			if (legal_pairs == null) {
-				indices_loop: {
+				if (gpuSession != null) {
+					try {
+						double[] switch_obj_vals = gpuSession.runIteration(nT, avg_Ts, avg_Cs);
+						int idx_gpu = 0;
+						for (int i_T : i_Ts) {
+							for (int i_C : i_Cs) {
+								double obj_val_gpu = switch_obj_vals[idx_gpu++];
+								if (obj_val_gpu < min_obj_val) {
+									min_obj_val = obj_val_gpu;
+									indicTmin = indicT.clone();
+									indicTmin[i_T] = 0;
+									indicTmin[i_C] = 1;
+									if (diagnostics) {
+										switched_pair_1[0] = i_T;
+										switched_pair_1[1] = i_C;
+									}
+								}
+							}
+						}
+					} catch (Throwable t) {
+						throw new RuntimeException(t);
+					}
+				} else {
+					// Save kernel sums before the inner loop so each candidate
+					// is evaluated from the same baseline (setSwitch mutates w in place).
+					double saved_kernel_sum = 0;
+					double[] saved_multi_kernel_sums = null;
+					if (objective.equals(ObjectiveFunction.KER)) {
+						saved_kernel_sum = ((KernelObjective)obj_fun).getRunningKernelSum();
+					} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
+						saved_multi_kernel_sums = ((MultipleKernelObjectiveFunction)obj_fun).getRunningKernelSums();
+					}
+					indices_loop:
 					for (int i_T : i_Ts){
 						for (int i_C : i_Cs){
-//							System.out.println("   i_T " + i_T + " i_C " + i_C);
-							
-							int[] indicT_proposal = indicT.clone();
-							//make the single switch
-							indicT_proposal[i_T] = 0; //i_T is the new control
-							indicT_proposal[i_C] = 1; //i_C is the new treatment
-							
-							if (objective.equals(ObjectiveFunction.KER)){	
-								((KernelObjective)obj_fun).setSwitch(i_T, i_C);						
+							if (objective.equals(ObjectiveFunction.KER)){
+								((KernelObjective)obj_fun).setSwitch(i_T, i_C);
 							} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
-								((MultipleKernelObjectiveFunction)obj_fun).setSwitch(i_T, i_C);		
+								((MultipleKernelObjectiveFunction)obj_fun).setSwitch(i_T, i_C);
 							} else {
-	//							System.out.println("   updateAvgVec");
 								updateAvgVec(avg_Ts, i_T, i_C, nT);
-								((SimpleAverageObjectiveFunction)obj_fun).setXTbar(avg_Ts);
-								
 								updateAvgVec(avg_Cs, i_C, i_T, n - nT);
-								((SimpleAverageObjectiveFunction)obj_fun).setXCbar(avg_Cs);
-	//							System.out.println("set XTbar and XCbar");
 							}
-	
-							
-							//calculate our objective function (according to the user's specification)
-	//						System.out.println("calculating objective function for iter " + iter + " i_T = " + i_T + " i_C = " + i_C);
 							obj_val = obj_fun.calc(false);
-							
-	
-//							System.out.println("  i_T = " + i_T + " i_C = " + i_C + " obj_val = " + obj_val);
-							
-							if (obj_val < min_obj_val){
-								indicTmin = indicT_proposal;
-	//							System.out.println("best indicT so far " + Tools.StringJoin(indicTmin));
+							boolean is_new_min = obj_val < min_obj_val;
+							if (is_new_min){
+								indicTmin = indicT.clone();
+								indicTmin[i_T] = 0;
+								indicTmin[i_C] = 1;
 								min_obj_val = obj_val;
-	//							System.out.println("switched i_T " + i_T + " and i_C " + i_C);							
-	//							System.out.println("min_obj_val " + min_obj_val + " for iter " + iter);
-								
 								if (diagnostics){
 									switched_pair_1[0] = i_T;
 									switched_pair_1[1] = i_C;
-									if (objective.equals(ObjectiveFunction.ABS)){
-										xbardiffjs = ((AbsSumObjectiveWithDiagnostics)obj_fun).getXbardiffjs().clone();
-									}
 								}
-								
-								if (semigreedy){ //semigreedy means as soon as we find improvement, we ditch
-									break indices_loop;
-								}							
 							}
-							
-							//reset the avg vecs
-							if (obj_fun instanceof SimpleAverageObjectiveFunction){
+							// Undo switch so each candidate is evaluated from the same
+							// baseline and indicT is never left with a wrong count of 1s.
+							if (objective.equals(ObjectiveFunction.KER)){
+								((KernelObjective)obj_fun).restoreW(i_T, i_C);
+								((KernelObjective)obj_fun).setRunningKernelSum(saved_kernel_sum);
+							} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
+								((MultipleKernelObjectiveFunction)obj_fun).restoreKernelSumsAndW(i_T, i_C, saved_multi_kernel_sums);
+							} else if (obj_fun instanceof SimpleAverageObjectiveFunction){
 								updateAvgVec(avg_Ts, i_C, i_T, nT);
-								updateAvgVec(avg_Cs, i_T, i_C, n - nT);	
-								
+								updateAvgVec(avg_Cs, i_T, i_C, n - nT);
 							}
-						}	
+							if (is_new_min && semigreedy) break indices_loop;
+						}
 					}
 				}			
 			} else {
-				indices_loop: {
-					for (int m1 = 0; m1 < (legal_pairs.size() - 1); m1++){
-						for (int m2 = m1; m2 < legal_pairs.size(); m2++){
-	//						System.out.println("   i_T " + i_T + " i_C " + i_C);
-							
-							//identify the two switches
-							int[] pair1 = legal_pairs.get(m1);
-							int[] pair2 = legal_pairs.get(m2);
-							
-							int i_T_1 = Integer.MIN_VALUE;
-							int i_C_1 = Integer.MIN_VALUE;
-							int i_T_2 = Integer.MIN_VALUE;
-							int i_C_2 = Integer.MIN_VALUE;
-							if (indicT[pair1[0]] == 1) {
-								i_T_1 = pair1[0];
-								i_C_1 = pair1[1];
-							} else {
-								i_T_1 = pair1[1];
-								i_C_1 = pair1[0];
+				indices_loop:
+				for (int m1 = 0; m1 < (legal_pairs.size() - 1); m1++){
+					for (int m2 = m1 + 1; m2 < legal_pairs.size(); m2++){
+						int[] pair1 = legal_pairs.get(m1);
+						int[] pair2 = legal_pairs.get(m2);
+						int i_T_1 = (indicT[pair1[0]] == 1) ? pair1[0] : pair1[1];
+						int i_C_1 = (indicT[pair1[0]] == 1) ? pair1[1] : pair1[0];
+						int i_T_2 = (indicT[pair2[0]] == 1) ? pair2[0] : pair2[1];
+						int i_C_2 = (indicT[pair2[0]] == 1) ? pair2[1] : pair2[0];
+						
+						if (objective.equals(ObjectiveFunction.KER)){	
+							((KernelObjective)obj_fun).setSwitch(i_T_1, i_C_1);	
+							((KernelObjective)obj_fun).setSwitch(i_T_2, i_C_2);						
+						} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
+							((MultipleKernelObjectiveFunction)obj_fun).setSwitch(i_T_1, i_C_1);	
+							((MultipleKernelObjectiveFunction)obj_fun).setSwitch(i_T_2, i_C_2);		
+						} else {
+							updateAvgVec(avg_Ts, i_T_1, i_C_1, nT);
+							updateAvgVec(avg_Ts, i_T_2, i_C_2, nT);
+							updateAvgVec(avg_Cs, i_C_1, i_T_1, n - nT);
+							updateAvgVec(avg_Cs, i_C_2, i_T_2, n - nT);
+						}
+						obj_val = obj_fun.calc(false);
+						if (obj_val < min_obj_val){
+							indicTmin = indicT.clone();
+							indicTmin[i_T_1] = 0; indicTmin[i_C_1] = 1;
+							indicTmin[i_T_2] = 0; indicTmin[i_C_2] = 1;
+							min_obj_val = obj_val;
+							if (diagnostics){
+								switched_pair_1[0] = i_T_1; switched_pair_1[1] = i_C_1;
+								switched_pair_2[0] = i_T_2; switched_pair_2[1] = i_C_2;
 							}
-							if (indicT[pair2[0]] == 1) {
-								i_T_2 = pair1[1];
-								i_C_2 = pair1[0];
-							} else {
-								i_T_2 = pair1[0];
-								i_C_2 = pair1[1];
-							}
-							//make the two switches
-							int[] indicT_proposal = indicT.clone();
-							indicT_proposal[i_T_1] = 0;
-							indicT_proposal[i_C_1] = 1;
-							indicT_proposal[i_T_2] = 0;
-							indicT_proposal[i_C_2] = 1;
-							
-							if (objective.equals(ObjectiveFunction.KER)){	
-								((KernelObjective)obj_fun).setSwitch(i_T_1, i_C_1);	
-								((KernelObjective)obj_fun).setSwitch(i_T_2, i_C_2);						
-							} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
-								((MultipleKernelObjectiveFunction)obj_fun).setSwitch(i_T_1, i_C_1);	
-								((MultipleKernelObjectiveFunction)obj_fun).setSwitch(i_T_2, i_C_2);		
-							} else {
-	//							System.out.println("   updateAvgVec");
-								updateAvgVec(avg_Ts, i_T_1, i_C_1, nT);
-								updateAvgVec(avg_Ts, i_T_2, i_C_2, nT);
-								((SimpleAverageObjectiveFunction)obj_fun).setXTbar(avg_Ts);
-								
-								updateAvgVec(avg_Cs, i_C_1, i_T_1, n - nT);
-								updateAvgVec(avg_Cs, i_C_2, i_T_2, n - nT);
-								((SimpleAverageObjectiveFunction)obj_fun).setXCbar(avg_Cs);
-	//							System.out.println("set XTbar and XCbar");
-							}
-	
-							
-							//calculate our objective function (according to the user's specification)
-	//						System.out.println("calculating objective function for iter " + iter + " i_T = " + i_T + " i_C = " + i_C);
-							obj_val = obj_fun.calc(false);
-							
-	
-	//						System.out.println("  i_T = " + i_T + " i_C = " + i_C + " obj_val = " + obj_val);
-							
-							if (obj_val < min_obj_val){
-								indicTmin = indicT_proposal;
-	//							System.out.println("best indicT so far " + Tools.StringJoin(indicTmin));
-								min_obj_val = obj_val;
-	//							System.out.println("switched i_T " + i_T + " and i_C " + i_C);							
-	//							System.out.println("min_obj_val " + min_obj_val + " for iter " + iter);
-								
-								
-	
-	
-								if (diagnostics){
-									switched_pair_1[0] = i_T_1;
-									switched_pair_1[1] = i_C_1;
-									switched_pair_2[0] = i_T_2;
-									switched_pair_2[1] = i_C_2;
-									if (objective.equals(ObjectiveFunction.ABS)){
-										xbardiffjs = ((AbsSumObjectiveWithDiagnostics)obj_fun).getXbardiffjs().clone();
-									}
-								}
-								
-								if (semigreedy){ //semigreedy means as soon as we find improvement, we ditch
-									break indices_loop;
-								}							
-							}
-							
-							//reset the avg vecs
-							if (obj_fun instanceof SimpleAverageObjectiveFunction){
-								updateAvgVec(avg_Ts, i_C_1, i_T_1, nT);
-								updateAvgVec(avg_Ts, i_C_2, i_T_2, nT);
-								updateAvgVec(avg_Cs, i_T_1, i_C_1, n - nT);	
-								updateAvgVec(avg_Cs, i_T_2, i_C_2, n - nT);	
-								
-							}
-						}	
-					}
-				}					
+							if (semigreedy) break indices_loop;
+						}
+						if (obj_fun instanceof SimpleAverageObjectiveFunction){
+							updateAvgVec(avg_Ts, i_C_1, i_T_1, nT);
+							updateAvgVec(avg_Ts, i_C_2, i_T_2, nT);
+							updateAvgVec(avg_Cs, i_T_1, i_C_1, n - nT);	
+							updateAvgVec(avg_Cs, i_T_2, i_C_2, n - nT);	
+						}
+					}	
+				}
 			}
 
-//			System.out.println("after indices loop");
-			
-			//we've finished one iteration by checking every possible switch
-			//record this switch only if it is a real switch
 			if (diagnostics && indicTmin != null){
 				switched_pairs.add(switched_pair_1);
-				if (legal_pairs != null) {
-					switched_pairs.add(switched_pair_2);
-				}
+				if (legal_pairs != null) switched_pairs.add(switched_pair_2);
 				min_obj_val_by_iteration.add(min_obj_val);
-				if (objective.equals(ObjectiveFunction.ABS)){
-					xbardiffjs_by_iteration.add(xbardiffjs);
-				}
 			}
 			
-			//after searching through every possible switch, we didn't find anything, so break
-			if (indicTmin == null){
-				break;
-			}
-			//otherwise - continue and update the binary search vector
-			else {
-				indicT = indicTmin;
-			}
-			
+			if (indicTmin == null) break;
+			indicT = indicTmin;
+			i_Ts = Tools.findIndicies(indicT, nT, 1);
+			i_Cs = Tools.findIndicies(indicT, n - nT, 0);
+
 			if (objective.equals(ObjectiveFunction.KER)){	
 				((KernelObjective)obj_fun).resetKernelSum();
 				((KernelObjective)obj_fun).setW(indicT);
-				obj_fun.calc(false); //caches the current objective value
-//				((KernelObjective)obj_fun).setPermanentSwitch(switched_pair[0], switched_pair[1]);						
+				obj_fun.calc(false);
 			} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)){	
-				if (diagnostics) {
-					((MultipleKernelObjectiveFunction)obj_fun).calcKernelObjDiagnostics();
-				}
 				((MultipleKernelObjectiveFunction)obj_fun).resetKernelSum();
 				((MultipleKernelObjectiveFunction)obj_fun).setW(indicT);
-				obj_fun.calc(false); //caches the current objective value
-//				((KernelObjective)obj_fun).setPermanentSwitch(switched_pair[0], switched_pair[1]);						
+				obj_fun.calc(false);
 			}
-//			
-//			System.out.println("  iter " + iter + " obj_val = " + min_obj_val);
 
-			//we can also be done if we hit our upper limit of iterations
-			if (max_iters != null && max_iters == iter){
-				break;
-			}
-//			System.out.println("before search_stopped");
-			if (search_stopped.get()) {
-				break;
-			}
+			if (max_iters != null && max_iters == iter) break;
+			if (search_stopped.get()) break;
 		}	
-//		System.out.println("after while true");
 		
-		//search is over; ship back the data now
-		for (int i = 0; i < indicT.length; i++){
-			ending_indicT[i] = indicT[i];
-		}
-//		System.out.println("ending_indicT " + Tools.StringJoin(ending_indicT));
+		if (gpuSession != null) gpuSession.close();
+		for (int i = 0; i < indicT.length; i++) ending_indicT[i] = indicT[i];
 		objective_vals[d0] = min_obj_val;
 		num_iters[d0] = iter - 1;
-		if (objective.equals(ObjectiveFunction.MUL_KER_PCT) && verbose){	
-			System.out.println("SEARCH DONE obj_val " + min_obj_val + " iters " + (iter - 1));
-		}
 	}
-
-//	private HashMap<Integer, int[]> setupIndicies(HashMap<Integer, int[]> legal_pairs, int[] i_Ts, int[] i_Cs) {
-//		HashMap<Integer, int[]> Ts_to_Cs = new HashMap<Integer, int[]>();
-//		if (legal_pairs == null) {
-//			for (int i_T : i_Ts){
-//				Ts_to_Cs.put(i_T, i_Cs);
-//			}
-//		} else {
-//			Ts_to_Cs = legal_pairs;
-//		}
-//		return Ts_to_Cs;
-//	}
 
 	private void createScaledXstd() {
 		Xscaled = new double[X.length][];
 		int p = X[0].length;
 		for (int i = 0; i < X.length; i++){
-			for (int j = 0; j < p; j++){
-				if (Xscaled[i] == null){
-					Xscaled[i] = new double[p];
-				}
-				Xscaled[i][j] = X[i][j] / nT;
-			}			
+			Xscaled[i] = new double[p];
+			for (int j = 0; j < p; j++) Xscaled[i][j] = X[i][j] / nT;
 		}
 	}
 
 	private void updateAvgVec(double[] avg_vec, int i_remove, int i_add, int nT) {
 		double[] obs_to_remove = Xscaled[i_remove];
 		double[] obs_to_add = Xscaled[i_add];
-		
-		for (int j = 0; j < obs_to_add.length; j++){
-			avg_vec[j] = avg_vec[j] - obs_to_remove[j] + obs_to_add[j];
-		}		
+		for (int j = 0; j < obs_to_add.length; j++) avg_vec[j] = avg_vec[j] - obs_to_remove[j] + obs_to_add[j];
 	}
 }

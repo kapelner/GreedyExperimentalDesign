@@ -33,6 +33,7 @@ computeBinaryMatchStructure = function(X, mahal_match = FALSE, compute_dist_matr
 	p = ncol(X)
 	assertNumeric(symmetry_tol, lower = 0)
 	assertLogical(use_safe_inverse)
+	use_gpu = ged_use_gpu(require_available = TRUE)
 	if (!is.null(D)){
 		assertClass(D, "matrix")
 		assertTRUE(nrow(D) == n)
@@ -67,7 +68,7 @@ computeBinaryMatchStructure = function(X, mahal_match = FALSE, compute_dist_matr
 				}
 			} else {
 				#default is C++-optimized sqd euclidean distance function		
-				D = compute_distance_matrix_cpp(X)				
+				D = if (use_gpu) compute_distance_matrix_gpu(X) else compute_distance_matrix_cpp(X)
 			}
 		} else if (is.null(D)){
 			D = compute_dist_matrix(X)
@@ -168,6 +169,8 @@ initBinaryMatchExperimentalDesignSearchObject = function(binary_match_structure,
 	#now go ahead and create the Java object and set its information
 	java_obj = .jnew("PairwiseMatchingExperimentalDesign.PairwiseMatchingExperimentalDesign")
 	set_verbose_if_available(java_obj, verbose)
+	use_gpu = ged_use_gpu(require_available = TRUE)
+	set_use_gpu_if_available(java_obj)
 	.jcall(java_obj, "V", "setMaxDesigns", as.integer(max_designs))
 	.jcall(java_obj, "V", "setNumCores", as.integer(num_cores))	
 	if (!is.null(seed)){
@@ -195,6 +198,8 @@ initBinaryMatchExperimentalDesignSearchObject = function(binary_match_structure,
 	pairwise_matching_experimental_design_search$start = start
 	pairwise_matching_experimental_design_search$wait = wait
 	pairwise_matching_experimental_design_search$num_cores = num_cores
+	pairwise_matching_experimental_design_search$use_gpu = ged_gpu_option()
+	pairwise_matching_experimental_design_search$use_gpu_effective = use_gpu
 	pairwise_matching_experimental_design_search$java_obj = java_obj
 	pairwise_matching_experimental_design_search$verbose = verbose
 	class(pairwise_matching_experimental_design_search) = "pairwise_matching_experimental_design_search"

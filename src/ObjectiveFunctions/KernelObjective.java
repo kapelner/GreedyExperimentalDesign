@@ -3,121 +3,121 @@ package ObjectiveFunctions;
 public class KernelObjective extends ObjectiveFunction {
 
 	private double[][] Kgram;
-//	private HashMap<Integer, HashMap<Integer, Double>> qcds;
-//	private double[][] qcds;
-	protected int[] w;
+	private int[] w;
 	private int n;
-	protected Double running_kernel_sum;
-	private Integer t; //the index of the new treatment
-	private Integer c; //the index of the new control
+	public double running_kernel_sum;
 	private double initial_obj_val;
-
+	
 	public KernelObjective(double[][] Kgram) {
 		this.Kgram = Kgram;
 		this.n = Kgram.length;
-//		qcds = new HashMap<Integer, HashMap<Integer, Double>>();
-//		qcds = new double[n][n];
 	}
 
 	@Override
-	public double calc(boolean debug_mode) {
+	public double calc(boolean b) {
+		return running_kernel_sum;
+	}
+
+	public void setW(int[] w) {
+		this.w = w;
+		//calculate the initial kernel sum
+		running_kernel_sum = 0;
+        
+        if (use_gpu) {
+            double[] wDouble = new double[n];
+            for (int i = 0; i < n; i++) {
+                wDouble[i] = 2 * w[i] - 1;
+            }
+            double[] KFlat = new double[n * n];
+            int idx = 0;
+            for (int j = 0; j < n; j++) {
+                for (int i = 0; i < n; i++) {
+                    KFlat[idx++] = Kgram[i][j];
+                }
+            }
+            try {
+                running_kernel_sum = OptimalExperimentalDesign.WebGpuPanama.computeObjective(wDouble, KFlat, 1, n);
+            } catch (Throwable t) {
+                // Fallback to CPU if GPU fails
+                calcCpu();
+            }
+        } else {
+            calcCpu();
+        }
+	}
+    
+    private void calcCpu() {
+        running_kernel_sum = 0;
+        for (int i = 0; i < n; i++) {
+            double vi = 2 * w[i] - 1;
+            for (int j = 0; j < n; j++) {
+                double vj = 2 * w[j] - 1;
+                running_kernel_sum += vi * Kgram[i][j] * vj;
+            }
+        }
+    }
+
+	public void setSwitch(int i_T, int i_C) {
+		//we are removing treatment from i_T and adding it to i_C
+		//this means vi goes from 1 to -1 and vj goes from -1 to 1
+		//delta = (v_new - v_old)_i * K_i,i * (v_new - v_old)_i + 2 * (v_new - v_old)_i * sum_{j != i} K_i,j * v_j
 		
-		//we've started with a new vector so need to do the full calculation once
-		if (running_kernel_sum == null) {
-//			System.out.println("running_kernel_sum == null");
-			fullQuadraticFormCalculationAndCache(debug_mode);
-			if (t == null) { //for diagnostics only
-				return running_kernel_sum;
-			}
-		}
-		double qcd = 0.0;
-//		qcds[t][c] = 0.0;
-		for (int l = 0; l < n; l++) {
-			if (l == t || l == c) {
+		//update for i_T
+		double v_old_iT = 1;
+		double v_new_iT = -1;
+		double diff_iT = v_new_iT - v_old_iT; // -2
+		
+		double delta = diff_iT * Kgram[i_T][i_T] * diff_iT;
+		for (int j = 0; j < n; j++) {
+			if (j == i_T) {
 				continue;
 			}
-			qcd += (w[l] * (Kgram[t][l] - Kgram[c][l]));	
-//			qcds[t][c] += (w[l] * (Kgram[t][l] - Kgram[c][l]));	
+			double v_j = 2 * w[j] - 1;
+			delta += 2 * diff_iT * Kgram[i_T][j] * v_j;
 		}
+		running_kernel_sum += delta;
+		w[i_T] = 0;
 		
-		//cache
-//		if (qcds.get(t) == null) {
-//			qcds.put(t, new HashMap<Integer, Double>());
-//		}
-//		qcds.get(t).put(c, qcd);
-		//return
+		//update for i_C
+		double v_old_iC = -1;
+		double v_new_iC = 1;
+		double diff_iC = v_new_iC - v_old_iC; // 2
 		
-		return running_kernel_sum - 4 * qcd;
-//		return running_kernel_sum - 4 * qcds[t][c];
-	}
-	
-//	public void setPermanentSwitch(int t, int c) {
-//		//set the running kernel sum
-////		setSwitch(t, c);
-////		running_kernel_sum = calc(false);
-////		running_kernel_sum -= 4 * qcds.get(t).get(c);
-//		running_kernel_sum -= 4 * qcds[t][c];
-//		//finally, reset cache and temp switch values
-//		this.t = null;
-//		this.c = null;
-////		qcds = new HashMap<Integer, HashMap<Integer, Double>>();
-//		qcds = new double[n][n];
-//	}
-	
-	public void resetKernelSum() {
-		running_kernel_sum = null;
-	}
-	
-	private void fullQuadraticFormCalculationAndCache(boolean debug_mode) {
-		this.t = null;
-		this.c = null;
-//		qcds = new HashMap<Integer, HashMap<Integer, Double>>();
-//		qcds = new double[n][n];
-//		System.out.println("fullQuadraticFormCalculationAndCache Kgram = " + Kgram + " w = " + w + " running_kernel_sum = " + running_kernel_sum);
-		running_kernel_sum = 0.0;
-		
-		for (int i = 0; i < n; i++) {
-			for (int j = 0; j < n; j++) {
-				running_kernel_sum += Kgram[i][j] * w[i] * w[j];
+		delta = diff_iC * Kgram[i_C][i_C] * diff_iC;
+		for (int j = 0; j < n; j++) {
+			if (j == i_C) {
+				continue;
 			}
+			double v_j = 2 * w[j] - 1;
+			delta += 2 * diff_iC * Kgram[i_C][j] * v_j;
 		}
-		//we're leaving out this constant
-		//kernel_sum *= 4 / n^2; //this is the constant in Eq 4.2 of Kallus (2018)
-	
-		if (debug_mode){
-			System.out.println("kernel_sum: " + running_kernel_sum);			
-		}
-	}
-	
-	public void setSwitch(int t, int c) {
-		this.t = t;
-		this.c = c;
+		running_kernel_sum += delta;
+		w[i_C] = 1;
 	}
 
-	//binary => 1/-1. This setting is done once
-	public void setW(int[] indicT) {
-		int n = indicT.length;
-		this.w = new int[n];
-		for (int i = 0; i < n; i++) {
-			this.w[i] = (indicT[i] == 1 ? 1 : -1);
-		}
-	}
-
-	public double log10_i_over_current_obj_val() {
-//		System.out.println("in log10_i_over_current_obj_val running_kernel_sum " + running_kernel_sum + " w " + w + " t " + t + " c " + c + " Kgram " + Kgram);
-		double current_obj_val = calc(false);
-//		System.out.print(
-//				String.format("%.4g", current_obj_val) + 
-//				" initial_obj_val: " + 
-//				String.format("%.4g", initial_obj_val) + 
-//				" log_ratio: " + 
-//				String.format("%.4g", Math.log10(initial_obj_val / current_obj_val)) + 
-//				" t: " + t + " c: " + c);	
-		return Math.log10(initial_obj_val / current_obj_val);
+	public void resetKernelSum() {
+		setW(w);
 	}
 
 	public void setInitialObjVal() {
-		initial_obj_val = calc(false);
+		initial_obj_val = running_kernel_sum;
+	}
+
+	public double log10_i_over_current_obj_val() {
+		return Math.log10(initial_obj_val / running_kernel_sum);
+	}
+
+	public double getRunningKernelSum() {
+		return running_kernel_sum;
+	}
+
+	public void setRunningKernelSum(double sum) {
+		running_kernel_sum = sum;
+	}
+
+	public void restoreW(int i_T, int i_C) {
+		w[i_T] = 1;
+		w[i_C] = 0;
 	}
 
 }

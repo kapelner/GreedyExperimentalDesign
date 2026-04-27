@@ -122,6 +122,8 @@ initGreedyExperimentalDesignObject = function(
 	#now go ahead and create the Java object and set its information
 	java_obj = .jnew("GreedyExperimentalDesign.GreedyExperimentalDesign")
 	set_verbose_if_available(java_obj, verbose)
+	use_gpu = ged_use_gpu(require_available = TRUE)
+	set_use_gpu_if_available(java_obj)
 	.jcall(java_obj, "V", "setMaxDesigns", as.integer(max_designs))
 	.jcall(java_obj, "V", "setNumCores", as.integer(num_cores))	
 	if (!is.null(seed)){
@@ -192,6 +194,8 @@ initGreedyExperimentalDesignObject = function(
 	greedy_experimental_design_search$wait = wait
 	greedy_experimental_design_search$diagnostics = diagnostics
 	greedy_experimental_design_search$verbose = verbose
+	greedy_experimental_design_search$use_gpu = ged_gpu_option()
+	greedy_experimental_design_search$use_gpu_effective = use_gpu
 	greedy_experimental_design_search$X = X
 	greedy_experimental_design_search$n = n
 	greedy_experimental_design_search$p = p

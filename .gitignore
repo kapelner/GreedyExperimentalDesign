@@ -1,3 +1,4 @@
+.codex
 reports/figure/*
 reports/*.log
 reports/*.tex
@@ -7,13 +8,20 @@ adranp.f
 java_log.*
 gurobi_numerical_optimization_via_R_package_Gree.log
 .Rhistory
+class_files/*
 /bin/
 /src/*.o
+/src/*.so
 /src/*.dll
+/src/*.dylib
 /src/RcppExports.*
 /GreedyExperimentalDesign/src/*.o
-/GreedyExperimentalDesign/src/*.dll
 /GreedyExperimentalDesign/src/*.so
+/GreedyExperimentalDesign/src/*.dll
+/GreedyExperimentalDesign/src/*.dylib
+/GreedyExperimentalDesign/src/symbols.rds
+/GreedyExperimentalDesign/src/Makevars
+/GreedyExperimentalDesign/src/Makevars.win
 /GreedyExperimentalDesign/src/RcppExports.*
 /src/.idea/*
 .DS_Store
@@ -28,3 +36,7 @@ GreedyExperimentalDesign.Rcheck/
 GreedyExperimentalDesign_*.tar.gz
 power_bakeoff_results.csv
 power_bakoff_output.txt
+
+# wgpu-native platform-specific libraries — obtain per-platform per the GPU setup section in README
+lib/wgpu/lib/
+lib/libGpuBridge.so

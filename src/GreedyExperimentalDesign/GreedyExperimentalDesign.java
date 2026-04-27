@@ -151,7 +151,8 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 			rand_obj,
 			search_stopped,
 			//special for multiple kernels
-			null, null, null, null, null
+			null, null, null, null, null,
+			use_gpu
 		);		
 	}
 
@@ -159,22 +160,24 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 
 
 	private void initializeStartingIndicTs() {
-		starting_indicTs = new int[max_designs][n];
-		for (int d = 0; d < max_designs; d++){
-			if (legal_pairs == null) {
-				starting_indicTs[d] = Tools.fisherYatesShuffle(Tools.newBlankDesign(n, nT), rand_obj);
-			} else {
-				for (int[] s : legal_pairs) {
-					if (rand_obj.nextDouble() < 0.5) {
-						starting_indicTs[d][s[0]] = 1;
-						starting_indicTs[d][s[1]] = 0;
-					} else {
-						starting_indicTs[d][s[0]] = 0;
-						starting_indicTs[d][s[1]] = 1;						
+		if (starting_indicTs == null) {
+			starting_indicTs = new int[max_designs][n];
+			for (int d = 0; d < max_designs; d++){
+				if (legal_pairs == null) {
+					starting_indicTs[d] = Tools.fisherYatesShuffle(Tools.newBlankDesign(n, nT), rand_obj);
+				} else {
+					for (int[] s : legal_pairs) {
+						if (rand_obj.nextDouble() < 0.5) {
+							starting_indicTs[d][s[0]] = 1;
+							starting_indicTs[d][s[1]] = 0;
+						} else {
+							starting_indicTs[d][s[0]] = 0;
+							starting_indicTs[d][s[1]] = 1;						
+						}
 					}
 				}
+				
 			}
-			
 		}
 	}	
 	
@@ -226,6 +229,13 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 			starting_indicTs[i] = this.starting_indicTs[indicies[i]];
 		}
 		return starting_indicTs;
+	}
+
+	public void setStartingIndicT(int r, int[] starting_indicT) {
+		if (starting_indicTs == null) {
+			starting_indicTs = new int[max_designs][n];
+		}
+		starting_indicTs[r] = starting_indicT;
 	}
 
 	public void setLegalPair(int[] legal_pair, int i) {

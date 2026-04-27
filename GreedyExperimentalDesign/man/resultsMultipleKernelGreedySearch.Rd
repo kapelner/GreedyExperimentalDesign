@@ -2,38 +2,19 @@
 % Please edit documentation in R/greedy_multiple_kernel_search.R
 \name{resultsMultipleKernelGreedySearch}
 \alias{resultsMultipleKernelGreedySearch}
-\title{Returns the results (thus far) of the greedy design search for multiple kernels}
+\title{Returns the results of a greedy multiple kernel search}
 \usage{
-resultsMultipleKernelGreedySearch(obj, max_vectors = 9, form = "one_zero")
+resultsMultipleKernelGreedySearch(obj, max_vectors = NULL, form = "one_zero")
 }
 \arguments{
-\item{obj}{The \code{greedy_multiple_kernel_experimental_design} object that is currently running the search}
+\item{obj}{The \code{greedy_multiple_kernel_experimental_design} object where the search was run.}
 
-\item{max_vectors}{The number of design vectors you wish to return. \code{NULL} returns all of them. 
-This is not recommended as returning over 1,000 vectors is time-intensive. The default is 9.}
+\item{max_vectors}{How many random allocation vectors you wish to return. The default is \code{NULL} indicating you want all of them.}
 
 \item{form}{Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's.}
 }
 \description{
-Returns the results (thus far) of the greedy design search for multiple kernels
-}
-\examples{
-\dontrun{
-set.seed(1)
-X = matrix(rnorm(20), nrow = 10)
-mk = initGreedyMultipleKernelExperimentalDesignObject(
-  X,
-  max_designs = 4,
-  kernel_pre_num_designs = 4,
-  num_cores = 1,
-  kernel_names = c("mahalanobis", "gaussian"),
-  start = TRUE,
-  wait = TRUE,
-  verbose = FALSE
-)
-res = resultsMultipleKernelGreedySearch(mk, max_vectors = 2, form = "one_zero")
-res$obj_vals
-}
+Returns the results of a greedy multiple kernel search
 }
 \author{
 Adam Kapelner

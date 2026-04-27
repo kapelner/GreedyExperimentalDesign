@@ -1,0 +1,11 @@
+CXX_STD = CXX17
+PKG_CPPFLAGS = @GED_GPU_CPPFLAGS@
+PKG_LIBS = @GED_GPU_LIBS@
+
+OBJECTS = RcppExports.o binary_match_utils.o create_block_allocation.o \
+          euclidean.o fast_shuffle.o ged_native_backend.o \
+          ged_wgpu_backend.o gpu_backend_exports.o greedy_orthogonalization.o \
+          indicTs_from_pairs.o kernel_matrix.o kernel_quadratic_forms.o \
+          leave_one_out_rij.o mahalanobis.o objective_and_standardize.o \
+          objective_batch.o pair_differences.o random_designs.o \
+          randomization_metrics.o var_cov_block.o

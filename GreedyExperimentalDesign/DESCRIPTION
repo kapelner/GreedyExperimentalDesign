@@ -1,8 +1,8 @@
 Package: GreedyExperimentalDesign
 Type: Package
 Title: Greedy Experimental Design Construction
-Version: 1.6
-Date: 2026-1-1
+Version: 1.6.1
+Date: 2026-04-26
 Author: Adam Kapelner [aut, cre] (ORCID: 0000-0001-5985-6792), David Azriel [aut], Abba Krieger [aut]
 Authors@R: c(person(given = "Adam",
                       family = "Kapelner",
@@ -40,7 +40,7 @@ Encoding: UTF-8
 Depends:
     R (>= 4.1.0),
     rJava (>= 0.9-6)
-SystemRequirements: Java (>= 7.0)
+SystemRequirements: Java (>= 22.0); wgpu-native >= 0.19.0 (optional, for GPU acceleration, see https://github.com/gfx-rs/wgpu-native)
 LinkingTo: Rcpp
 Imports: 
 	Rcpp,

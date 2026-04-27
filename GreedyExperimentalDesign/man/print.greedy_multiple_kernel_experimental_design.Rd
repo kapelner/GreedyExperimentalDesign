@@ -7,9 +7,9 @@
 \method{print}{greedy_multiple_kernel_experimental_design}(x, ...)
 }
 \arguments{
-\item{x}{The \code{greedy_multiple_kernel_experimental_design} object to be summarized in the console}
+\item{x}{The \code{greedy_multiple_kernel_experimental_design} object to be printed in the console}
 
-\item{...}{Other parameters to pass to the default print function}
+\item{...}{Optional arguments for the \code{print} function}
 }
 \description{
 Prints a summary of a \code{greedy_multiple_kernel_experimental_design} object

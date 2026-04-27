@@ -16,6 +16,11 @@ MULTI_KERNEL_NAMES = c(
   "poly_3"
 )
 
+# Load the package. We assume it is installed in the current environment.
+if (!suppressPackageStartupMessages(require(GreedyExperimentalDesign, quietly = TRUE))) {
+    stop("GreedyExperimentalDesign package not found. Please install it first.")
+}
+
 #!/usr/bin/env Rscript
 script_path = function() {
   args = commandArgs(trailingOnly = FALSE)
@@ -31,13 +36,8 @@ this_script = script_path()
 pkg_root = NULL
 if (!is.null(this_script)) {
   pkg_root = normalizePath(file.path(dirname(this_script), ".."), winslash = "/", mustWork = FALSE)
-}
-
-if (!is.null(pkg_root) && requireNamespace("pkgload", quietly = TRUE) &&
-  file.exists(file.path(pkg_root, "DESCRIPTION"))) {
-  pkgload::load_all(pkg_root, export_all = FALSE, quiet = TRUE)
-} else {
-  suppressPackageStartupMessages(library(GreedyExperimentalDesign))
+} else if (dir.exists("GreedyExperimentalDesign")) {
+  pkg_root = normalizePath("GreedyExperimentalDesign", winslash = "/", mustWork = FALSE)
 }
 
 add_java_classpath = function(root_dir = NULL) {
@@ -249,72 +249,48 @@ if (gurobi_loaded) {
       gnoed_res = resultsGurobiNumericalOptimizeSearch(gnoed)
       collect_method("gurobi_multiple_designs", gnoed_res$indicTs, X, N, SinvX)
     },
-    error = function(err) {
-      cat("Skipping gurobi_multiple_designs: ", conditionMessage(err), "\n", sep = "")
-      NULL
-    }
+    error = function(e) NULL
   )
   if (!is.null(gurobi_results)) {
-    results[["gurobi_multiple_designs"]] = gurobi_results
+    results[["gurobi"]] = gurobi_results
   }
-} else {
-  cat("Skipping Gurobi search: gurobi package not available.\n")
 }
 
-cat("Skipping Karp search: only supports abs_sum_diff and p = 1.\n")
-
 cat("Preparing plot data.\n")
-
-plot_data = do.call(rbind, results)
-plot_data$method = factor(plot_data$method, levels = names(results))
-
-method_levels = levels(plot_data$method)
-mean_data = do.call(
-  rbind,
-  lapply(method_levels, function(method_name) {
-    vals = plot_data$mahal_dist[plot_data$method == method_name]
-    n = length(vals)
-    sd_val = stats::sd(vals)
-    se = sd_val / sqrt(n)
-    ci_width = 2 * stats::qnorm(0.975) * se
-    data.frame(
-      method = method_name,
-      mean = mean(vals),
-      ci_width = max(ci_width, .Machine$double.eps),
-      stringsAsFactors = FALSE
-    )
-  })
+plot_df = do.call(rbind, results)
+plot_df$method = factor(
+  plot_df$method,
+  levels = c(
+    "complete_randomization",
+    "rerandomization",
+    "binary_match",
+    "binary_match_then_rerandomization",
+    "greedy",
+    "binary_match_then_greedy",
+    "multiple_kernel",
+    "gurobi_multiple_designs"
+  )
 )
 
-cat("Rendering plot to: ", PLOT_PATH, "\n", sep = "")
+# Calculate proportions for better plotting
+base_val = mean(results[["complete_randomization"]]$mahal_dist)
+plot_df$prop_mahal_dist = plot_df$mahal_dist / base_val
 
-plot_obj = ggplot2::ggplot(
-  plot_data,
-  ggplot2::aes(x = mahal_dist, fill = method, color = method)
-) +
-  ggplot2::geom_histogram(alpha = 0.2, position = "identity", bins = 80, color = NA) +
-  ggplot2::geom_vline(
-    data = mean_data,
-    ggplot2::aes(xintercept = mean, color = method, linewidth = ci_width),
-    alpha = 0.6
-  ) +
-  ggplot2::scale_linewidth(range = c(0.6, 2.5), guide = "none") +
-  ggplot2::scale_color_brewer(palette = "Dark2") +
-  ggplot2::scale_fill_brewer(palette = "Dark2") +
-  ggplot2::guides(
-    fill = "none",
-    color = ggplot2::guide_legend(override.aes = list(linewidth = 1.2, alpha = 0.9))
-  ) +
-  ggplot2::scale_x_log10() +
-  ggplot2::labs(
-    title = "Mahalanobis Distance Across Search Methods",
-    x = "log10(scaled mahalanobis distance)",
-    y = "",
-    color = "Method"
-  ) +
-  ggplot2::theme_minimal(base_size = 12) +
-  ggplot2::theme(legend.position = "bottom")
+means_df = aggregate(prop_mahal_dist ~ method, plot_df, mean)
 
-ggplot2::ggsave(PLOT_PATH, plot_obj, width = 9, height = 6, dpi = 120)
+cat("Rendering plot to:", PLOT_PATH, "\n")
+p = ggplot(plot_df) +
+  geom_histogram(aes(x = prop_mahal_dist, fill = method), bins = 50, alpha = 0.7) +
+  geom_vline(data = means_df, aes(xintercept = prop_mahal_dist, color = method), linetype = "dashed", size = 1) +
+  facet_wrap(~method, ncol = 2, scales = "free_y") +
+  theme_minimal() +
+  labs(
+    title = paste("Distribution of Mahalanobis Distance (N =", N, ", P =", P, ")"),
+    subtitle = "Normalized by average Complete Randomization value",
+    x = "Proportional Mahalanobis Distance (Lower is Better)",
+    y = "Frequency"
+  ) +
+  theme(legend.position = "none")
+
+ggsave(PLOT_PATH, p, width = 12, height = 15, dpi = 300)
 cat("Saved plot to:", PLOT_PATH, "\n")
-invisible(NULL)

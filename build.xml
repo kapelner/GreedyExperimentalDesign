@@ -15,15 +15,20 @@
 	
     <target name="compile" description="compile the source code">
       <mkdir dir="class_files"/>
-      <javac srcdir="src" destdir="class_files" includeantruntime="false" source="1.8" target="1.8">
+      <javac srcdir="src" destdir="class_files" includeantruntime="false" release="25">
       	<exclude name="**/package-info.java"/>
+      	<exclude name="GurobiNumericalOptimizeExperimentalDesign/**"/>
       	<classpath refid="master-classpath" />
       	<compilerarg value="-Xlint:-options"/>
       </javac>
     </target>	
 	
 	<target name="dist" depends="compile" description="generate the jar file" >
-	    <jar destfile="GreedyExperimentalDesign/inst/java/GreedyExperimentalDesign.jar" basedir="class_files" />
+	    <jar destfile="GreedyExperimentalDesign/inst/java/GreedyExperimentalDesign.jar" basedir="class_files">
+	      <fileset dir="src">
+	        <include name="**/*.wgsl"/>
+	      </fileset>
+	    </jar>
 	</target>	
 	
 	<target name="clean" description="Clean up" depends="dist">

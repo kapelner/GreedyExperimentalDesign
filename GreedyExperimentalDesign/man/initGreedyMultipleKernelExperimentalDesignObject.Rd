@@ -2,17 +2,17 @@
 % Please edit documentation in R/greedy_multiple_kernel_search.R
 \name{initGreedyMultipleKernelExperimentalDesignObject}
 \alias{initGreedyMultipleKernelExperimentalDesignObject}
-\title{Begin A Greedy Pair Multiple Kernel Switching Search}
+\title{Begin A Greedy Multiple Kernel Design Search}
 \usage{
 initGreedyMultipleKernelExperimentalDesignObject(
   X = NULL,
-  max_designs = 10000,
-  objective = "added_pct_reduction",
-  kernel_pre_num_designs = 2000,
   kernel_names = NULL,
   Kgrams = NULL,
-  maximum_gain_scaling = 1.1,
   kernel_weights = NULL,
+  maximum_gain_scaling = TRUE,
+  nT = NULL,
+  max_designs = 10000,
+  kernel_pre_num_designs = 1000,
   wait = FALSE,
   start = TRUE,
   max_iters = Inf,
@@ -20,41 +20,38 @@ initGreedyMultipleKernelExperimentalDesignObject(
   diagnostics = FALSE,
   num_cores = 1,
   seed = NULL,
-  verbose = TRUE,
-  use_safe_inverse = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
 \item{X}{The design matrix with $n$ rows (one for each subject) and $p$ columns 
 (one for each measurement on the subject). This is the design matrix you wish 
-to search for a more optimal design. We will standardize this matrix by column internally.}
+to search for a more optimal design. This parameter must be specified unless you
+choose objective type \code{"kernel"} in which case, the \code{Kgrams} parameter must
+be specified.}
 
-\item{max_designs}{The maximum number of designs to be returned. Default is 10,000. Make this large 
-so you can search however long you wish as the search can be stopped at any time by
-using the \code{\link{stopSearch}} method}
-
-\item{objective}{The method used to aggregate the kernel objective functions together. Default is "added_pct_reduction".}
-
-\item{kernel_pre_num_designs}{How many designs per kernel to run to explore the space of kernel objective values. Default is 2000.}
-
-\item{kernel_names}{An array with the kernels to compute with default parameters. Must have elements in the following set:
-"mahalanobis", "poly_s" where the "s" is a natural number 1 or greater,
-"exponential", "laplacian", "inv_mult_quad", "gaussian". Default is \code{NULL} to
+\item{kernel_names}{A vector of M >= 1 strings indicating the kernels to be used. Valid values are 
+"\code{mahalanobis}", "\code{gaussian}", "\code{laplacian}", "\code{exponential}", 
+"\code{inv_mult_quad}", "\code{poly_2}", "\code{poly_3}". Or a special value "\code{manual}" to 
 indicate the kernels are specified manually using the \code{Kgrams} parameter.}
 
 \item{Kgrams}{A list of M >= 1 elements where each is a \code{n x n} matrix whose
-entries are the evaluation of the kernel function between subject i and subject j. 
-Default is \code{NULL} to indicate this was specified using the convenience parameter 
-\code{kernel_names}.}
+entries are the evaluation of the kernel function between subject i and subject j. Default is \code{NULL}.}
 
-\item{maximum_gain_scaling}{This controls how much the percentage of possible improvement on a kernel objective function
-should be scaled by. The minimum is 1 which allows for designs that could potentially have >=100%
-improvement over original. We recommend 1.1 which means that a design that was found to be the best
-of the \code{kernel_pre_num_designs} still has 1/1.1 = 9\% room to grow making it highly unlikely that
-any design could be >= 100\%.}
+\item{kernel_weights}{A vector of M weights for each kernel which should sum to 1. Default is \code{NULL} which 
+specifies equal weighting.}
 
-\item{kernel_weights}{A vector with positive weights (need not be normalized) where each element represents the weight of 
-each kernel. The default is \code{NULL} for uniform weighting.}
+\item{maximum_gain_scaling}{Should we scale the kernels to have the same maximum gain? Default is \code{TRUE}.}
+
+\item{nT}{The number of treatments to assign. Default is \code{NULL} which is for forced balance allocation
+i.e. nT = nC = n / 2 where n is the number of rows in X (or Kgram if X is unspecified).}
+
+\item{max_designs}{The maximum number of designs to be returned. Default is 10,000. Make this large 
+so you can search however long you wish as the search can be stopped at any time by
+using the \code{\link{stopSearch}} method.}
+
+\item{kernel_pre_num_designs}{The number of initial designs to search through before starting the greedy search for each kernel.
+Default is \code{1000}.}
 
 \item{wait}{Should the \code{R} terminal hang until all \code{max_designs} vectors are found? The 
 deafult is \code{FALSE}.}
@@ -77,34 +74,14 @@ at every iteration (default is \code{FALSE} to decrease the algorithm's run time
 the output will not be deterministic. Default is \code{NULL} for no seed set.}
 
 \item{verbose}{Should the algorithm emit progress output? Default is \code{TRUE}.}
-
-\item{use_safe_inverse}{Should a regularized inverse be used for the Mahalanobis objective?
-Default is \code{FALSE}.}
 }
 \value{
-An object of type \code{greedy_experimental_design_search} which can be further operated upon
+An object of type \code{greedy_multiple_kernel_experimental_design} which can be further operated upon
 }
 \description{
 This method creates an object of type greedy_multiple_kernel_experimental_design and will immediately initiate
 a search through allocation space for forced balance designs. For debugging, you can use set the \code{seed}
 parameter and \code{num_cores = 1} to be assured of deterministic output.
-}
-\examples{
-\dontrun{
-set.seed(1)
-X = matrix(rnorm(20), nrow = 10)
-mk = initGreedyMultipleKernelExperimentalDesignObject(
-  X,
-  max_designs = 4,
-  kernel_pre_num_designs = 4,
-  num_cores = 1,
-  kernel_names = c("mahalanobis", "gaussian"),
-  start = TRUE,
-  wait = TRUE,
-  verbose = FALSE
-)
-mk
-}
 }
 \author{
 Adam Kapelner

@@ -33,6 +33,42 @@ gen_pm_designs_cpp <- function(indicies_pairs, n, r) {
     .Call('_GreedyExperimentalDesign_gen_pm_designs_cpp', PACKAGE = 'GreedyExperimentalDesign', indicies_pairs, n, r)
 }
 
+ged_gpu_release_context_cpp <- function() {
+    invisible(.Call('_GreedyExperimentalDesign_ged_gpu_release_context_cpp', PACKAGE = 'GreedyExperimentalDesign'))
+}
+
+ged_gpu_available_cpp <- function() {
+    .Call('_GreedyExperimentalDesign_ged_gpu_available_cpp', PACKAGE = 'GreedyExperimentalDesign')
+}
+
+ged_gpu_devices_cpp <- function() {
+    .Call('_GreedyExperimentalDesign_ged_gpu_devices_cpp', PACKAGE = 'GreedyExperimentalDesign')
+}
+
+compute_distance_matrix_gpu_cpp <- function(X, backend = "auto", device = 0L) {
+    .Call('_GreedyExperimentalDesign_compute_distance_matrix_gpu_cpp', PACKAGE = 'GreedyExperimentalDesign', X, backend, device)
+}
+
+compute_kernel_matrix_gpu_cpp <- function(X, kernel = "gaussian", poly_s = 2L, gamma = 1.0, device = 0L) {
+    .Call('_GreedyExperimentalDesign_compute_kernel_matrix_gpu_cpp', PACKAGE = 'GreedyExperimentalDesign', X, kernel, poly_s, gamma, device)
+}
+
+compute_objective_vals_gpu_cpp <- function(W, Kgram, device = 0L) {
+    .Call('_GreedyExperimentalDesign_compute_objective_vals_gpu_cpp', PACKAGE = 'GreedyExperimentalDesign', W, Kgram, device)
+}
+
+compute_multiple_kernel_objective_vals_gpu_cpp <- function(W, Kgrams, weights, initial_objs, running_sums, max_reds, maximum_gain_scaling, device = 0L) {
+    .Call('_GreedyExperimentalDesign_compute_multiple_kernel_objective_vals_gpu_cpp', PACKAGE = 'GreedyExperimentalDesign', W, Kgrams, weights, initial_objs, running_sums, max_reds, maximum_gain_scaling, device)
+}
+
+compute_randomization_metrics_gpu_cpp <- function(W, device = 0L) {
+    .Call('_GreedyExperimentalDesign_compute_randomization_metrics_gpu_cpp', PACKAGE = 'GreedyExperimentalDesign', W, device)
+}
+
+full_greedy_search_gpu_cpp <- function(X, Sinv, start_indicT, max_iters, device = 0L) {
+    .Call('_GreedyExperimentalDesign_full_greedy_search_gpu_cpp', PACKAGE = 'GreedyExperimentalDesign', X, Sinv, start_indicT, max_iters, device)
+}
+
 greedy_orthogonalization_eliminate_cpp <- function(Rij, Rmin, stop_if_worse) {
     .Call('_GreedyExperimentalDesign_greedy_orthogonalization_eliminate_cpp', PACKAGE = 'GreedyExperimentalDesign', Rij, Rmin, stop_if_worse)
 }

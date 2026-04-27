@@ -1,0 +1,9 @@
+#ifndef GED_GPU_CONFIG_H
+#define GED_GPU_CONFIG_H
+
+// These are set by configure
+#undef GED_GPU_CONFIG_NVIDIA_DEVICE_VISIBLE
+#undef GED_GPU_CONFIG_CUDA_TOOLKIT_AVAILABLE
+#undef GED_GPU_CONFIG_WGPU_AVAILABLE
+
+#endif

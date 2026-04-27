@@ -26,6 +26,7 @@ public abstract class AllExperimentalDesigns extends FileLoggedClass {
 	protected double[][] Kgram;
 	protected boolean wait;
 	protected boolean verbose = true;
+	protected boolean use_gpu = false;
 	
 	//temporary objects needed for search
 	protected ExecutorService search_thread_pool;	
@@ -110,6 +111,14 @@ public abstract class AllExperimentalDesigns extends FileLoggedClass {
 
 	public boolean isVerbose(){
 		return verbose;
+	}
+
+	public void setUseGpu(boolean use_gpu){
+		this.use_gpu = use_gpu;
+	}
+
+	public boolean isUseGpu(){
+		return use_gpu;
 	}
 	
 	public void setN(int n) {
