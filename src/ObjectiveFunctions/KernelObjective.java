@@ -6,7 +6,7 @@ public class KernelObjective extends ObjectiveFunction {
 	private int[] w;
 	private int n;
 	public double running_kernel_sum;
-	private double initial_obj_val;
+	public double initial_obj_val;
 	
 	public KernelObjective(double[][] Kgram) {
 		this.Kgram = Kgram;
@@ -20,30 +20,19 @@ public class KernelObjective extends ObjectiveFunction {
 
 	public void setW(int[] w) {
 		this.w = w;
-		//calculate the initial kernel sum
 		running_kernel_sum = 0;
-        
-        if (use_gpu) {
-            double[] wDouble = new double[n];
-            for (int i = 0; i < n; i++) {
-                wDouble[i] = 2 * w[i] - 1;
-            }
-            double[] KFlat = new double[n * n];
-            int idx = 0;
-            for (int j = 0; j < n; j++) {
-                for (int i = 0; i < n; i++) {
-                    KFlat[idx++] = Kgram[i][j];
-                }
-            }
-            try {
-                running_kernel_sum = OptimalExperimentalDesign.WebGpuPanama.computeObjective(wDouble, KFlat, 1, n);
-            } catch (Throwable t) {
-                // Fallback to CPU if GPU fails
-                calcCpu();
-            }
-        } else {
-            calcCpu();
-        }
+		calcCpu();
+	}
+
+	// Read-only O(n) proposal evaluation — non-mutating equivalent of pre-GPU calc().
+	// obj_new = obj_old + 4 * sum_{l != i_T, i_C} v_l * (K[i_C][l] - K[i_T][l])
+	public double calcProposal(int i_T, int i_C) {
+		double delta = 0.0;
+		for (int l = 0; l < n; l++) {
+			if (l == i_T || l == i_C) continue;
+			delta += (2 * w[l] - 1) * (Kgram[i_C][l] - Kgram[i_T][l]);
+		}
+		return running_kernel_sum + 4 * delta;
 	}
     
     private void calcCpu() {

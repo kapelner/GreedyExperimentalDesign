@@ -59,11 +59,12 @@ install_pkg = function(pkg_dir, lib_dir, r_bin) {
   }
 }
 
-run_bench = function(rscript_bin, script_path, lib_dir, output_path, label) {
+run_bench = function(rscript_bin, script_path, lib_dir, repo_dir, output_path, label) {
   args = c(
     "--vanilla",
     script_path,
     "--lib", lib_dir,
+    "--repo", repo_dir,
     "--output", output_path,
     "--label", label,
     "--quiet"
@@ -173,9 +174,9 @@ current_csv = file.path(temp_root, "current_results.csv")
 prev_csv = file.path(temp_root, "prev_results.csv")
 
 cat("Running benchmarks for current version...\n")
-run_bench(rscript_bin, bench_script, lib_current, current_csv, "current")
+run_bench(rscript_bin, bench_script, lib_current, repo_root, current_csv, "current")
 cat("Running benchmarks for previous version...\n")
-run_bench(rscript_bin, bench_script, lib_prev, prev_csv, "previous")
+run_bench(rscript_bin, bench_script, lib_prev, prev_root, prev_csv, "previous")
 
 current = read.csv(current_csv, stringsAsFactors = FALSE)
 previous = read.csv(prev_csv, stringsAsFactors = FALSE)

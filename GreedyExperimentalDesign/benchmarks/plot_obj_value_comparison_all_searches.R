@@ -256,21 +256,13 @@ if (gurobi_loaded) {
   }
 }
 
+# Calculate average mahal_dist for each method to order facets
+method_means = sapply(results, function(res) mean(res$mahal_dist))
+ordered_methods = names(sort(method_means, decreasing = TRUE))
+
 cat("Preparing plot data.\n")
 plot_df = do.call(rbind, results)
-plot_df$method = factor(
-  plot_df$method,
-  levels = c(
-    "complete_randomization",
-    "rerandomization",
-    "binary_match",
-    "binary_match_then_rerandomization",
-    "greedy",
-    "binary_match_then_greedy",
-    "multiple_kernel",
-    "gurobi_multiple_designs"
-  )
-)
+plot_df$method = factor(plot_df$method, levels = ordered_methods)
 
 # Calculate proportions for better plotting
 base_val = mean(results[["complete_randomization"]]$mahal_dist)
@@ -281,8 +273,9 @@ means_df = aggregate(prop_mahal_dist ~ method, plot_df, mean)
 cat("Rendering plot to:", PLOT_PATH, "\n")
 p = ggplot(plot_df) +
   geom_histogram(aes(x = prop_mahal_dist, fill = method), bins = 50, alpha = 0.7) +
-  geom_vline(data = means_df, aes(xintercept = prop_mahal_dist, color = method), linetype = "dashed", size = 1) +
-  facet_wrap(~method, ncol = 2, scales = "free_y") +
+  geom_vline(data = means_df, aes(xintercept = prop_mahal_dist, color = method), linetype = "dashed", linewidth = 1) +
+  facet_wrap(method~., nrow = 2, scales = "free_y") +
+  scale_x_log10() +
   theme_minimal() +
   labs(
     title = paste("Distribution of Mahalanobis Distance (N =", N, ", P =", P, ")"),
@@ -292,5 +285,5 @@ p = ggplot(plot_df) +
   ) +
   theme(legend.position = "none")
 
-ggsave(PLOT_PATH, p, width = 12, height = 15, dpi = 300)
+ggsave(PLOT_PATH, p, width = 12, height = 8, dpi = 300)
 cat("Saved plot to:", PLOT_PATH, "\n")

@@ -45,9 +45,10 @@
 #' @export
 initGreedyMultipleKernelExperimentalDesignObject = function(
 		X = NULL, 
-		kernel_names = NULL,
+		kernel_names = NULL, 
 		Kgrams = NULL,
 		kernel_weights = NULL,
+		objective = "added_pct_reduction",
 		maximum_gain_scaling = TRUE,
 		nT = NULL,
 		max_designs = 10000, 
@@ -59,7 +60,8 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 		diagnostics = FALSE,
 		num_cores = 1,
 		seed = NULL,
-		verbose = TRUE){
+		verbose = TRUE,
+		use_safe_inverse = FALSE){
 	
 	if ((is.null(kernel_names) & is.null(Kgrams)) | (!is.null(kernel_names) & !is.null(Kgrams))){
 		stop("You must specify EITHER the kernel_names or the Kgrams argument.")
@@ -79,10 +81,16 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 	checkCount(nT, positive = TRUE, null.ok = FALSE)
 	assertLogical(verbose)
 	assertLogical(maximum_gain_scaling)
+	assertLogical(use_safe_inverse)
+	assertChoice(objective, "added_pct_reduction")
 	
 	if (is.null(Kgrams)){
 		Xstd = standardize_data_matrix(X)
-		SinvX = solve(stats::var(X))
+		if (use_safe_inverse){
+			SinvX = safe_cov_inverse(X)
+		} else {
+			SinvX = solve(stats::var(X))
+		}
 		Kgrams = list()
 		for (i_k in 1 : length(kernel_names)){
 			if (kernel_names[i_k] == "mahalanobis"){
@@ -120,9 +128,10 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 	#now go ahead and create the Java object and set its information
 	java_obj = .jnew("MultipleKernelGreedyExperimentalDesign.MultipleKernelGreedyExperimentalDesign")
 	set_verbose_if_available(java_obj, verbose)
-	
+
+	.jcall(java_obj, "V", "setObjective", objective)
 	.jcall(java_obj, "V", "setMaxDesigns", as.integer(max_designs))
-	.jcall(java_obj, "V", "setNumCores", as.integer(num_cores))	
+	.jcall(java_obj, "V", "setNumCores", as.integer(num_cores))
 	if (!is.null(seed)){
 		.jcall(java_obj, "V", "setSeed", as.integer(seed))
 	}
@@ -136,7 +145,7 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 	if (max_iters < Inf){
 		.jcall(java_obj, "V", "setMaxIters", as.integer(max_iters))
 	}
-	
+
 	#find r many starting points
 	#first find optimal vectors for each individual kernel
 	cat("Finding initial starting points for each kernel individually.\n")
@@ -146,44 +155,47 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 		cat("  Kernel", i_k, "...")
 		gd_res = resultsGreedySearch(initGreedyExperimentalDesignObject(
 							X, max_designs = kernel_pre_num_designs, Kgram = Kgrams[[i_k]], objective = "kernel",
-							num_cores = num_cores, seed = seed, start = TRUE, wait = TRUE, verbose = FALSE), 
+							num_cores = num_cores, seed = seed, start = TRUE, wait = TRUE, verbose = FALSE,
+							diagnostics = TRUE), 
 						max_vectors = max_designs, form = "one_zero")
 		cat(" done.\n")
 		#and get the objective values for this kernel for all r designs
-		# ending_indicTs from rJava is n x max_designs (inner arrays become columns); transpose to max_designs x n
-		ending_indicTs_t = t(gd_res$ending_indicTs)
-		objvalsi = compute_objective_vals_gpu(ending_indicTs_t, Kgrams[[i_k]])
+		objvalsi = compute_objective_vals_gpu(gd_res$ending_indicTs, Kgrams[[i_k]])
 		kernel_obj_values[, i_k] = objvalsi
 		if (i_k == 1){ #start with the first kernel's best vectors
-			initial_starting_indicTs = ending_indicTs_t
+			initial_starting_indicTs = gd_res$ending_indicTs
 		}
+
+		# Compute max reduction for this kernel and set it in Java
+		starting_obj_vals = compute_objective_vals_gpu(gd_res$starting_indicTs, Kgrams[[i_k]])
+		log10_reductions = log10(starting_obj_vals / objvalsi)
+		max_red = max(log10_reductions, na.rm = TRUE)
+		.jcall(java_obj, "V", "setMaxReductionLogObjVal", as.integer(i_k - 1), max_red)
 	}
-	
-	#set the starting points
-	for (r in 1 : max_designs){
-		.jcall(java_obj, "V", "setStartingIndicT", as.integer(r - 1), as.integer(initial_starting_indicTs[r, ]))
-	}
-	
+
 	#set the kernel weights
 	.jcall(java_obj, "V", "setKernelWeights", kernel_weights)
-	
+
 	#set the maximum gain scaling
-	if (maximum_gain_scaling){
-		.jcall(java_obj, "V", "setMaximumGainScaling")
+	if (is.logical(maximum_gain_scaling)){
+		if (maximum_gain_scaling){
+			.jcall(java_obj, "V", "setMaximumGainScaling", 1.1)
+		}
+	} else {
+		.jcall(java_obj, "V", "setMaximumGainScaling", as.numeric(maximum_gain_scaling))
 	}
-	
+
 	#feed in the gram matrices
 	for (i_k in 1 : m){
 		for (i in 1 : n){
 			.jcall(java_obj, "V", "setSpecificKgramByRow", as.integer(i_k - 1), as.integer(i - 1), Kgrams[[i_k]][i, , drop = FALSE]) #java indexes from 0...n-1
 		}
 	}
-	
+
 	#feed in the initial objective values for each kernel
 	for (r in 1 : max_designs){
 		.jcall(java_obj, "V", "setInitialKernelObjValues", as.integer(r - 1), kernel_obj_values[r, ])
 	}
-	
 	#do we want diagnostics? Set it...
 	if (diagnostics){
 		.jcall(java_obj, "V", "setDiagnostics")
@@ -207,6 +219,8 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 	greedy_multiple_kernel_experimental_design$n = n
 	greedy_multiple_kernel_experimental_design$p = p
 	greedy_multiple_kernel_experimental_design$m = m
+	greedy_multiple_kernel_experimental_design$objective = objective
+	greedy_multiple_kernel_experimental_design$use_safe_inverse = use_safe_inverse
 	greedy_multiple_kernel_experimental_design$java_obj = java_obj
 	class(greedy_multiple_kernel_experimental_design) = "greedy_multiple_kernel_experimental_design"
 	
@@ -230,23 +244,25 @@ resultsMultipleKernelGreedySearch = function(obj, max_vectors = NULL, form = "on
 	assertClass(obj, "greedy_multiple_kernel_experimental_design")
 	assertChoice(form, c("one_zero", "pos_one_min_one"))
 	
-	max_vectors_completed = greedySearchCurrentProgress(obj)
+	obj_vals = .jcall(obj$java_obj, "[D", "getObjectiveVals")
+	num_completed = length(obj_vals)
 	if (is.null(max_vectors)){
-		max_vectors = max_vectors_completed
+		max_vectors = num_completed
 	}
-	assertInt(max_vectors, lower = 1, upper = max_vectors_completed)
+	assertInt(max_vectors, lower = 1, upper = num_completed)
 	
-	ending_indicTs = matrix(NA, nrow = max_vectors, ncol = obj$n)
-	for (r in 1 : max_vectors){
-		ending_indicTs[r, ] = .jcall(obj$java_obj, "[I", "getEndingIndicT", as.integer(r - 1))
-	}
+	ordered_indices = order(obj_vals)
+	ordered_java_indices = as.integer(ordered_indices[1 : max_vectors] - 1)
+	
+	ending_indicTs = .jcall(obj$java_obj, "[[I", "getEndingIndicTs", .jarray(ordered_java_indices), simplify = TRUE)
 	
 	if (form == "pos_one_min_one"){
 		ending_indicTs = (ending_indicTs - 0.5) * 2
 	}
 	
 	list(
-		ending_indicTs = ending_indicTs
+		ending_indicTs = ending_indicTs,
+		obj_vals = obj_vals[ordered_indices[1 : max_vectors]]
 	)
 }
 

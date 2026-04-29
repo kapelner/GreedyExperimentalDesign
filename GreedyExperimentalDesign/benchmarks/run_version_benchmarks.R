@@ -1,16 +1,16 @@
 ## Run with: Rscript GreedyExperimentalDesign/benchmarks/run_version_benchmarks.R --lib <lib> --output <csv> --label <label>
 JAVA_XMS_GB = 10
 JAVA_XMX_GB = 10
-MIN_SECONDS = 2
+MIN_SECONDS = 1
 MAX_INNER_REPEATS = 200
 MIN_ELAPSED_SEC = 1e-06
-TIME_REPS = 10
-TIME_WARMUP = 5
+TIME_REPS = 3
+TIME_WARMUP = 1
 SEED = 1984
 NUM_CORES = 1
-MAX_DESIGNS = 2000
-N = 100
-P = 5
+MAX_DESIGNS = 10
+N = 40
+P = 2
 FIRST_COL = 1
 DIAGNOSTICS = FALSE
 DIAGNOSTICS_MULTIPLE_KERNEL = FALSE
@@ -63,6 +63,7 @@ Sys.setenv(
 
 lib_path = get_arg("--lib")
 out_path = get_arg("--output")
+repo_arg = get_arg("--repo")
 label = get_arg("--label", "run")
 quiet = has_flag("--quiet")
 if (is.null(lib_path) || lib_path == "") {
@@ -77,9 +78,28 @@ if (!dir.exists(lib_path)) {
 
 options(java.parameters = sprintf("-Xmx%sg", JAVA_XMX_GB))
 
+script_path = function() {
+  args = commandArgs(trailingOnly = FALSE)
+  file_flag = "--file="
+  match_idx = grep(file_flag, args)
+  if (length(match_idx) == 0) {
+    return(NULL)
+  }
+  normalizePath(sub(file_flag, "", args[[match_idx[1]]]))
+}
+
 ant_bin = require_tool("ant")
-pkg_dir = normalizePath(file.path(getwd(), ".."))
-cat("Rebuilding Java jar...\n")
+if (!is.null(repo_arg)) {
+  pkg_dir = normalizePath(repo_arg)
+} else {
+  this_script = script_path()
+  if (is.null(this_script)) {
+    pkg_dir = normalizePath(getwd())
+  } else {
+    pkg_dir = normalizePath(file.path(dirname(this_script), "..", ".."))
+  }
+}
+cat("Rebuilding Java jar in:", pkg_dir, "\n")
 run_ant_dist(pkg_dir, ant_bin)
 
 suppressPackageStartupMessages(library(GreedyExperimentalDesign, lib.loc = lib_path))

@@ -37,7 +37,7 @@ public class MultipleKernelObjectiveFunction extends ObjectiveFunction {
 		for (int k = 0; k < m; k++) {
 			double val = kernel_objective_functions[k].calc(debug_mode);
 			if (maximum_gain_scaling != null) {
-				val = kernel_objective_functions[k].log10_i_over_current_obj_val() / (max_reduction_log_obj_vals.get(k) * maximum_gain_scaling);
+				val = 1.0 - kernel_objective_functions[k].log10_i_over_current_obj_val() / (max_reduction_log_obj_vals.get(k) * maximum_gain_scaling);
 			}
 			obj += kernel_weights[k] * val;
 		}
@@ -89,6 +89,18 @@ public class MultipleKernelObjectiveFunction extends ObjectiveFunction {
 			sums[k] = kernel_objective_functions[k].getRunningKernelSum();
 		}
 		return sums;
+	}
+
+	public double calcProposal(int i_T, int i_C) {
+		double obj = 0;
+		for (int k = 0; k < m; k++) {
+			double val = kernel_objective_functions[k].calcProposal(i_T, i_C);
+			if (maximum_gain_scaling != null) {
+				val = 1.0 - Math.log10(kernel_objective_functions[k].initial_obj_val / val) / (max_reduction_log_obj_vals.get(k) * maximum_gain_scaling);
+			}
+			obj += kernel_weights[k] * val;
+		}
+		return obj;
 	}
 
 	public void restoreKernelSumsAndW(int i_T, int i_C, double[] saved_sums) {

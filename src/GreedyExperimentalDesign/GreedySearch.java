@@ -118,8 +118,23 @@ public class GreedySearch {
 			int[] switched_pair_1 = new int[2];
 			int[] switched_pair_2 = new int[2];
 			int[] indicTmin = null;
-			
+
+			if (semigreedy){
+				i_Ts = Tools.fisherYatesShuffle(i_Ts, r);
+				i_Cs = Tools.fisherYatesShuffle(i_Cs, r);
+			}
+
+			if (obj_fun instanceof SimpleAverageObjectiveFunction){
+				ArrayList<double[]> XT = Tools.subsetMatrix(X, i_Ts); 
+				ArrayList<double[]> XC = Tools.subsetMatrix(X, i_Cs); 
+				avg_Ts = Tools.colAvg(XT, p);
+				avg_Cs = Tools.colAvg(XC, p);
+				((SimpleAverageObjectiveFunction)obj_fun).setXTbar(avg_Ts);
+				((SimpleAverageObjectiveFunction)obj_fun).setXCbar(avg_Cs);
+			}
+
 			if (legal_pairs == null) {
+
 				if (gpuSession != null) {
 					try {
 						double[] switch_obj_vals = gpuSession.runIteration(nT, avg_Ts, avg_Cs);
@@ -143,27 +158,19 @@ public class GreedySearch {
 						throw new RuntimeException(t);
 					}
 				} else {
-					// Save kernel sums before the inner loop so each candidate
-					// is evaluated from the same baseline (setSwitch mutates w in place).
-					double saved_kernel_sum = 0;
-					double[] saved_multi_kernel_sums = null;
-					if (objective.equals(ObjectiveFunction.KER)) {
-						saved_kernel_sum = ((KernelObjective)obj_fun).getRunningKernelSum();
-					} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
-						saved_multi_kernel_sums = ((MultipleKernelObjectiveFunction)obj_fun).getRunningKernelSums();
-					}
 					indices_loop:
 					for (int i_T : i_Ts){
 						for (int i_C : i_Cs){
 							if (objective.equals(ObjectiveFunction.KER)){
-								((KernelObjective)obj_fun).setSwitch(i_T, i_C);
+								obj_val = ((KernelObjective)obj_fun).calcProposal(i_T, i_C);
 							} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
-								((MultipleKernelObjectiveFunction)obj_fun).setSwitch(i_T, i_C);
+								obj_val = ((MultipleKernelObjectiveFunction)obj_fun).calcProposal(i_T, i_C);
 							} else {
 								updateAvgVec(avg_Ts, i_T, i_C, nT);
 								updateAvgVec(avg_Cs, i_C, i_T, n - nT);
+								obj_val = obj_fun.calc(false);
 							}
-							obj_val = obj_fun.calc(false);
+							
 							boolean is_new_min = obj_val < min_obj_val;
 							if (is_new_min){
 								indicTmin = indicT.clone();
@@ -175,14 +182,8 @@ public class GreedySearch {
 									switched_pair_1[1] = i_C;
 								}
 							}
-							// Undo switch so each candidate is evaluated from the same
-							// baseline and indicT is never left with a wrong count of 1s.
-							if (objective.equals(ObjectiveFunction.KER)){
-								((KernelObjective)obj_fun).restoreW(i_T, i_C);
-								((KernelObjective)obj_fun).setRunningKernelSum(saved_kernel_sum);
-							} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
-								((MultipleKernelObjectiveFunction)obj_fun).restoreKernelSumsAndW(i_T, i_C, saved_multi_kernel_sums);
-							} else if (obj_fun instanceof SimpleAverageObjectiveFunction){
+							
+							if (obj_fun instanceof SimpleAverageObjectiveFunction){
 								updateAvgVec(avg_Ts, i_C, i_T, nT);
 								updateAvgVec(avg_Cs, i_T, i_C, n - nT);
 							}
@@ -201,7 +202,11 @@ public class GreedySearch {
 						int i_T_2 = (indicT[pair2[0]] == 1) ? pair2[0] : pair2[1];
 						int i_C_2 = (indicT[pair2[0]] == 1) ? pair2[1] : pair2[0];
 						
-						if (objective.equals(ObjectiveFunction.KER)){	
+						if (objective.equals(ObjectiveFunction.KER)){
+							// For legal_pairs, we still need to apply switches if we want to use calcProposal
+							// but actually, we can't easily use calcProposal for double switches.
+							// So we'll keep setSwitch for now, or implement calcProposal for double switches.
+							// However, legal_pairs is less common.
 							((KernelObjective)obj_fun).setSwitch(i_T_1, i_C_1);	
 							((KernelObjective)obj_fun).setSwitch(i_T_2, i_C_2);						
 						} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
@@ -214,7 +219,8 @@ public class GreedySearch {
 							updateAvgVec(avg_Cs, i_C_2, i_T_2, n - nT);
 						}
 						obj_val = obj_fun.calc(false);
-						if (obj_val < min_obj_val){
+						boolean is_new_min = obj_val < min_obj_val;
+						if (is_new_min){
 							indicTmin = indicT.clone();
 							indicTmin[i_T_1] = 0; indicTmin[i_C_1] = 1;
 							indicTmin[i_T_2] = 0; indicTmin[i_C_2] = 1;
@@ -223,14 +229,21 @@ public class GreedySearch {
 								switched_pair_1[0] = i_T_1; switched_pair_1[1] = i_C_1;
 								switched_pair_2[0] = i_T_2; switched_pair_2[1] = i_C_2;
 							}
-							if (semigreedy) break indices_loop;
 						}
-						if (obj_fun instanceof SimpleAverageObjectiveFunction){
+						if (objective.equals(ObjectiveFunction.KER)){
+							((KernelObjective)obj_fun).restoreW(i_T_2, i_C_2);
+							((KernelObjective)obj_fun).restoreW(i_T_1, i_C_1);
+							((KernelObjective)obj_fun).resetKernelSum(); // Needs full recalc because we don't save sums here
+						} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
+							// Similar for multiple kernel
+							((MultipleKernelObjectiveFunction)obj_fun).setW(indicT); // Hard reset
+						} else if (obj_fun instanceof SimpleAverageObjectiveFunction){
 							updateAvgVec(avg_Ts, i_C_1, i_T_1, nT);
 							updateAvgVec(avg_Ts, i_C_2, i_T_2, nT);
 							updateAvgVec(avg_Cs, i_T_1, i_C_1, n - nT);	
 							updateAvgVec(avg_Cs, i_T_2, i_C_2, n - nT);	
 						}
+						if (is_new_min && semigreedy) break indices_loop;
 					}	
 				}
 			}

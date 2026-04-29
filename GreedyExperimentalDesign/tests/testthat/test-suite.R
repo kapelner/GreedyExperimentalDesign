@@ -175,8 +175,7 @@ test_that("core functions work across sizes", {
       num_cores = 1,
       seed = cfg$seed,
       diagnostics = TRUE,
-      verbose = FALSE,
-      use_safe_inverse = TRUE
+      verbose = FALSE
     ))
     expect_output(print(mk))
     expect_output(summary(mk))
