@@ -46,7 +46,8 @@ if [ "$with_wgpu" != "no" ]; then
             exit 1
         fi
         echo "configure.win: wgpu-native not found or incomplete in ../lib/wgpu; falling back to CPU-only build."
-        echo "  (Missing one or more of: webgpu.h, wgpu.h, wgpu_native.dll, libwgpu_native.a)"
+        echo "  (If you would like GPU optimization, ensure all four of these files are present in the directory"
+        echo "  structure found in the README: webgpu.h, wgpu.h, wgpu_native.dll, libwgpu_native.a)"
     fi
 fi
 
