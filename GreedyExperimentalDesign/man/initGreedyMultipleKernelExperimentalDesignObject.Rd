@@ -9,6 +9,7 @@ initGreedyMultipleKernelExperimentalDesignObject(
   kernel_names = NULL,
   Kgrams = NULL,
   kernel_weights = NULL,
+  objective = "added_pct_reduction",
   maximum_gain_scaling = TRUE,
   nT = NULL,
   max_designs = 10000,
@@ -20,13 +21,13 @@ initGreedyMultipleKernelExperimentalDesignObject(
   diagnostics = FALSE,
   num_cores = 1,
   seed = NULL,
-  verbose = TRUE
+  verbose = TRUE,
+  use_safe_inverse = FALSE
 )
 }
 \arguments{
 \item{X}{The design matrix with $n$ rows (one for each subject) and $p$ columns 
-(one for each measurement on the subject). This is the design matrix you wish 
-to search for a more optimal design. This parameter must be specified unless you
+(one for each measurement on the subject). This parameter must be specified unless you
 choose objective type \code{"kernel"} in which case, the \code{Kgrams} parameter must
 be specified.}
 
@@ -40,6 +41,8 @@ entries are the evaluation of the kernel function between subject i and subject 
 
 \item{kernel_weights}{A vector of M weights for each kernel which should sum to 1. Default is \code{NULL} which 
 specifies equal weighting.}
+
+\item{objective}{The method used to aggregate the kernel objective functions together. Default is "added_pct_reduction".}
 
 \item{maximum_gain_scaling}{Should we scale the kernels to have the same maximum gain? Default is \code{TRUE}.}
 
@@ -58,22 +61,22 @@ deafult is \code{FALSE}.}
 
 \item{start}{Should we start searching immediately (default is \code{TRUE}).}
 
-\item{max_iters}{Should we impose a maximum number of greedy switches? The default is \code{Inf} which a flag 
-for ``no limit.''}
+\item{max_iters}{The maximum number of iterations of the greedy search algorithm to run. Default is \code{Inf}.}
 
 \item{semigreedy}{Should we use a fully greedy approach or the quicker semi-greedy approach? The default is
 \code{FALSE} corresponding to the fully greedy approach.}
 
-\item{diagnostics}{Returns diagnostic information about the iterations including (a) the initial starting
-vectors, (b) the switches at every iteration and (c) information about the objective function
-at every iteration (default is \code{FALSE} to decrease the algorithm's run time).}
+\item{diagnostics}{Should the objective function values at each iteration be saved? Default is \code{FALSE}.}
 
-\item{num_cores}{The number of CPU cores you wish to use during the search. The default is \code{1}.}
+\item{num_cores}{The number of CPU cores to use for the search. Default is 1.}
 
 \item{seed}{The set to set for deterministic output. This should only be set if \code{num_cores = 1} otherwise
 the output will not be deterministic. Default is \code{NULL} for no seed set.}
 
 \item{verbose}{Should the algorithm emit progress output? Default is \code{TRUE}.}
+
+\item{use_safe_inverse}{Should a regularized inverse be used for the Mahalanobis objective?
+Default is \code{FALSE}.}
 }
 \value{
 An object of type \code{greedy_multiple_kernel_experimental_design} which can be further operated upon
@@ -82,6 +85,26 @@ An object of type \code{greedy_multiple_kernel_experimental_design} which can be
 This method creates an object of type greedy_multiple_kernel_experimental_design and will immediately initiate
 a search through allocation space for forced balance designs. For debugging, you can use set the \code{seed}
 parameter and \code{num_cores = 1} to be assured of deterministic output.
+}
+\examples{
+ \dontrun{
+	library(MASS)
+	data(Boston)
+ #pretend the Boston data was an experiment setting 
+	#first pull out the covariates
+ X = Boston[, 1 : 13]
+ #begin the greedy design search
+	mk = initGreedyMultipleKernelExperimentalDesignObject(X, 
+		max_designs = 100, num_cores = 3, kernel_names = c("mahalanobis", "gaussian"))
+	#wait
+	res = resultsMultipleKernelGreedySearch(mk, max_vectors = 2)
+	design = res$ending_indicTs[1, ] #ordered already by best-->worst
+ design
+	#how far have we come of the 100 we set out to do?
+	mk
+	#we can cut it here
+	stopSearch(mk)
+	}
 }
 \author{
 Adam Kapelner

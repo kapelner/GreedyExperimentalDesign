@@ -24,15 +24,22 @@ public class KernelObjective extends ObjectiveFunction {
 		calcCpu();
 	}
 
-	// Read-only O(n) proposal evaluation — non-mutating equivalent of pre-GPU calc().
-	// obj_new = obj_old + 4 * sum_{l != i_T, i_C} v_l * (K[i_C][l] - K[i_T][l])
+	// Read-only O(n) proposal evaluation — non-mutating equivalent of setSwitch() followed by calc().
+	// v_new = v + delta_v where delta_v_iT = -2 and delta_v_iC = 2
+	// obj_new = v_new^T K v_new = (v + delta_v)^T K (v + delta_v) = v^T K v + 2 v^T K delta_v + delta_v^T K delta_v
 	public double calcProposal(int i_T, int i_C) {
-		double delta = 0.0;
-		for (int l = 0; l < n; l++) {
-			if (l == i_T || l == i_C) continue;
-			delta += (2 * w[l] - 1) * (Kgram[i_C][l] - Kgram[i_T][l]);
+		// delta_v^T K delta_v = (-2)^2 * K_iT,iT + (2)^2 * K_iC,iC + 2 * (-2) * (2) * K_iT,iC
+		// = 4 * K_iT,iT + 4 * K_iC,iC - 8 * K_iT,iC
+		double term3 = 4 * Kgram[i_T][i_T] + 4 * Kgram[i_C][i_C] - 8 * Kgram[i_T][i_C];
+		
+		// 2 * v^T K delta_v = 2 * sum_j v_j * (K delta_v)_j = 2 * sum_j v_j * (K_j,iT * (-2) + K_j,iC * (2))
+		// = 4 * sum_j v_j * (K_j,iC - K_j,iT)
+		double term2 = 0;
+		for (int j = 0; j < n; j++) {
+			double v_j = 2 * w[j] - 1;
+			term2 += v_j * (Kgram[i_C][j] - Kgram[i_T][j]);
 		}
-		return running_kernel_sum + 4 * delta;
+		return running_kernel_sum + 4 * term2 + term3;
 	}
     
     private void calcCpu() {

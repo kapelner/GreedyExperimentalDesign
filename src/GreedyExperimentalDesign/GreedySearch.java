@@ -104,13 +104,10 @@ public class GreedySearch {
 		int iter = 0;
 		double min_obj_val = obj_fun.calc(false);
 
-		OptimalExperimentalDesign.WebGpuPanama.GpuGreedySearchSession gpuSession = null;
+		Object gpuSessionObj = null;
 		if (use_gpu && objective.equals(ObjectiveFunction.MAHAL) && legal_pairs == null) {
-			double[] XFlat = new double[n * p];
-			for (int i = 0; i < n; i++) for (int j = 0; j < p; j++) XFlat[i * p + j] = X[i][j];
-			double[] SinvFlat = new double[p * p];
-			for (int i = 0; i < p; i++) for (int j = 0; j < p; j++) SinvFlat[i * p + j] = Sinvmat[i][j];
-			gpuSession = OptimalExperimentalDesign.WebGpuPanama.createGreedySearchSession(n, p, XFlat, SinvFlat, i_Ts, i_Cs);
+			try { gpuSessionObj = createGpuSession(n, p, Sinvmat, i_Ts, i_Cs); }
+			catch (Throwable t) { throw new RuntimeException(t); }
 		}
 
 		while (true){
@@ -125,8 +122,8 @@ public class GreedySearch {
 			}
 
 			if (obj_fun instanceof SimpleAverageObjectiveFunction){
-				ArrayList<double[]> XT = Tools.subsetMatrix(X, i_Ts); 
-				ArrayList<double[]> XC = Tools.subsetMatrix(X, i_Cs); 
+				ArrayList<double[]> XT = Tools.subsetMatrix(X, i_Ts);
+				ArrayList<double[]> XC = Tools.subsetMatrix(X, i_Cs);
 				avg_Ts = Tools.colAvg(XT, p);
 				avg_Cs = Tools.colAvg(XC, p);
 				((SimpleAverageObjectiveFunction)obj_fun).setXTbar(avg_Ts);
@@ -135,10 +132,11 @@ public class GreedySearch {
 
 			if (legal_pairs == null) {
 
-				if (gpuSession != null) {
+				if (gpuSessionObj != null) {
 					try {
-						double[] switch_obj_vals = gpuSession.runIteration(nT, avg_Ts, avg_Cs);
-						int idx_gpu = 0;
+						updateGpuAssignment(gpuSessionObj, i_Ts, i_Cs);
+						double[] switch_obj_vals = runGpuIteration(gpuSessionObj, nT, avg_Ts, avg_Cs);
+	int idx_gpu = 0;
 						for (int i_T : i_Ts) {
 							for (int i_C : i_Cs) {
 								double obj_val_gpu = switch_obj_vals[idx_gpu++];
@@ -166,8 +164,8 @@ public class GreedySearch {
 							} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
 								obj_val = ((MultipleKernelObjectiveFunction)obj_fun).calcProposal(i_T, i_C);
 							} else {
-								updateAvgVec(avg_Ts, i_T, i_C, nT);
-								updateAvgVec(avg_Cs, i_C, i_T, n - nT);
+								updateAvgVec(avg_Ts, i_T, i_C, true);
+								updateAvgVec(avg_Cs, i_C, i_T, false);
 								obj_val = obj_fun.calc(false);
 							}
 							
@@ -184,8 +182,8 @@ public class GreedySearch {
 							}
 							
 							if (obj_fun instanceof SimpleAverageObjectiveFunction){
-								updateAvgVec(avg_Ts, i_C, i_T, nT);
-								updateAvgVec(avg_Cs, i_T, i_C, n - nT);
+								updateAvgVec(avg_Ts, i_C, i_T, true);
+								updateAvgVec(avg_Cs, i_T, i_C, false);
 							}
 							if (is_new_min && semigreedy) break indices_loop;
 						}
@@ -203,20 +201,16 @@ public class GreedySearch {
 						int i_C_2 = (indicT[pair2[0]] == 1) ? pair2[1] : pair2[0];
 						
 						if (objective.equals(ObjectiveFunction.KER)){
-							// For legal_pairs, we still need to apply switches if we want to use calcProposal
-							// but actually, we can't easily use calcProposal for double switches.
-							// So we'll keep setSwitch for now, or implement calcProposal for double switches.
-							// However, legal_pairs is less common.
 							((KernelObjective)obj_fun).setSwitch(i_T_1, i_C_1);	
 							((KernelObjective)obj_fun).setSwitch(i_T_2, i_C_2);						
 						} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
 							((MultipleKernelObjectiveFunction)obj_fun).setSwitch(i_T_1, i_C_1);	
 							((MultipleKernelObjectiveFunction)obj_fun).setSwitch(i_T_2, i_C_2);		
 						} else {
-							updateAvgVec(avg_Ts, i_T_1, i_C_1, nT);
-							updateAvgVec(avg_Ts, i_T_2, i_C_2, nT);
-							updateAvgVec(avg_Cs, i_C_1, i_T_1, n - nT);
-							updateAvgVec(avg_Cs, i_C_2, i_T_2, n - nT);
+							updateAvgVec(avg_Ts, i_T_1, i_C_1, true);
+							updateAvgVec(avg_Ts, i_T_2, i_C_2, true);
+							updateAvgVec(avg_Cs, i_C_1, i_T_1, false);
+							updateAvgVec(avg_Cs, i_C_2, i_T_2, false);
 						}
 						obj_val = obj_fun.calc(false);
 						boolean is_new_min = obj_val < min_obj_val;
@@ -233,15 +227,14 @@ public class GreedySearch {
 						if (objective.equals(ObjectiveFunction.KER)){
 							((KernelObjective)obj_fun).restoreW(i_T_2, i_C_2);
 							((KernelObjective)obj_fun).restoreW(i_T_1, i_C_1);
-							((KernelObjective)obj_fun).resetKernelSum(); // Needs full recalc because we don't save sums here
+							((KernelObjective)obj_fun).resetKernelSum();
 						} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)) {
-							// Similar for multiple kernel
-							((MultipleKernelObjectiveFunction)obj_fun).setW(indicT); // Hard reset
+							((MultipleKernelObjectiveFunction)obj_fun).setW(indicT);
 						} else if (obj_fun instanceof SimpleAverageObjectiveFunction){
-							updateAvgVec(avg_Ts, i_C_1, i_T_1, nT);
-							updateAvgVec(avg_Ts, i_C_2, i_T_2, nT);
-							updateAvgVec(avg_Cs, i_T_1, i_C_1, n - nT);	
-							updateAvgVec(avg_Cs, i_T_2, i_C_2, n - nT);	
+							updateAvgVec(avg_Ts, i_C_1, i_T_1, true);
+							updateAvgVec(avg_Ts, i_C_2, i_T_2, true);
+							updateAvgVec(avg_Cs, i_T_1, i_C_1, false);	
+							updateAvgVec(avg_Cs, i_T_2, i_C_2, false);	
 						}
 						if (is_new_min && semigreedy) break indices_loop;
 					}	
@@ -262,35 +255,63 @@ public class GreedySearch {
 			if (objective.equals(ObjectiveFunction.KER)){	
 				((KernelObjective)obj_fun).resetKernelSum();
 				((KernelObjective)obj_fun).setW(indicT);
-				obj_fun.calc(false);
 			} else if (objective.equals(ObjectiveFunction.MUL_KER_PCT)){	
 				((MultipleKernelObjectiveFunction)obj_fun).resetKernelSum();
 				((MultipleKernelObjectiveFunction)obj_fun).setW(indicT);
-				obj_fun.calc(false);
 			}
 
 			if (max_iters != null && max_iters == iter) break;
 			if (search_stopped.get()) break;
 		}	
 		
-		if (gpuSession != null) gpuSession.close();
+		if (gpuSessionObj != null) { try { closeGpuSession(gpuSessionObj); } catch (Throwable t) { throw new RuntimeException(t); } }
 		for (int i = 0; i < indicT.length; i++) ending_indicT[i] = indicT[i];
 		objective_vals[d0] = min_obj_val;
 		num_iters[d0] = iter - 1;
 	}
 
+	private Object createGpuSession(int n, int p, double[][] Sinvmat, int[] i_Ts, int[] i_Cs) throws Throwable {
+		double[] XFlat = new double[n * p];
+		for (int i = 0; i < n; i++) for (int j = 0; j < p; j++) XFlat[i * p + j] = X[i][j];
+		double[] SinvFlat = new double[p * p];
+		for (int i = 0; i < p; i++) for (int j = 0; j < p; j++) SinvFlat[i * p + j] = Sinvmat[i][j];
+		return OptimalExperimentalDesign.WebGpuPanama.createGreedySearchSession(n, p, XFlat, SinvFlat, i_Ts, i_Cs);
+	}
+
+	private void updateGpuAssignment(Object session, int[] i_Ts, int[] i_Cs) throws Throwable {
+		((OptimalExperimentalDesign.WebGpuPanama.GpuGreedySearchSession) session).updateAssignment(i_Ts, i_Cs);
+	}
+
+	private double[] runGpuIteration(Object session, int nT, double[] avg_Ts, double[] avg_Cs) throws Throwable {
+		return ((OptimalExperimentalDesign.WebGpuPanama.GpuGreedySearchSession) session).runIteration(nT, avg_Ts, avg_Cs);
+	}
+
+	private void closeGpuSession(Object session) throws Throwable {
+		((OptimalExperimentalDesign.WebGpuPanama.GpuGreedySearchSession) session).close();
+	}
+
+	private double[][] XscaledT;
+	private double[][] XscaledC;
+	
 	private void createScaledXstd() {
-		Xscaled = new double[X.length][];
+		XscaledT = new double[X.length][];
+		XscaledC = new double[X.length][];
 		int p = X[0].length;
+		int nC = X.length - nT;
 		for (int i = 0; i < X.length; i++){
-			Xscaled[i] = new double[p];
-			for (int j = 0; j < p; j++) Xscaled[i][j] = X[i][j] / nT;
+			XscaledT[i] = new double[p];
+			XscaledC[i] = new double[p];
+			for (int j = 0; j < p; j++) {
+				XscaledT[i][j] = X[i][j] / (double)nT;
+				XscaledC[i][j] = X[i][j] / (double)nC;
+			}
 		}
 	}
 
-	private void updateAvgVec(double[] avg_vec, int i_remove, int i_add, int nT) {
-		double[] obs_to_remove = Xscaled[i_remove];
-		double[] obs_to_add = Xscaled[i_add];
+	private void updateAvgVec(double[] avg_vec, int i_remove, int i_add, boolean is_T) {
+		double[] obs_to_remove = is_T ? XscaledT[i_remove] : XscaledC[i_remove];
+		double[] obs_to_add = is_T ? XscaledT[i_add] : XscaledC[i_add];
 		for (int j = 0; j < obs_to_add.length; j++) avg_vec[j] = avg_vec[j] - obs_to_remove[j] + obs_to_add[j];
 	}
+
 }

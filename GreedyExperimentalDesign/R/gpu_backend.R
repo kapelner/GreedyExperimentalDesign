@@ -28,7 +28,7 @@ compute_distance_matrix_gpu = function(X, backend = "auto", device = 0){
 	assertMatrix(X, mode = "numeric", any.missing = FALSE)
 	assertChoice(backend, c("auto", "cpu", "gpu"))
 	assertInt(device, lower = -1)
-	if (!isTRUE(getOption("GreedyExperimentalDesign.use_gpu", FALSE)) && backend == "auto") {
+	if (!isTRUE(getOption("GreedyExperimentalDesign.use_gpu", FALSE)) || backend == "cpu") {
 		backend = "cpu"
 	}
 	compute_distance_matrix_gpu_cpp(X, backend, as.integer(device))
@@ -46,6 +46,9 @@ compute_distance_matrix_gpu = function(X, backend = "auto", device = 0){
 compute_kernel_matrix_gpu = function(X, kernel = "gaussian", ...){
 	args = list(...)
 	device = if (!is.null(args$device)) args$device else 0
+	if (!isTRUE(getOption("GreedyExperimentalDesign.use_gpu", FALSE))) {
+		device = -1
+	}
 	gamma = if (!is.null(args$gamma)) args$gamma else 1
 	poly_s = if (!is.null(args$poly_s)) args$poly_s else 2
 	assertMatrix(X, mode = "numeric", any.missing = FALSE)
@@ -64,9 +67,12 @@ compute_kernel_matrix_gpu = function(X, kernel = "gaussian", ...){
 #' @return A numeric vector with one quadratic form per row of \code{W}.
 #' @export
 compute_objective_vals_gpu = function(W, Kgram, device = 0){
+    if (!isTRUE(getOption("GreedyExperimentalDesign.use_gpu", FALSE))) {
+        device = -1
+    }
 	assertMatrix(W, mode = "numeric", any.missing = FALSE)
 	assertMatrix(Kgram, mode = "numeric", any.missing = FALSE)
-	assertCount(device)
+	assertInt(device, lower = -1)
 	compute_objective_vals_gpu_cpp(W, Kgram, as.integer(device))
 }
 
@@ -82,6 +88,9 @@ compute_objective_vals_gpu = function(W, Kgram, device = 0){
 #' @param device The device ID
 #' @export
 compute_multiple_kernel_objective_vals_gpu = function(W, Kgrams, weights, initial_objs, running_sums, max_reds, maximum_gain_scaling, device = 0){
+    if (!isTRUE(getOption("GreedyExperimentalDesign.use_gpu", FALSE))) {
+        device = -1
+    }
     compute_multiple_kernel_objective_vals_gpu_cpp(W, Kgrams, weights, initial_objs, running_sums, max_reds, maximum_gain_scaling, as.integer(device))
 }
 
@@ -93,6 +102,9 @@ compute_multiple_kernel_objective_vals_gpu = function(W, Kgrams, weights, initia
 #' @return An \code{n x n} matrix of same-group probabilities.
 #' @export
 compute_randomization_metrics_gpu = function(W, device = 0){
+    if (!isTRUE(getOption("GreedyExperimentalDesign.use_gpu", FALSE))) {
+        device = -1
+    }
 	assertMatrix(W, mode = "integer", any.missing = FALSE)
 	assertInt(device, lower = -1)
 	compute_randomization_metrics_gpu_cpp(W, as.integer(device))
@@ -107,5 +119,8 @@ compute_randomization_metrics_gpu = function(W, device = 0){
 #' @param device Device ID
 #' @export
 full_greedy_search_gpu = function(X, Sinv, start_indicT, max_iters = 100, device = 0) {
+    if (!isTRUE(getOption("GreedyExperimentalDesign.use_gpu", FALSE))) {
+        device = -1
+    }
     full_greedy_search_gpu_cpp(X, Sinv, start_indicT, as.integer(max_iters), as.integer(device))
 }

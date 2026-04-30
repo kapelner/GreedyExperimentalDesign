@@ -20,7 +20,9 @@ NumericMatrix compute_kernel_matrix_cpp(NumericMatrix X, int kernel_type, int po
 			for (int k = 0; k < p; k++){
 				dot += X(i, k) * X(i, k);
 			}
-			K(i, i) = (kernel_type == 1) ? std::pow(1.0 + dot / poly_s, poly_s) : std::exp(dot);
+			K(i, i) = 1.0;
+			double base = 1.0 + dot / poly_s;
+			for (int k = 0; k < poly_s; k++) K(i, i) *= base;
 		} else {
 			K(i, i) = 1.0;
 		}
@@ -32,7 +34,9 @@ NumericMatrix compute_kernel_matrix_cpp(NumericMatrix X, int kernel_type, int po
 					dot += X(i, k) * X(j, k);
 				}
 				if (kernel_type == 1){
-					val = std::pow(1.0 + dot / poly_s, poly_s);
+					val = 1.0;
+					double base = 1.0 + dot / poly_s;
+					for (int k = 0; k < poly_s; k++) val *= base;
 				} else {
 					val = std::exp(dot);
 				}

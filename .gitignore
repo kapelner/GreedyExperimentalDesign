@@ -36,7 +36,13 @@ GreedyExperimentalDesign.Rcheck/
 GreedyExperimentalDesign_*.tar.gz
 power_bakeoff_results.csv
 power_bakoff_output.txt
+debug_kernel.cpp
+run_debug.R
+test_kernel.cpp
+test_pow.cpp
+
 
 # wgpu-native platform-specific libraries — obtain per-platform per the GPU setup section in README
 lib/wgpu/lib/
+lib/wgpu/include/
 lib/libGpuBridge.so

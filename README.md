@@ -4,7 +4,9 @@ An R package for computing near optimal experimental designs for a two-arm exper
 
 To load the package, make sure `rJava` is installed and properly configured! Then:
 
-	options(java.parameters = "-Xmx5g") #or however much memory you wish to allocate
+	options(java.parameters = "-Xmx10g") # or however much memory you wish to allocate
+	# For GPU-enabled machines, we recommend the following to remove warnings:
+	# options(java.parameters = c("-Xmx10g", "--enable-native-access=ALL-UNNAMED"))
 	library(GreedyExperimentalDesign)
 	
 If you want to use the numerical optimization design, download [https://www.gurobi.com/downloads/gurobi-software/](Gurobi) and register your machine with your license via `grbgetkey`. Then, this download comes with its own proprietary R package and you need to do a local install via `R CMD INSTALL`.
@@ -168,9 +170,11 @@ GreedyExperimentalDesign/        ← git repository root
 
 Once GPU support is compiled in, the package uses it automatically. The startup option `GreedyExperimentalDesign.use_gpu` is set to `TRUE` on load when a GPU is detected, and functions that accept a `backend` parameter default to `"auto"` which routes to the GPU.
 
+Note: on GPU-enabled machines, it is recommended to set `options(java.parameters = c("-Xmx10g", "--enable-native-access=ALL-UNNAMED"))` before loading the library to allocate enough memory and suppress JVM "illegal-access" warnings.
+
 ```r
 library(GreedyExperimentalDesign)
-
+```
 # Check what is available
 ged_gpu_available()
 ged_gpu_devices()

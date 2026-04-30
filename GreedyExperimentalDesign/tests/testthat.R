@@ -1,4 +1,4 @@
-options(java.parameters = "-Xmx10g")
+options(java.parameters = c("-Xmx10g", "--enable-native-access=ALL-UNNAMED"))
 
 library(testthat)
 library(GreedyExperimentalDesign)

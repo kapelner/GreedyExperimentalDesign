@@ -307,6 +307,11 @@ public final class WebGpuPanama {
             bindGroup = createGreedyBindGroup(ctx.device, arena, bgl, paramsBuf, xBuf, sinvBuf, iTsBuf, iCsBuf, avgTBuf, avgCBuf, resultsBuf);
         }
 
+        public void updateAssignment(int[] newITs, int[] newICs) throws Throwable {
+            MH_QUEUE_WRITE_BUFFER.invoke(ctx.queue, iTsBuf, 0L, toNativeIntSegment(arena, newITs), (long)numIT * 4);
+            MH_QUEUE_WRITE_BUFFER.invoke(ctx.queue, iCsBuf, 0L, toNativeIntSegment(arena, newICs), (long)numIC * 4);
+        }
+
         public double[] runIteration(int nT, double[] currentAvgT, double[] currentAvgC) throws Throwable {
             MemoryLayout paramsLayout = MemoryLayout.structLayout(I32.withName("n"), I32.withName("p"), I32.withName("nT"), I32.withName("num_i_Ts"), I32.withName("num_i_Cs"), MemoryLayout.paddingLayout(4), MemoryLayout.paddingLayout(8));
             MemorySegment pSeg = zero(arena, paramsLayout);

@@ -103,9 +103,10 @@ public class MultipleKernelObjectiveFunction extends ObjectiveFunction {
 		return obj;
 	}
 
+
 	public void restoreKernelSumsAndW(int i_T, int i_C, double[] saved_sums) {
-		kernel_objective_functions[0].restoreW(i_T, i_C);
 		for (int k = 0; k < m; k++) {
+			kernel_objective_functions[k].restoreW(i_T, i_C);
 			kernel_objective_functions[k].setRunningKernelSum(saved_sums[k]);
 		}
 	}

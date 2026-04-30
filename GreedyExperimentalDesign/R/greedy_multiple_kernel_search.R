@@ -5,8 +5,7 @@
 #' parameter and \code{num_cores = 1} to be assured of deterministic output.
 #' 
 #' @param X					The design matrix with $n$ rows (one for each subject) and $p$ columns 
-#' 							(one for each measurement on the subject). This is the design matrix you wish 
-#' 							to search for a more optimal design. This parameter must be specified unless you
+#' 							(one for each measurement on the subject). This parameter must be specified unless you
 #' 							choose objective type \code{"kernel"} in which case, the \code{Kgrams} parameter must
 #' 							be specified.
 #' @param kernel_names		A vector of M >= 1 strings indicating the kernels to be used. Valid values are 
@@ -17,6 +16,7 @@
 #' 							entries are the evaluation of the kernel function between subject i and subject j. Default is \code{NULL}.
 #' @param kernel_weights	A vector of M weights for each kernel which should sum to 1. Default is \code{NULL} which 
 #' 							specifies equal weighting.
+#' @param objective			The method used to aggregate the kernel objective functions together. Default is "added_pct_reduction".
 #' @param maximum_gain_scaling Should we scale the kernels to have the same maximum gain? Default is \code{TRUE}.
 #' @param nT				The number of treatments to assign. Default is \code{NULL} which is for forced balance allocation
 #' 							i.e. nT = nC = n / 2 where n is the number of rows in X (or Kgram if X is unspecified).
@@ -28,20 +28,38 @@
 #' @param wait				Should the \code{R} terminal hang until all \code{max_designs} vectors are found? The 
 #' 							deafult is \code{FALSE}.
 #' @param start				Should we start searching immediately (default is \code{TRUE}).
+#' @param max_iters			The maximum number of iterations of the greedy search algorithm to run. Default is \code{Inf}.
 #' @param semigreedy		Should we use a fully greedy approach or the quicker semi-greedy approach? The default is
 #' 							\code{FALSE} corresponding to the fully greedy approach.
-#' @param max_iters			Should we impose a maximum number of greedy switches? The default is \code{Inf} which a flag 
-#' 							for ``no limit.''
-#' @param diagnostics		Returns diagnostic information about the iterations including (a) the initial starting
-#' 							vectors, (b) the switches at every iteration and (c) information about the objective function
-#' 							at every iteration (default is \code{FALSE} to decrease the algorithm's run time).
-#' @param num_cores 		The number of CPU cores you wish to use during the search. The default is \code{1}.
+#' @param diagnostics		Should the objective function values at each iteration be saved? Default is \code{FALSE}.
+#' @param num_cores 		The number of CPU cores to use for the search. Default is 1.
 #' @param seed				The set to set for deterministic output. This should only be set if \code{num_cores = 1} otherwise
 #' 							the output will not be deterministic. Default is \code{NULL} for no seed set.
 #' @param verbose			Should the algorithm emit progress output? Default is \code{TRUE}.
+#' @param use_safe_inverse 	Should a regularized inverse be used for the Mahalanobis objective?
+#' 							Default is \code{FALSE}.
 #' @return					An object of type \code{greedy_multiple_kernel_experimental_design} which can be further operated upon
 #' 
 #' @author Adam Kapelner
+#' @examples
+#'  \dontrun{
+#' 	library(MASS)
+#' 	data(Boston)
+#'  #pretend the Boston data was an experiment setting 
+#' 	#first pull out the covariates
+#'  X = Boston[, 1 : 13]
+#'  #begin the greedy design search
+#' 	mk = initGreedyMultipleKernelExperimentalDesignObject(X, 
+#' 		max_designs = 100, num_cores = 3, kernel_names = c("mahalanobis", "gaussian"))
+#' 	#wait
+#' 	res = resultsMultipleKernelGreedySearch(mk, max_vectors = 2)
+#' 	design = res$ending_indicTs[1, ] #ordered already by best-->worst
+#'  design
+#' 	#how far have we come of the 100 we set out to do?
+#' 	mk
+#' 	#we can cut it here
+#' 	stopSearch(mk)
+#' 	}
 #' @export
 initGreedyMultipleKernelExperimentalDesignObject = function(
 		X = NULL, 
@@ -118,12 +136,12 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 	if (abs(sum(kernel_weights) - 1) > 1e-8){
 		stop("kernel_weights must sum to 1.")
 	}
-
+	
 	#we are about to construct a MultipleKernelGreedyExperimentalDesign java object. First, let R garbage collect
 	#to clean up previous GreedyExperimentalDesign objects that are no longer in use. This is important
 	#because R's garbage collection system does not "see" the size of Java objects. Thus,
 	#you are at risk of running out of memory without this invocation. 
-	gc() #Delete at your own risk!	
+	gc() #Delete at your own risk!
 	
 	#now go ahead and create the Java object and set its information
 	java_obj = .jnew("MultipleKernelGreedyExperimentalDesign.MultipleKernelGreedyExperimentalDesign")
@@ -148,22 +166,32 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 
 	#find r many starting points
 	#first find optimal vectors for each individual kernel
-	cat("Finding initial starting points for each kernel individually.\n")
+	if (verbose){
+		cat("Finding initial starting points for each kernel individually.\n")
+	}
 	kernel_obj_values = matrix(NA, nrow = max_designs, ncol = m)
 	initial_starting_indicTs = matrix(NA, nrow = max_designs, ncol = n)
 	for (i_k in 1 : m){
-		cat("  Kernel", i_k, "...")
-		gd_res = resultsGreedySearch(initGreedyExperimentalDesignObject(
+		if (verbose){
+			cat("  Kernel", i_k, "...")
+		}
+		gd_obj = initGreedyExperimentalDesignObject(
 							X, max_designs = kernel_pre_num_designs, Kgram = Kgrams[[i_k]], objective = "kernel",
 							num_cores = num_cores, seed = seed, start = TRUE, wait = TRUE, verbose = FALSE,
-							diagnostics = TRUE), 
-						max_vectors = max_designs, form = "one_zero")
-		cat(" done.\n")
-		#and get the objective values for this kernel for all r designs
+							diagnostics = TRUE)
+		gd_res = resultsGreedySearch(gd_obj, max_vectors = max_designs, form = "one_zero")
+		if (verbose){
+			cat(" done.\n")
+		}
+		
 		objvalsi = compute_objective_vals_gpu(gd_res$ending_indicTs, Kgrams[[i_k]])
-		kernel_obj_values[, i_k] = objvalsi
-		if (i_k == 1){ #start with the first kernel's best vectors
-			initial_starting_indicTs = gd_res$ending_indicTs
+		n_got = length(objvalsi)
+		if (n_got > 0){
+			idx = 1 : min(n_got, max_designs)
+			kernel_obj_values[idx, i_k] = objvalsi[idx]
+			if (i_k == 1){ #start with the first kernel's best vectors
+				initial_starting_indicTs[idx, ] = gd_res$ending_indicTs[idx, ]
+			}
 		}
 
 		# Compute max reduction for this kernel and set it in Java
@@ -171,6 +199,11 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 		log10_reductions = log10(starting_obj_vals / objvalsi)
 		max_red = max(log10_reductions, na.rm = TRUE)
 		.jcall(java_obj, "V", "setMaxReductionLogObjVal", as.integer(i_k - 1), max_red)
+	}
+
+	#set the starting points
+	for (r in 1 : max_designs){
+		.jcall(java_obj, "V", "setStartingIndicT", as.integer(r - 1), as.integer(initial_starting_indicTs[r, ]))
 	}
 
 	#set the kernel weights
@@ -196,23 +229,19 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 	for (r in 1 : max_designs){
 		.jcall(java_obj, "V", "setInitialKernelObjValues", as.integer(r - 1), kernel_obj_values[r, ])
 	}
+
 	#do we want diagnostics? Set it...
 	if (diagnostics){
 		.jcall(java_obj, "V", "setDiagnostics")
 	}
-	
+
 	#is it semigreedy? Set it...
 	if (semigreedy){
 		.jcall(java_obj, "V", "setSemigreedy")
 	}
-		
+
 	#now return information as an object (just a list)
 	greedy_multiple_kernel_experimental_design = list()
-	greedy_multiple_kernel_experimental_design$max_designs = max_designs
-	greedy_multiple_kernel_experimental_design$semigreedy = semigreedy
-	greedy_multiple_kernel_experimental_design$start = start
-	greedy_multiple_kernel_experimental_design$wait = wait
-	greedy_multiple_kernel_experimental_design$diagnostics = diagnostics
 	greedy_multiple_kernel_experimental_design$verbose = verbose
 	greedy_multiple_kernel_experimental_design$X = X
 	greedy_multiple_kernel_experimental_design$Kgrams = Kgrams
@@ -228,7 +257,7 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 	if (start){
 		startSearch(greedy_multiple_kernel_experimental_design)
 	}
-	
+
 	greedy_multiple_kernel_experimental_design
 }
 
@@ -239,6 +268,20 @@ initGreedyMultipleKernelExperimentalDesignObject = function(
 #' @param form				Which form should it be in? The default is \code{one_zero} for 1/0's or \code{pos_one_min_one} for +1/-1's.
 #' 
 #' @author Adam Kapelner
+#' @examples
+#'  \dontrun{
+#' 	library(MASS)
+#' 	data(Boston)
+#'  #pretend the Boston data was an experiment setting 
+#' 	#first pull out the covariates
+#'  X = Boston[, 1 : 13]
+#'  #begin the greedy design search
+#' 	mk = initGreedyMultipleKernelExperimentalDesignObject(X, 
+#' 		max_designs = 100, num_cores = 3, kernel_names = c("mahalanobis", "gaussian"))
+#' 	#wait
+#' 	res = resultsMultipleKernelGreedySearch(mk, max_vectors = 2, form = "one_zero")
+#' 	res$obj_vals
+#' 	}
 #' @export
 resultsMultipleKernelGreedySearch = function(obj, max_vectors = NULL, form = "one_zero"){
 	assertClass(obj, "greedy_multiple_kernel_experimental_design")

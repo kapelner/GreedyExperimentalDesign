@@ -16,6 +16,21 @@ resultsMultipleKernelGreedySearch(obj, max_vectors = NULL, form = "one_zero")
 \description{
 Returns the results of a greedy multiple kernel search
 }
+\examples{
+ \dontrun{
+	library(MASS)
+	data(Boston)
+ #pretend the Boston data was an experiment setting 
+	#first pull out the covariates
+ X = Boston[, 1 : 13]
+ #begin the greedy design search
+	mk = initGreedyMultipleKernelExperimentalDesignObject(X, 
+		max_designs = 100, num_cores = 3, kernel_names = c("mahalanobis", "gaussian"))
+	#wait
+	res = resultsMultipleKernelGreedySearch(mk, max_vectors = 2, form = "one_zero")
+	res$obj_vals
+	}
+}
 \author{
 Adam Kapelner
 }

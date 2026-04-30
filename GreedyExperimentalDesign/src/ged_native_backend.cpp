@@ -80,7 +80,13 @@ Rcpp::NumericMatrix kernel_matrix_cpu(Rcpp::NumericMatrix X,
         if (kernel_name == "poly" || kernel_name == "exponential") {
             double dot = 0.0;
             for (int k = 0; k < p; k++) dot += X(i, k) * X(i, k);
-            K(i, i) = (kernel_name == "poly") ? std::pow(1.0 + dot / poly_s, poly_s) : std::exp(gamma * dot);
+            K(i, i) = 1.0;
+            if (kernel_name == "poly") {
+                double base = 1.0 + dot / poly_s;
+                for (int k = 0; k < poly_s; k++) K(i, i) *= base;
+            } else {
+                K(i, i) = std::exp(gamma * dot);
+            }
         } else {
 		    K(i, i) = 1.0;
         }
@@ -89,7 +95,13 @@ Rcpp::NumericMatrix kernel_matrix_cpu(Rcpp::NumericMatrix X,
             if (kernel_name == "poly" || kernel_name == "exponential") {
                 double dot = 0.0;
                 for (int k = 0; k < p; k++) dot += X(i, k) * X(j, k);
-                val = (kernel_name == "poly") ? std::pow(1.0 + dot / poly_s, poly_s) : std::exp(gamma * dot);
+                val = 1.0;
+                if (kernel_name == "poly") {
+                    double base = 1.0 + dot / poly_s;
+                    for (int k = 0; k < poly_s; k++) val *= base;
+                } else {
+                    val = std::exp(gamma * dot);
+                }
             } else {
                 double sqd = 0.0;
                 for (int k = 0; k < p; ++k) {

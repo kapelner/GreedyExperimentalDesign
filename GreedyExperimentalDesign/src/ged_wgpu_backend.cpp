@@ -268,7 +268,11 @@ fn main(@builtin(workgroup_id) wid: vec3<u32>, @builtin(local_invocation_id) lid
     }
     if (i < n && j < n && i <= j) {
         var val = 0.0;
-        if (params.kernel_type == 1u) { val = pow(1.0 + acc / f32(params.poly_s), f32(params.poly_s)); }
+        if (params.kernel_type == 1u) { 
+            var base = 1.0 + acc / f32(params.poly_s);
+            val = 1.0;
+            for (var k = 0u; k < params.poly_s; k++) { val *= base; }
+        }
         else if (params.kernel_type == 2u) { val = exp(params.gamma * acc); }
         else if (params.kernel_type == 3u) { val = exp(-params.gamma * sqrt(acc)); }
         else if (params.kernel_type == 4u) { val = 1.0 / sqrt(params.gamma * acc + 1.0); }
