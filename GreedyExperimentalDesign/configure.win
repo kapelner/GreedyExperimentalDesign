@@ -23,11 +23,12 @@ fi
 # WebGPU detection (preferring the one in ../lib/wgpu)
 if [ "$with_wgpu" != "no" ]; then
     WGPU_DIR="../lib/wgpu"
-    WGPU_HEADER="${WGPU_DIR}/include/webgpu/webgpu.h"
-    # For Windows MinGW, we look for the import library (libwgpu_native.a) or the static library
+    WGPU_H1="${WGPU_DIR}/include/webgpu/webgpu.h"
+    WGPU_H2="${WGPU_DIR}/include/webgpu/wgpu.h"
+    WGPU_DLL="${WGPU_DIR}/lib/wgpu_native.dll"
     WGPU_LIB="${WGPU_DIR}/lib/libwgpu_native.a"
 
-    if [ -f "$WGPU_HEADER" ] && [ -f "$WGPU_LIB" ]; then
+    if [ -f "$WGPU_H1" ] && [ -f "$WGPU_H2" ] && [ -f "$WGPU_DLL" ] && [ -f "$WGPU_LIB" ]; then
         # Use relative path for R to normalize; R (Windows) will resolve this 
         # relative to the package directory where configure.win is running.
         WGPU_DIR_WIN=$(Rscript -e "cat(normalizePath('${WGPU_DIR}', winslash = '/', mustWork = FALSE))")
@@ -37,10 +38,15 @@ if [ "$with_wgpu" != "no" ]; then
     else
         if [ "$with_wgpu" = "yes" ]; then
             echo "configure.win: error: --with-wgpu requested, but required files not found in ../lib/wgpu" >&2
-            echo "  Looking for: $WGPU_HEADER and $WGPU_LIB" >&2
+            echo "  Looking for:" >&2
+            echo "    - $WGPU_H1" >&2
+            echo "    - $WGPU_H2" >&2
+            echo "    - $WGPU_DLL" >&2
+            echo "    - $WGPU_LIB" >&2
             exit 1
         fi
         echo "configure.win: wgpu-native not found or incomplete in ../lib/wgpu; falling back to CPU-only build."
+        echo "  (Missing one or more of: webgpu.h, wgpu.h, wgpu_native.dll, libwgpu_native.a)"
     fi
 fi
 
