@@ -974,7 +974,7 @@ public final class WebGpuPanama {
     }
 
     private static MethodHandle downcall(String symbol, FunctionDescriptor descriptor) {
-        return LINKER.downcallHandle(LOOKUP.findOrThrow(symbol), descriptor);
+        return LINKER.downcallHandle(LOOKUP.find(symbol).orElseThrow(), descriptor);
     }
 
     private static MemorySegment upcall(String method, FunctionDescriptor descriptor) {
