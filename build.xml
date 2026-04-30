@@ -15,7 +15,7 @@
 	
     <target name="compile" description="compile the source code">
       <mkdir dir="class_files"/>
-      <javac srcdir="src" destdir="class_files" includeantruntime="false" release="25">
+      <javac srcdir="src" destdir="class_files" includeantruntime="false" release="22">
       	<exclude name="**/package-info.java"/>
       	<exclude name="GurobiNumericalOptimizeExperimentalDesign/**"/>
       	<classpath refid="master-classpath" />
