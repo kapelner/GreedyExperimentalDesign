@@ -29,7 +29,6 @@ NumericVector compute_objective_vals_cpp(NumericMatrix X, IntegerMatrix indicTs,
 		}
 		sd_all.resize(p);
 		for (int j = 0; j < p; j++){
-			double mean = sum_all[j] / static_cast<double>(n);
 			double var = (sumsq_all[j] - (sum_all[j] * sum_all[j]) / static_cast<double>(n)) / static_cast<double>(n - 1);
 			if (var < 0.0) {
 				var = 0.0;

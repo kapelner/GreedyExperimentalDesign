@@ -28,7 +28,7 @@ if [ "$with_wgpu" != "no" ]; then
 
     if [ -d "../lib/wgpu" ]; then
         wgpu_cppflags="-I\"${WGPU_DIR_WIN}/include\" -DGED_USE_WGPU"
-        wgpu_libs="-L\"${WGPU_DIR_WIN}/lib\" -lwgpu_native"
+        wgpu_libs="-L\"${WGPU_DIR_WIN}/lib\" -lwgpu_native -lws2_32 -luserenv -lntdll -lbcrypt -ld3d12 -ldxgi -ld3dcompiler -lsetupapi"
         echo "configure.win: wgpu-native found in $WGPU_DIR_WIN"
     else
         if [ "$with_wgpu" = "yes" ]; then

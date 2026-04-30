@@ -35,8 +35,8 @@ bool all_elements_same_cpp(NumericVector vec) {
 	if (vec.size() <= 1) {
 	  return true;
 	}
-	int firstElement = vec[0];
-	for (size_t i = 1; i < vec.size(); ++i) {
+	double firstElement = vec[0];
+	for (R_xlen_t i = 1; i < vec.size(); ++i) {
 	  if (vec[i] != firstElement) {
 	    return false;
 	  }

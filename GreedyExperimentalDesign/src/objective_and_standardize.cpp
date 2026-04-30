@@ -90,7 +90,6 @@ double compute_objective_val_cpp(NumericMatrix X, IntegerVector indic_T, std::st
 		}
 		double total = 0.0;
 		for (int j = 0; j < p; j++){
-			double mean = sum_all[j] / static_cast<double>(n);
 			double var = (sumsq_all[j] - (sum_all[j] * sum_all[j]) / static_cast<double>(n)) / static_cast<double>(n - 1);
 			if (var < 0.0) {
 				var = 0.0;
