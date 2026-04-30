@@ -22,19 +22,25 @@ fi
 
 # WebGPU detection (preferring the one in ../lib/wgpu)
 if [ "$with_wgpu" != "no" ]; then
-    # Use relative path for R to normalize; R (Windows) will resolve this 
-    # relative to the package directory where configure.win is running.
-    WGPU_DIR_WIN=$(Rscript -e "cat(normalizePath('../lib/wgpu', winslash = '/', mustWork = FALSE))")
+    WGPU_DIR="../lib/wgpu"
+    WGPU_HEADER="${WGPU_DIR}/include/webgpu/webgpu.h"
+    # For Windows MinGW, we look for the import library (libwgpu_native.a) or the static library
+    WGPU_LIB="${WGPU_DIR}/lib/libwgpu_native.a"
 
-    if [ -d "../lib/wgpu" ]; then
+    if [ -f "$WGPU_HEADER" ] && [ -f "$WGPU_LIB" ]; then
+        # Use relative path for R to normalize; R (Windows) will resolve this 
+        # relative to the package directory where configure.win is running.
+        WGPU_DIR_WIN=$(Rscript -e "cat(normalizePath('${WGPU_DIR}', winslash = '/', mustWork = FALSE))")
         wgpu_cppflags="-I\"${WGPU_DIR_WIN}/include\" -DGED_USE_WGPU"
         wgpu_libs="-L\"${WGPU_DIR_WIN}/lib\" -lwgpu_native -lws2_32 -luserenv -lntdll -lbcrypt -ld3d12 -ldxgi -ld3dcompiler -lsetupapi"
         echo "configure.win: wgpu-native found in $WGPU_DIR_WIN"
     else
         if [ "$with_wgpu" = "yes" ]; then
-            echo "configure.win: error: --with-wgpu requested, but ../lib/wgpu not found" >&2
+            echo "configure.win: error: --with-wgpu requested, but required files not found in ../lib/wgpu" >&2
+            echo "  Looking for: $WGPU_HEADER and $WGPU_LIB" >&2
             exit 1
         fi
+        echo "configure.win: wgpu-native not found or incomplete in ../lib/wgpu; falling back to CPU-only build."
     fi
 fi
 
