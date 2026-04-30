@@ -43,6 +43,10 @@ RCPP_INC=`Rscript -e 'cat(system.file("include", package="Rcpp"))'`
 FINAL_CPPFLAGS="$wgpu_cppflags -I\"$RCPP_INC\""
 FINAL_LIBS="$wgpu_libs"
 
+# Clean up any stale object files or DLLs from previous failed/different builds
+# to prevent LTO version mismatch errors.
+rm -f "${BASE_DIR}/src/"*.o "${BASE_DIR}/src/"*.dll
+
 sed \
 	-e "s|@GED_WIN_CPPFLAGS@|$FINAL_CPPFLAGS|g" \
 	-e "s|@GED_WIN_LIBS@|$FINAL_LIBS|g" \
