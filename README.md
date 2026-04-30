@@ -4,10 +4,12 @@ An R package for computing near optimal experimental designs for a two-arm exper
 
 To load the package, make sure `rJava` is installed and properly configured! Then:
 
-	options(java.parameters = "-Xmx10g") # or however much memory you wish to allocate
-	# For GPU-enabled machines, we recommend the following to remove warnings:
-	# options(java.parameters = c("-Xmx10g", "--enable-native-access=ALL-UNNAMED"))
-	library(GreedyExperimentalDesign)
+```r
+options(java.parameters = "-Xmx10g") # or however much memory you wish to allocate
+# For GPU-enabled machines, we recommend the following to remove warnings:
+# options(java.parameters = c("-Xmx10g", "--enable-native-access=ALL-UNNAMED"))
+library(GreedyExperimentalDesign)
+```
 	
 If you want to use the numerical optimization design, download [https://www.gurobi.com/downloads/gurobi-software/](Gurobi) and register your machine with your license via `grbgetkey`. Then, this download comes with its own proprietary R package and you need to do a local install via `R CMD INSTALL`.
 
@@ -66,11 +68,11 @@ GreedyExperimentalDesign/        ← git repository root
 
 4. Verify from R:
 
-    ```r
-    library(GreedyExperimentalDesign)
-    ged_gpu_available()   # TRUE, with wgpu_compiled = TRUE
-    ged_gpu_devices()     # data frame listing the detected GPU
-    ```
+```r
+library(GreedyExperimentalDesign)
+ged_gpu_available()   # TRUE, with wgpu_compiled = TRUE
+ged_gpu_devices()     # data frame listing the detected GPU
+```
 
 **Runtime note:** `libwgpu_native.so` is embedded in the build via `-rpath`, so no extra `LD_LIBRARY_PATH` configuration is needed after a standard install.
 
@@ -84,39 +86,39 @@ GreedyExperimentalDesign/        ← git repository root
 
 2. Extract into the repository:
 
-    ```bash
-    cd /path/to/GreedyExperimentalDesign   # repo root
-    mkdir -p lib/wgpu
-    unzip ~/Downloads/wgpu-macos-aarch64-release.zip -d lib/wgpu
-    ```
+```bash
+cd /path/to/GreedyExperimentalDesign   # repo root
+mkdir -p lib/wgpu
+unzip ~/Downloads/wgpu-macos-aarch64-release.zip -d lib/wgpu
+```
 
-    Verify the layout:
-    ```
-    lib/wgpu/include/webgpu/webgpu.h
-    lib/wgpu/lib/libwgpu_native.dylib
-    ```
+Verify the layout:
+```
+lib/wgpu/include/webgpu/webgpu.h
+lib/wgpu/lib/libwgpu_native.dylib
+```
 
 3. Install the package:
 
-    ```bash
-    R CMD INSTALL GreedyExperimentalDesign
-    ```
+```bash
+R CMD INSTALL GreedyExperimentalDesign
+```
 
 4. On macOS, the dynamic linker may quarantine downloaded `.dylib` files. If the package loads but `ged_gpu_available()` returns `FALSE`, clear the quarantine flag:
 
-    ```bash
-    xattr -d com.apple.quarantine lib/wgpu/lib/libwgpu_native.dylib
-    ```
+```bash
+xattr -d com.apple.quarantine lib/wgpu/lib/libwgpu_native.dylib
+```
 
-    Then reinstall.
+Then reinstall.
 
 5. Verify from R:
 
-    ```r
-    library(GreedyExperimentalDesign)
-    ged_gpu_available()
-    ged_gpu_devices()
-    ```
+```r
+library(GreedyExperimentalDesign)
+ged_gpu_available()
+ged_gpu_devices()
+```
 
 ---
 
@@ -128,55 +130,57 @@ GreedyExperimentalDesign/        ← git repository root
 
 2. Extract into the repository:
 
-    ```
-    GreedyExperimentalDesign\   ← repo root
-    └── lib\
-        └── wgpu\
-            ├── include\
-            │   └── webgpu\
-            │       ├── webgpu.h
-            │       └── wgpu.h
-            └── lib\
-                ├── wgpu_native.dll
-                └── libwgpu_native.a   ← MinGW import library included in the -gnu- release
-    ```
-
+```
+GreedyExperimentalDesign\   ← repo root
+└── lib\
+    └── wgpu\
+        ├── include\
+        │   └── webgpu\
+        │       ├── webgpu.h
+        │       └── wgpu.h
+        └── lib\
+            ├── wgpu_native.dll
+            └── libwgpu_native.a   ← MinGW import library included in the -gnu- release
+```
 3. Install the package (from an Rtools-aware shell or RStudio terminal):
 
-    ```bash
-    R CMD INSTALL GreedyExperimentalDesign
-    ```
+```bash
+R CMD INSTALL GreedyExperimentalDesign
+```
 
-    You should see `configure.win: wgpu-native found in ../lib/wgpu` during the build.
+You should see `configure.win: wgpu-native found in ../lib/wgpu` during the build.
 
 4. Make `wgpu_native.dll` findable at runtime by adding its directory to `PATH` before starting R:
 
-    ```powershell
-    $env:PATH = "C:\path\to\GreedyExperimentalDesign\lib\wgpu\lib;" + $env:PATH
-    Rscript -e "library(GreedyExperimentalDesign); ged_gpu_available()"
-    ```
+```powershell
+$env:PATH = "C:\path\to\GreedyExperimentalDesign\lib\wgpu\lib;" + $env:PATH
+Rscript -e "library(GreedyExperimentalDesign); ged_gpu_available()"
+```
 
-    Alternatively, copy `wgpu_native.dll` into the installed package's library path (e.g. `C:\Users\you\AppData\Local\R\win-library\4.4\GreedyExperimentalDesign\libs\x64\`).
+Alternatively, copy `wgpu_native.dll` into the installed package's library path (e.g. `C:\Users\you\AppData\Local\R\win-library\4.4\GreedyExperimentalDesign\libs\x64\`).
 
 5. Verify from R:
 
-    ```r
-    library(GreedyExperimentalDesign)
-    ged_gpu_available()
-    ged_gpu_devices()
-    ```
+```r
+library(GreedyExperimentalDesign)
+ged_gpu_available()
+ged_gpu_devices()
+```
 
 ---
 
-### Usage
-
 Once GPU support is compiled in, the package uses it automatically. The startup option `GreedyExperimentalDesign.use_gpu` is set to `TRUE` on load when a GPU is detected, and functions that accept a `backend` parameter default to `"auto"` which routes to the GPU.
 
-Note: on GPU-enabled machines, it is recommended to set `options(java.parameters = c("-Xmx10g", "--enable-native-access=ALL-UNNAMED"))` before loading the library to allocate enough memory and suppress JVM "illegal-access" warnings.
+Note: on GPU-enabled machines, it is recommended to allocate enough memory and suppress JVM "illegal-access" warnings before loading the library:
 
 ```r
+options(java.parameters = c("-Xmx10g", "--enable-native-access=ALL-UNNAMED"))
 library(GreedyExperimentalDesign)
 ```
+
+### Usage
+
+```r
 # Check what is available
 ged_gpu_available()
 ged_gpu_devices()
@@ -197,7 +201,7 @@ r = 500
 W = matrix(sample(c(-1, 1), r * nrow(X), replace = TRUE), nrow = r)
 obj_vals = compute_objective_vals_gpu(W, K)    # length-r vector
 
-# Run a full greedy search entirely on the GPU (no per-iteration CPU round-trip)
+# Run a full greedy search entirely on the GPU
 Sinv = solve(cov(X))
 start_w = c(rep(1L, 500), rep(0L, 500))
 best_w = full_greedy_search_gpu(X, Sinv, start_w, max_iters = 1000)
@@ -222,13 +226,13 @@ If `R CMD INSTALL GreedyExperimentalDesign` fails with architecture mismatch err
 
 On macOS/Linux (from `GreedyExperimentalDesign/`):
 
-```
+```bash
 rm -f src/*.o src/*.so src/*.dll src/*.dylib
 ```
 
 On Windows (from `GreedyExperimentalDesign\`):
 
-```
+```batch
 del /Q src\\*.o src\\*.so src\\*.dll src\\*.dylib
 ```
 
@@ -240,4 +244,6 @@ The following benchmark demonstrates this package's many designs. It draws a fix
 
 To generate the figure above, run:
 
-	Rscript GreedyExperimentalDesign/benchmarks/plot_obj_value_comparison_all_searches.R
+```bash
+Rscript GreedyExperimentalDesign/benchmarks/plot_obj_value_comparison_all_searches.R
+```
