@@ -24,9 +24,11 @@ fi
 if [ "$with_wgpu" != "no" ]; then
     WGPU_DIR="${BASE_DIR}/../lib/wgpu"
     if [ -d "$WGPU_DIR" ]; then
-        wgpu_cppflags="-I${WGPU_DIR}/include -DGED_USE_WGPU"
-        wgpu_libs="-L${WGPU_DIR}/lib -lwgpu_native"
-        echo "configure.win: wgpu-native found in ../lib/wgpu"
+        # Use R to get a proper Windows path for the compiler
+        WGPU_DIR_WIN=$(Rscript -e "cat(normalizePath('${WGPU_DIR}', winslash = '/', mustWork = FALSE))")
+        wgpu_cppflags="-I${WGPU_DIR_WIN}/include -DGED_USE_WGPU"
+        wgpu_libs="-L${WGPU_DIR_WIN}/lib -lwgpu_native"
+        echo "configure.win: wgpu-native found in $WGPU_DIR_WIN"
     else
         if [ "$with_wgpu" = "yes" ]; then
             echo "configure.win: error: --with-wgpu requested, but ../lib/wgpu not found" >&2

@@ -29,7 +29,7 @@ if [ "$with_wgpu" != "no" ]; then
         wgpu_cppflags="-I${WGPU_DIR}/include -DGED_USE_WGPU"
         wgpu_libs="-L${WGPU_DIR}/lib -lwgpu_native -Wl,-rpath,${WGPU_DIR}/lib"
         wgpu_detected=1
-        echo "configure: wgpu-native found in ../lib/wgpu"
+        echo "configure: wgpu-native found in $WGPU_DIR"
     else
         if [ "$with_wgpu" = "yes" ]; then
             echo "configure: error: --with-wgpu requested, but ../lib/wgpu not found" >&2

@@ -28,8 +28,9 @@ GreedyExperimentalDesign/        ← git repository root
 ├── lib/
 │   └── wgpu/                    ← extract wgpu-native release here
 │       ├── include/
-│       │   ├── webgpu.h
-│       │   └── wgpu.h
+│       │   └── webgpu/
+│       │       ├── webgpu.h
+│       │       └── wgpu.h
 │       └── lib/
 │           └── <platform library>
 └── GreedyExperimentalDesign/    ← R package source (configure lives here)
@@ -51,7 +52,7 @@ GreedyExperimentalDesign/        ← git repository root
 
     Verify the layout:
     ```
-    lib/wgpu/include/webgpu.h
+    lib/wgpu/include/webgpu/webgpu.h
     lib/wgpu/lib/libwgpu_native.so
     ```
 
@@ -91,7 +92,7 @@ GreedyExperimentalDesign/        ← git repository root
 
     Verify the layout:
     ```
-    lib/wgpu/include/webgpu.h
+    lib/wgpu/include/webgpu/webgpu.h
     lib/wgpu/lib/libwgpu_native.dylib
     ```
 
@@ -123,7 +124,7 @@ GreedyExperimentalDesign/        ← git repository root
 
 **Requirements:** DirectX 12–capable GPU (any modern NVIDIA, AMD, or Intel GPU on Windows 10/11) with up-to-date drivers. Rtools 4.4 or later is required to build the package from source.
 
-1. Download `wgpu-windows-x86_64-gnu-release.zip` from the [wgpu-native releases page](https://github.com/gfx-rs/wgpu-native/releases) (version ≥ 0.19.0). **Use the `-gnu-` variant**, not `-msvc-`: R on Windows uses Rtools (MinGW/GCC) and requires the GNU import library (`libwgpu_native.a`); the MSVC releases ship only `wgpu_native.lib` which the MinGW linker cannot use.
+1. Download `wgpu-windows-x86_64-gnu-release.zip` from the [wgpu-native releases page](https://github.com/gfx-rs/wgpu-native/releases) and click 'Show all xx assets' (version ≥ 0.19.0). **Use the `-gnu-` variant**, not `-msvc-`: R on Windows uses Rtools (MinGW/GCC) and requires the GNU import library (`libwgpu_native.a`); the MSVC releases ship only `wgpu_native.lib` which the MinGW linker cannot use.
 
 2. Extract into the repository:
 
@@ -132,8 +133,9 @@ GreedyExperimentalDesign/        ← git repository root
     └── lib\
         └── wgpu\
             ├── include\
-            │   ├── webgpu.h
-            │   └── wgpu.h
+            │   └── webgpu\
+            │       ├── webgpu.h
+            │       └── wgpu.h
             └── lib\
                 ├── wgpu_native.dll
                 └── libwgpu_native.a   ← MinGW import library included in the -gnu- release
