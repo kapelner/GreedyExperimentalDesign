@@ -31,6 +31,7 @@ struct DeviceInfo {
 	bool usable;
 };
 
+#ifdef GED_USE_WGPU
 std::string normalize_backend(const std::string& backend) {
 	std::string value = backend;
 	std::transform(value.begin(), value.end(), value.begin(), ::tolower);
@@ -39,6 +40,7 @@ std::string normalize_backend(const std::string& backend) {
 	}
 	return value;
 }
+#endif
 
 std::string normalize_kernel(const std::string& kernel) {
 	std::string value = kernel;
