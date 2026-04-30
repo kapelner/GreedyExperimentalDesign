@@ -22,17 +22,11 @@ fi
 
 # WebGPU detection (preferring the one in ../lib/wgpu)
 if [ "$with_wgpu" != "no" ]; then
-    WGPU_DIR="${BASE_DIR}/../lib/wgpu"
-    if [ -d "$WGPU_DIR" ]; then
-        # If the path looks like /c/Users/..., R's normalizePath will handle it, 
-        # but we need to ensure BASE_DIR is converted correctly if it's currently a shell path.
-        WGPU_DIR_WIN=$(Rscript -e "cat(normalizePath('${WGPU_DIR}', winslash = '/', mustWork = FALSE))")
-        
-        # If R couldn't resolve it (e.g. it still starts with /c/), try to strip the leading slash for R
-        if echo "$WGPU_DIR_WIN" | grep -q "^/[a-zA-Z]/"; then
-             WGPU_DIR_WIN=$(Rscript -e "p <- '${WGPU_DIR}'; if(grepl('^/[a-z]/', p)) { p <- paste0(toupper(substr(p, 2, 2)), ':', substr(p, 3, nchar(p))) }; cat(normalizePath(p, winslash = '/', mustWork = FALSE))")
-        fi
+    # Use relative path for R to normalize; R (Windows) will resolve this 
+    # relative to the package directory where configure.win is running.
+    WGPU_DIR_WIN=$(Rscript -e "cat(normalizePath('../lib/wgpu', winslash = '/', mustWork = FALSE))")
 
+    if [ -d "../lib/wgpu" ]; then
         wgpu_cppflags="-I\"${WGPU_DIR_WIN}/include\" -DGED_USE_WGPU"
         wgpu_libs="-L\"${WGPU_DIR_WIN}/lib\" -lwgpu_native"
         echo "configure.win: wgpu-native found in $WGPU_DIR_WIN"
