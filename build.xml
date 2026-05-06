@@ -15,11 +15,12 @@
 	
     <target name="compile" description="compile the source code">
       <mkdir dir="class_files"/>
-      <javac srcdir="src" destdir="class_files" includeantruntime="false" release="22">
+      <javac srcdir="src" destdir="class_files" includeantruntime="false" release="21">
       	<exclude name="**/package-info.java"/>
       	<exclude name="GurobiNumericalOptimizeExperimentalDesign/**"/>
       	<classpath refid="master-classpath" />
       	<compilerarg value="-Xlint:-options"/>
+      	<compilerarg value="--enable-preview"/>
       </javac>
     </target>	
 	
@@ -31,7 +32,8 @@
 	    </jar>
 	</target>	
 	
-	<target name="clean" description="Clean up" depends="dist">
+	<target name="clean" description="Clean up">
 		<delete dir="class_files" />
+		<delete file="GreedyExperimentalDesign/inst/java/GreedyExperimentalDesign.jar" />
 	</target>
 </project>

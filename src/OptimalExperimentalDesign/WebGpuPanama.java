@@ -708,7 +708,7 @@ public final class WebGpuPanama {
     }
 
     private static MemorySegment createShaderModule(MemorySegment device, Arena arena, String label, String code) throws Throwable {
-        MemorySegment codeSeg = arena.allocateFrom(code);
+        MemorySegment codeSeg = arena.allocateUtf8String(code);
         MemorySegment wgsl = zero(arena, SHADER_SOURCE_WGSL);
         setI32(wgsl, SHADER_SOURCE_WGSL, "sType", 2); // WGPUSType_ShaderSourceWGSL = 0x00000002
         setAddr(wgsl, SHADER_SOURCE_WGSL, "code_data", codeSeg);
@@ -956,7 +956,7 @@ public final class WebGpuPanama {
     }
 
     private static void setStringViewFlat(MemorySegment segment, MemoryLayout layout, String field, Arena arena, String s) {
-        MemorySegment str = arena.allocateFrom(s);
+        MemorySegment str = arena.allocateUtf8String(s);
         setAddr(segment, layout, field + "_data", str);
         setLong(segment, layout, field + "_length", WGPU_STRLEN);
     }
