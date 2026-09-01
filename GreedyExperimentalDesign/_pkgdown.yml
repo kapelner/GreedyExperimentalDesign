@@ -35,6 +35,8 @@ reference:
       - hadamardExperimentalDesign
       - starts_with("generate_block_design")
       - gen_var_cov_matrix_block_designs
+      - computeBinaryMatchStructure
+      - optimize_asymmetric_treatment_assignment
   - title: "Design searches"
     contents:
       - starts_with("init")
@@ -61,3 +63,7 @@ reference:
       - starts_with("gen_")
       - starts_with("create_")
       - starts_with("shuffle")
+      - all_elements_same_cpp_wrap
+      - generate_stdzied_design_matrix
+      - greedy_orthogonalization_curation
+      - greedy_orthogonalization_curation2
