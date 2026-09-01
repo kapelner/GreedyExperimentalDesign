@@ -73,6 +73,7 @@ public class RerandomizationExperimentalDesign extends MultipleSearchExperimenta
 
     	search_thread_pool.execute(new Runnable(){
 			public void run() {
+				try {
 				while (true){
 //					System.out.println("progress = " + r);
 					//break up here too to avoid one more iteration (ugly, but a tad faster)
@@ -130,8 +131,11 @@ public class RerandomizationExperimentalDesign extends MultipleSearchExperimenta
 						}
 					}
 				}
+				} catch (Throwable t) {
+					worker_error.compareAndSet(null, t);
+				}
 			}
-    	});		
+	});
 		afterBeginSearch();		
 	}
 	

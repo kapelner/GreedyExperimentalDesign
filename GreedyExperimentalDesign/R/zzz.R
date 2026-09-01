@@ -33,9 +33,10 @@
   }
 
   #need to check if proper Java is installed by special request of Prof Brian Ripley
-  jv = .jcall("java/lang/System", "S", "getProperty", "java.runtime.version")
-  if (substr(jv, 1L, 2L) == "1.") {
-	  stop("Java 1.X is not supported by GreedyExperimentalDesign. Please install Java 22 or higher.")
+  java_spec_version = .jcall("java/lang/System", "S", "getProperty", "java.specification.version")
+  java_major = suppressWarnings(as.integer(sub("^1\\.", "", sub("\\..*$", "", java_spec_version))))
+  if (is.na(java_major) || java_major < 21L) {
+      stop("GreedyExperimentalDesign requires Java 21 or higher; detected Java ", java_spec_version, ".")
   }
 
 }

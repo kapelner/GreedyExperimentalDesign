@@ -76,6 +76,7 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 			final int d0 = d;
 	    	search_thread_pool.execute(new Runnable() {
 				public void run() {
+					try {
 					for (int d00 = d0; d00 < d0 + BATCH_SIZE && d00 < max_designs; d00++) {
 						ObjectiveFunction obj_fun = null;
 						try {
@@ -100,6 +101,9 @@ public class OptimalExperimentalDesign extends AllExperimentalDesigns {
 						
 						objective_vals[d00] = obj_fun.calc(false);
 						if (search_stopped.get()) break;
+					}
+					} catch (Throwable t) {
+						worker_error.compareAndSet(null, t);
 					}
 				}
 			});

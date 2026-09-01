@@ -5,6 +5,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import CustomLogging.FileLoggedClass;
 import ObjectiveFunctions.ObjectiveFunction;
@@ -19,6 +20,7 @@ public abstract class AllExperimentalDesigns extends FileLoggedClass {
 	protected String objective;
 	protected Integer num_cores;
 	protected AtomicBoolean search_stopped;
+	protected AtomicReference<Throwable> worker_error;
 	
 	//data inputed from the user's data
 	protected double[][] X;
@@ -39,12 +41,13 @@ public abstract class AllExperimentalDesigns extends FileLoggedClass {
 		num_cores = 1;
 		rand_obj = new Random();
 		search_stopped = new AtomicBoolean();
+		worker_error = new AtomicReference<>();
 	}	
 	
 	public void beginSearch() {
 //		System.out.println("beginSearch");
 		began_search = true;
-		
+		worker_error.set(null);
 		t0 = System.currentTimeMillis();
 		//build the pool and all tasks to it
 		search_thread_pool = Executors.newFixedThreadPool(num_cores == null ? 1 : num_cores);
@@ -69,6 +72,10 @@ public abstract class AllExperimentalDesigns extends FileLoggedClass {
 				await_completion.join();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
+			}
+			Throwable err = worker_error.get();
+			if (err != null) {
+				throw new RuntimeException("Search worker failed: " + err.getMessage(), err);
 			}
 		}
 	}	

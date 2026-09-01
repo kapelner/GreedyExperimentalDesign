@@ -1,4 +1,4 @@
-<project name="GreedyExperimentalDesign" basedir="." default="clean">
+<project name="GreedyExperimentalDesign" basedir="." default="dist">
     <description>
         This script builds the GreedyExperimentalDesign code into the GreedyExperimentalDesign.jar file which gets called from R in the R package
     </description>	

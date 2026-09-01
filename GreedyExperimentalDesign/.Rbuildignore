@@ -1,3 +1,5 @@
 ^benchmarks$
 ^\.Rlib$
 ^src/.*\.(o|so|dll|dylib)$
+^_pkgdown\.yml$
+^docs$

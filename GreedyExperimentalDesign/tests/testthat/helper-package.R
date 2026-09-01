@@ -1,4 +1,4 @@
-options(java.parameters = c("-Xmx10g", "--enable-native-access=ALL-UNNAMED"))
+options(java.parameters = c("-Xmx2g", "--enable-native-access=ALL-UNNAMED", "--enable-preview"))
 
 library(testthat)
 
@@ -118,7 +118,9 @@ LoggingReporter = R6::R6Class(
   inherit = testthat::Reporter,
   public = list(
     add_result = function(context, test, result) {
-      if (!testthat:::expectation_success(result)) {
+      # Skips are expected for the expensive/Gurobi suites during R CMD check;
+      # only actual errors and failed expectations should be logged as failures.
+      if (inherits(result, "error") || inherits(result, "expectation_failure")) {
         record_immediate_failure(result)
       }
     }

@@ -1,13 +1,29 @@
 # GreedyExperimentalDesign
 
+[![R-universe version](https://kapelner.r-universe.dev/GreedyExperimentalDesign/badges/version)](https://kapelner.r-universe.dev/GreedyExperimentalDesign)
+[![R-universe checks](https://kapelner.r-universe.dev/GreedyExperimentalDesign/badges/checks)](https://kapelner.r-universe.dev/GreedyExperimentalDesign)
+[![R-CMD-check](https://github.com/kapelner/GreedyExperimentalDesign/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/kapelner/GreedyExperimentalDesign/actions/workflows/R-CMD-check.yaml)
+
 An R package for computing near optimal experimental designs for a two-arm experiment with covariates. This is joint work with Abba M. Krieger of the Wharton School of the University of Pennsylvania and David Azriel of The Technion.
+
+Install the development version from R-universe with:
+
+```r
+install.packages(
+  "GreedyExperimentalDesign",
+  repos = c(
+    kapelner = "https://kapelner.r-universe.dev",
+    CRAN = "https://cloud.r-project.org"
+  )
+)
+```
 
 To load the package, make sure `rJava` is installed and properly configured! Then:
 
 ```r
-options(java.parameters = "-Xmx10g") # or however much memory you wish to allocate
+options(java.parameters = c("-Xmx10g", "--enable-native-access=ALL-UNNAMED", "--enable-preview"))
 # For GPU-enabled machines, we recommend the following to remove warnings:
-# options(java.parameters = c("-Xmx10g", "--enable-native-access=ALL-UNNAMED"))
+# options(java.parameters = c("-Xmx10g", "--enable-native-access=ALL-UNNAMED", "--enable-preview"))
 library(GreedyExperimentalDesign)
 ```
 	
