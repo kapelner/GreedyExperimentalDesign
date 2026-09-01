@@ -47,3 +47,9 @@ test_pow.cpp
 lib/wgpu/lib/
 lib/wgpu/include/
 lib/libGpuBridge.so
+
+# pkgdown renders the site in CI and deploys it to gh-pages.
+/GreedyExperimentalDesign/docs/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/

@@ -1,4 +1,4 @@
-version 1.6.1
+# GreedyExperimentalDesign 1.6.1
 * Optional GPU acceleration via wgpu-native (WebGPU) on Linux (Vulkan), macOS (Metal), and Windows (Direct3D 12/Vulkan)
 * All five compute shaders use workgroup shared memory tiling, eliminating 8-16x memory bandwidth waste versus naive global-memory access
 * Distance matrix shader tiles X rows cooperatively across 256-thread workgroups, computing all n*(n-1)/2 pairs in parallel
@@ -10,7 +10,7 @@ version 1.6.1
 * GPU use is automatic when wgpu-native is detected at install time; disabled transparently otherwise with no change to existing CPU code paths
 * Added benchmark script benchmarks/benchmark_gpu_backend.R for CPU vs GPU timing comparison
 
-version 1.6
+# GreedyExperimentalDesign 1.6
 * Massive speedups using Rcpp all over the codebase
 * Gurobi search for r many vectors now works using pooling and a whole array of other arguments
 * ggplot2 in now the plotting engine
@@ -21,10 +21,10 @@ version 1.6
 * Fixed documentation errors and inconsistencies
 * Updated package description with DOI's for the relevant publications
 
-version 1.5.6.3
+# GreedyExperimentalDesign 1.5.6.3
 * Fixed the Java-side cache so newBlankDesign no longer reuses a design with the wrong nT when the same n is requested again, which was causing findIndicies to overrun its array (issue #3 on github)
 
-version 1.5.6.2
+# GreedyExperimentalDesign 1.5.6.2
 * added a C++ function that creates block design allocations rapidly
 * exports all toolbox-style blazing-fast C++ functions (a) generate_block_design_cpp_wrap which generates homogeneous block allocation vectors
 (b) compute_distance_matrix_cpp_wrap which generates Euclidean squared distance matrices and (c) shuffle_cpp_wrap a shuffling routine that 
@@ -32,46 +32,46 @@ is faster than base R's sample() function
 * made standard one_zero over zero_one formats for allocation vectors
 * added a function "gen_var_cov_matrix_block_designs" that generated varcov matrices for block designs
 
-version 1.5.6.1
+# GreedyExperimentalDesign 1.5.6.1
 * Faster implementation of complete_randomization_with_forced_balanced, imbalanced_complete_randomization, and imbalanced_block_designs via std::shuffle
 * Seed for complete_randomization_with_forced_balanced, imbalanced_complete_randomization, and imbalanced_block_designs
 * We now comply with CRAN policy to not change the user's graphical parameters
 
-version 1.5.6
+# GreedyExperimentalDesign 1.5.6
 * Method that calculates asymmetric cost allocation
 * Greedy Pair Switching algorithm that supports unequal number of treatments and controls
 * Imbalanced (unequal allocation) Completely Random Designs
 * Imbalanced (unequal allocation) Block Designs
 
-version 1.5.5
+# GreedyExperimentalDesign 1.5.5
 * Speedier implementation of binary pairwise matching designs using Java and Hash functions to check uniqueness
 
-version 1.5
+# GreedyExperimentalDesign 1.5
 * Greedy Design on Multiple Kernels simultaneously
 * You can pass distance matrices to binary match design initialization
 * You can create binary match designs based on Mahalanobis distances between units using a flag in the design initialization
 
-version 1.4
+# GreedyExperimentalDesign 1.4
 * Binary match followed by greedy within-the-binary-pairs search / rerandomization
 
-version 1.35
+# GreedyExperimentalDesign 1.35
 * Curation of designs based on minimizing orthogonality as measured by average absolute correlation between each pair of vectors
 * Hadamard matrix experimental designs
 
-version 1.31
+# GreedyExperimentalDesign 1.31
 * Various speedups and bug fixes.
 
-version 1.3
+# GreedyExperimentalDesign 1.3
 * Gurobi now works with Kernel distances.
 
-version 1.21
+# GreedyExperimentalDesign 1.21
 * Fixed small bug, deleted vignette which was causing compilation issues.
 
-version 1.2
+# GreedyExperimentalDesign 1.2
 * Gurobi setup for allocation searches via numerical optimization.
 
-version 1.1
+# GreedyExperimentalDesign 1.1
 * Updated package to conform to CRAN's new policies.
 
-version 1.0
+# GreedyExperimentalDesign 1.0
 * Initial Release

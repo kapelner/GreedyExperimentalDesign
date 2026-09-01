@@ -20,23 +20,26 @@ public class PairwiseMatchingExperimentalDesign extends MultipleSearchExperiment
 		for (int d = 0; d < max_designs; d++){
 	    	search_thread_pool.execute(new Runnable(){
 				public void run() {
-					if (search_stopped.get()) {
-						return;
-					}
-					while (true) {
-						int[] w = generateAllocation();
-						Integer h = Arrays.hashCode(w);
-						synchronized(unique_allocations) { //ensure the algorithm is threadsafe
-							if (unique_allocations.get(h) == null) {
-								unique_allocations.put(h, w);
-								break;
-							}						
+					try {
+						if (search_stopped.get()) {
+							return;
 						}
+						while (true) {
+							int[] w = generateAllocation();
+							Integer h = Arrays.hashCode(w);
+							synchronized(unique_allocations) { //ensure the algorithm is threadsafe
+								if (unique_allocations.get(h) == null) {
+									unique_allocations.put(h, w);
+									break;
+								}
+							}
+						}
+
+						num_completed.getAndIncrement();
+//						System.out.println("did one num_completed: " + num_completed.get());
+					} catch (Throwable t) {
+						worker_error.compareAndSet(null, t);
 					}
-					
-					num_completed.getAndIncrement();
-//					System.out.println("did one num_completed: " + num_completed.get());
-					
 				}
 			});
 		}	

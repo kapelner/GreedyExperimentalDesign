@@ -114,10 +114,14 @@ public class GreedyExperimentalDesign extends MultipleSearchExperimentalDesigns 
 //			}
 	    	search_thread_pool.execute(new Runnable(){
 				public void run() {
-					generateIndividualSearch(d0);
-					if (!search_stopped.get()) {
-						num_completed.getAndIncrement();
-//						System.out.println("did one num_completed: " + num_completed.get());
+					try {
+						generateIndividualSearch(d0);
+						if (!search_stopped.get()) {
+							num_completed.getAndIncrement();
+//							System.out.println("did one num_completed: " + num_completed.get());
+						}
+					} catch (Throwable t) {
+						worker_error.compareAndSet(null, t);
 					}
 				}
 			});

@@ -992,6 +992,13 @@ public final class WebGpuPanama {
     }
 
     private static Path findLibraryPath() {
+        String sysProp = System.getProperty("ged.wgpu.lib.path");
+        if (sysProp != null) {
+            Path p = Paths.get(sysProp);
+            if (Files.exists(p)) {
+                return p.toAbsolutePath().normalize();
+            }
+        }
         List<Path> candidates = List.of(
             Paths.get("lib", "wgpu", "lib", "libwgpu_native.so"),
             Paths.get("lib", "wgpu", "lib", "libwgpu_native.dylib"),

@@ -1,0 +1,17 @@
+url: https://kapelner.github.io/GreedyExperimentalDesign/
+
+template:
+  bootstrap: 5
+
+development:
+  mode: auto
+
+navbar:
+  structure:
+    left: [intro, reference, news]
+    right: [search, github]
+  components:
+    github:
+      icon: fa-github
+      href: https://github.com/kapelner/GreedyExperimentalDesign
+      aria-label: GitHub

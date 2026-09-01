@@ -45,8 +45,12 @@ public class KarpExperimentalDesign extends AllExperimentalDesigns {
 		super.beginSearch();
     	search_thread_pool.execute(new Runnable(){
 			public void run() {
-				keds = balanced ? new KarpDesignSearcherBalanced(X, verbose) : new KarpDesignSearcherUnbalanced(X, verbose);
-				keds.setVerbose(verbose);
+				try {
+					keds = balanced ? new KarpDesignSearcherBalanced(X, verbose) : new KarpDesignSearcherUnbalanced(X, verbose);
+					keds.setVerbose(verbose);
+				} catch (Throwable t) {
+					worker_error.compareAndSet(null, t);
+				}
 			}
 		});
 		afterBeginSearch();	
