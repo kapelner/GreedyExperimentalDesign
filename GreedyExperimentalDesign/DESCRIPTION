@@ -1,21 +1,18 @@
 Package: GreedyExperimentalDesign
 Type: Package
 Title: Greedy Experimental Design Construction
-Version: 1.6.1
-Date: 2026-04-30
-Author: Adam Kapelner [aut, cre] (ORCID: 0000-0001-5985-6792), David Azriel [aut], Abba Krieger [aut]
+Version: 1.6.1.9000
 Authors@R: c(person(given = "Adam",
                       family = "Kapelner",
-                      role = c("aut", "cre"),
+                      role = c("aut", "cre", "cph"),
                       email = "kapelner@qc.cuny.edu",
-                      comment = "ORCID: 0000-0001-5985-6792"),
+                      comment = c(ORCID = "0000-0001-5985-6792")),
                person(given = "David",
                       family = "Azriel",
                       role = "aut"),
                person(given = "Abba",
                       family = "Krieger",
                       role = "aut"))
-Maintainer: Adam Kapelner <kapelner@qc.cuny.edu>
 Description: Computes experimental designs for two-arm experiments with
     covariates using multiple methods, including: (0) complete randomization
     and randomization with forced-balance; (1) greedy optimization of a balance
@@ -59,7 +56,8 @@ Suggests:
     pkgload,
     R6
 Config/testthat/edition: 3
+Config/roxygen2/version: 8.0.0.9000
 URL: https://kapelner.github.io/GreedyExperimentalDesign/, https://github.com/kapelner/GreedyExperimentalDesign
 BugReports: https://github.com/kapelner/GreedyExperimentalDesign/issues
 Config/Needs/website: pkgdown
-RoxygenNote: 7.3.3
+RoxygenNote: 8.0.0.9000

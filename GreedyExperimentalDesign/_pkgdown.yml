@@ -2,9 +2,17 @@ url: https://kapelner.github.io/GreedyExperimentalDesign/
 
 template:
   bootstrap: 5
+  math-rendering: mathjax
 
 development:
   mode: auto
+
+home:
+  title: "GreedyExperimentalDesign: Covariate-Balanced Experimental Designs"
+  description: >
+    Construct covariate-balanced two-arm experimental designs with greedy
+    optimization, rerandomization, matching, Karp's method, exhaustive search,
+    Hadamard designs, and multiple-kernel objectives.
 
 navbar:
   structure:
@@ -15,3 +23,41 @@ navbar:
       icon: fa-github
       href: https://github.com/kapelner/GreedyExperimentalDesign
       aria-label: GitHub
+
+reference:
+  - title: "Package overview"
+    contents:
+      - GreedyExperimentalDesign
+  - title: "Randomization and blocking"
+    contents:
+      - starts_with("complete_randomization")
+      - starts_with("imbalanced_")
+      - hadamardExperimentalDesign
+      - starts_with("generate_block_design")
+      - gen_var_cov_matrix_block_designs
+  - title: "Design searches"
+    contents:
+      - starts_with("init")
+      - starts_with("startSearch")
+      - starts_with("stopSearch")
+      - searchTimeElapsed
+  - title: "Search results and summaries"
+    contents:
+      - starts_with("results")
+      - starts_with("summary")
+      - starts_with("print")
+  - title: "GPU and numerical backends"
+    contents:
+      - starts_with("ged_gpu")
+      - ends_with("_gpu")
+      - compute_gram_matrix
+      - compute_objective_val
+      - starts_with("safe_cov")
+      - starts_with("standardize")
+  - title: "Plots and utilities"
+    contents:
+      - starts_with("plot")
+      - starts_with("compute_")
+      - starts_with("gen_")
+      - starts_with("create_")
+      - starts_with("shuffle")
