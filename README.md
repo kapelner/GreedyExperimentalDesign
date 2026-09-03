@@ -1,4 +1,4 @@
-# GreedyExperimentalDesign
+# GreedyExperimentalDesign <img src="GreedyExperimentalDesign/man/figures/logo.png" align="right" height="139" alt="GreedyExperimentalDesign hex logo" />
 
 [![R-universe version](https://kapelner.r-universe.dev/GreedyExperimentalDesign/badges/version)](https://kapelner.r-universe.dev/GreedyExperimentalDesign)
 [![R-universe checks](https://kapelner.r-universe.dev/GreedyExperimentalDesign/badges/checks)](https://kapelner.r-universe.dev/GreedyExperimentalDesign)
